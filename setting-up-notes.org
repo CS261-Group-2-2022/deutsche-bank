@@ -1,0 +1,11 @@
+#+TITLE: Setting Up Notes
+
+#+begin_src
+sudo apt-get install nodejs npm
+sudo npm install -g typescript
+sudo npm link typescript
+sudo npm install -g gulp
+cd <<project-directory>>
+npx create-react-app .
+tsc -v
+#+end_src
