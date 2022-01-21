@@ -1,8 +1,19 @@
-import React from "react";
-import "./App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Home from "./pages/Home";
+import Error404 from "./pages/Error404";
 
 function App() {
-  return <h1 className="text-3xl font-bold underline">Hello world!</h1>;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        {/* <Route path="mentoring" element={<Mentoring />} /> */}
+        {/* <Route path="groups" element={<GroupSessions />} /> */}
+        <Route path="*" element={<Error404 />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
