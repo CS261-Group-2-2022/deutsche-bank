@@ -7,8 +7,14 @@ import {
 import { Link } from "react-router-dom";
 import RoundedImage from "../components/RoundedImage";
 import Topbar from "../components/Topbar";
+import { useUser } from "../utils/authentication";
 
-function DashboardUserHero() {
+type DashboardUserHeroProps = {
+  name: string;
+  businessArea: string;
+};
+
+function DashboardUserHero({ name, businessArea }: DashboardUserHeroProps) {
   return (
     <div className="bg-white">
       <div className="flex flex-row lg:items-center lg:justify-between w-full mx-auto py-4 px-4 sm:px-6 lg:px-8 z-20">
@@ -24,10 +30,10 @@ function DashboardUserHero() {
           </div>
           <h2>
             <span className="block text-3xl sm:text-4xl font-bold">
-              Hi, John Doe
+              Hi, {name}
             </span>
             <span className="block text-l sm:text-2xl text-gray-500">
-              Trading
+              {businessArea}
             </span>
           </h2>
         </div>
@@ -178,10 +184,15 @@ function UpcomingSessionsColumn() {
 }
 
 export default function Home() {
+  const { user } = useUser();
+
   return (
     <>
       <Topbar />
-      <DashboardUserHero />
+      <DashboardUserHero
+        name={user?.name ?? "NOT LOGGED IN"}
+        businessArea={user?.business_area ?? "Trading"}
+      />
       <div className="bg-white w-full">
         <div className="grid grid-cols-3 mx-5 gap-5">
           <div className="col-span-2 space-y-5">
