@@ -1,6 +1,7 @@
 # Ignore pycache
 **/__pycache__
 **/*.pyc
+**.pyc
 
 # Ignore migrations
 backend/*/migrations/**
