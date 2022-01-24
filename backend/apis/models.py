@@ -38,6 +38,7 @@ class User(models.Model):
     @staticmethod
     def print_all_users() -> None:
         print(" ,-----------------------------------------------------------")
+        print(" | " + " Printing all users...")
         for u in User.objects.all().iterator():
             print(" | ---------------------------------------------------- ")
             print(" | " + str(u))
@@ -71,8 +72,8 @@ def create_dummy_data():
     print(" | " + " Created dummy data for the first time...")
     for u in User.objects.all().iterator():
         print(" | " + str(u))
-        print(" | pk:" + u.pk)
-        print(" | pk:" + u.id)
+        print(f" | {u.pk=}:")
+        print(f" | {u.id=}:")
         print(" | " + u.first_name)
         print(" | " + f"{u.mentor=}")
     print(" `-----------------------------------------------------------")
@@ -89,4 +90,5 @@ def clear_dummy_data():
         print(" < Did not delete.")
 
 
+create_dummy_data()
 User.print_all_users()
