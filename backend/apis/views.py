@@ -3,13 +3,10 @@ from typing import *
 
 from rest_framework import viewsets
 
-from .serializers import StuffSerializer
-from .models import StuffModel
+from .serializers import UserSerializer
+from .models import User
 
-class StuffViewSet(viewsets.ModelViewSet):
-    queryset = StuffModel.objects.all()
-    serializer_class = StuffSerializer
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
-class FirstStuffViewSet(viewsets.ModelViewSet):
-    queryset = StuffModel.objects.all()
-    serializer_class = StuffSerializer

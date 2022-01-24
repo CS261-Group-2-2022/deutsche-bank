@@ -5,10 +5,8 @@ from django.urls import include, path
 from rest_framework import routers
 from .views import *
 
-
 router : routers.DefaultRouter = routers.DefaultRouter()
-router.register(r'stuff', StuffViewSet)
-router.register(r'stuff/first', FirstStuffViewSet)
+router.register(r'users', UserViewSet)
 
 urlpatterns : List[str] = [
     path('', include(router.urls)),

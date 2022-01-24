@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 from typing import *
 
-from rest_framework import serializers
+from rest_framework_dataclasses import serializers
+from .models import User
 
-from .models import StuffModel
-
-class StuffSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.DataclassSerializer):
     class Meta:
-        model = StuffModel
-        fields : List[str] = ['title']
+        dataclass = User

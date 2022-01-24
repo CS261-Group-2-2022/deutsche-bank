@@ -41,7 +41,6 @@ INSTALLED_APPS = [
 
     'rest_framework',
 
-    'frontend',
     'apis',
 ]
 
@@ -124,7 +123,12 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, '../build/static')
+]
+
+CORS_ORIGIN_WHITELIST = [
+    # Whitelist default local React ports
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
 ]
 
 # Default primary key field type
