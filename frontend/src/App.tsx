@@ -14,7 +14,36 @@ class User {
 
   password : string = "" // TODO(arwck): This shouldn't be serialized.
 
-  mentor? : User = undefined
+  /// This is an object of the form: mentor = { id: 5 }.
+  mentor? : Partial<User> | null = null
+
+  async getMentor() : Promise<User | null> {
+    // If the mentor is undefined, we don't have a mentor. Return undefined.
+    if (this.mentor === null) {
+      return null;
+    }
+
+    // If we already have the mentor fetched, then just return it.
+    if (this.mentor?.first_name !== undefined) {
+      return new User(this.mentor);
+    }
+
+    // Otherwise, we have to fetch it ourselves from the backend.
+    let r = await fetch(`http://localhost:8000/api/v1/users/${this.mentor?.id}`);
+
+    if (r.status !== 200) {
+      debugger;
+    }
+
+    let j : Partial<User> = await r.json();
+    let u : User = new User(j);
+
+    // Save the mentor user for later.
+    this.mentor = u;
+
+    // And return it.
+    return u;
+  }
 
   constructor(from: Partial<User>) {
     Object.assign(this, from);
@@ -35,7 +64,13 @@ let getAllUsers : () => Promise<User[]> =
     return j.map(u => new User(u));
   }
 
-getAllUsers().then(console.log);
+getAllUsers().then(us => us.forEach(u => {
+  u.getMentor().then(m => {
+    console.log(u);
+    console.log('is mentored by');
+    console.log(m);
+  });
+}))
 
 let App = () => {
   return (
