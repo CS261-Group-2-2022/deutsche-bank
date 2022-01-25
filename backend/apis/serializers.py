@@ -7,3 +7,4 @@ from .models import User
 class UserSerializer(serializers.DataclassSerializer):
     class Meta:
         dataclass = User
+        exclude = ['password']
