@@ -4,97 +4,113 @@ from django.db import models
 from typing import *
 from dataclasses import dataclass
 
+""" This file contains the database models and some associated utilities.
+"""
+
+@dataclass(init=False)
+class BusinessArea(models.Model):
+    """ Database model that stores the business areas that are in the company.
+
+    This can then be searched through during account creation to select your business area, or more
+    can be created later on.
+    Further, this is also used in the storage of this information - see the User model's
+    business_area field.
+    """
+    id: int = models.AutoField(primary_key=True, unique=True)
+    name: str = models.CharField(max_length = 100, unique=True)
 
 @dataclass
-class UserById:  # avoid recursive user lookup
+class UserById:
+    """ Utility class, used only as a type hint, so that when we serialize Users to JSON, we can
+    prevent the whole User instance being sent, and instead send only the id of the user.
+    """
     id: int
-
 
 @dataclass(init=False)
 class User(models.Model):
+    """ Database model that describes a single User.
+    """
     id : int = models.AutoField(primary_key=True, unique=True)
 
     first_name : str = models.CharField(max_length = 100)
     last_name : str = models.CharField(max_length = 100)
 
-    # TODO(arwck): Figure out how emailfield works
+    business_area : BusinessArea | None = models.ForeignKey('BusinessArea',
+                                                            null=True,
+                                                            on_delete=models.SET_NULL)
+
+    # Users also are experts in a set of fields. See get_expertise below.
+    # This is encoded by the UserExpertise model, which relates them together.
+
     email : str = models.EmailField(max_length = 100)
     is_email_verified : bool = models.BooleanField()
 
     password : str = models.CharField(max_length = 100) # TODO(arwck): Shouldn't be chars.
-    # TODO(arwck): This shouldn't be serialized, either.
 
-    # TODO(arwck): This should be an primary key or a link in the json, but currently it totally isn't.
-    # So, we need to change the type hint here to something that'll get it to give the right result
-    # mentor : type['User']
-    # mentor : type[User] # Only allowed if we import __future__ annotations
-    # mentor : User # Only allowed if we import __future__ annotations
     mentor : UserById = \
         models.ForeignKey('User',
                           null=True,
                           on_delete=models.SET_NULL)
 
-    # TODO(arwck): Figure out if this works
-    def get_mentees(self) -> List[type['User']]:
+    def get_expertise(self) -> List[Type[User]]:
+        return self.userexpertise_set.all()
+
+    # TODO(arwck): Make an endpoint for this
+    def get_mentees(self) -> List[Type[User]]:
         """ Retrieves the list of mentees for this user.
         :return the set of users who have this user as their mentor.
         """
         return self.user_set.all()
 
-    @staticmethod
-    def print_all_users() -> None:
-        print(" ,-----------------------------------------------------------")
-        print(" | " + " Printing all users...")
-        for u in User.objects.all().iterator():
-            print(" | ---------------------------------------------------- ")
-            print(" | " + str(u))
-            print(f" | {u.pk=}")
-            print(f" | {u.id=}")
-            print(" | " + u.first_name)
-            print(" | " + f"{u.mentor=}")
-        print(" `-----------------------------------------------------------")
+@dataclass(init=False)
+class Expertise(models.Model):
+    """ Database model that holds all the 'kinds' of expertise users may have.
 
-def create_dummy_data():
-    user_count : int = User.objects.count()
+    This can then be searched through during account creation to select your areas of expertise.
+    Further, this is also used in the storage of this information - see UserExpertise.
+    """
+    id: int = models.AutoField(primary_key=True, unique=True)
+    name: str = models.CharField(max_length = 100, unique=True)
 
-    if user_count > 0:
-        return
+@dataclass(init=False)
+class UserExpertise(models.Model):
+    """ Database model that encodes that a given user has a given expertise.
 
-    Arpad = User.objects.create(first_name = 'Arpad',
-                        last_name = 'Kiss',
-                        email = 'arpad.kiss@warwick.ac.uk',
-                        is_email_verified = False,
-                        password = 'nunya',
-                        mentor = None)
+    Any user can have multiple areas of expertise, and any expertise may have many users that are
+    experts in that field, therefore we need a database table like this to encode this information.
 
-    Isaac = User.objects.create(first_name = 'Isaac',
-                        last_name = 'IDFK',
-                        email = 'isaac.idfk@warwick.ac.uk',
-                        is_email_verified = False,
-                        password = 'aynun',
-                        mentor = Arpad)
+    Attributes
+    ----------
+    user
+        The User object that this expertise belongs to.
+        This is related by a foreign key relation.
+        Also, this has the type hint 'UserById', so that when we serialize to JSON, the whole User
+        object doesn't get sent.
+    expertise
+        The Expertise object that this link relates to.
+        This denotes what the person is actually an expert in.
+        This is related by a foreign key relation.
+    """
+    user: UserById = models.ForeignKey('User',
+                                   null=False,
+                                   on_delete=models.CASCADE)
+    expertise: Expertise = models.ForeignKey('Expertise',
+                                             null=False,
+                                             on_delete=models.CASCADE)
 
+from .dummy_data import *
+
+def print_all_users() -> None:
     print(" ,-----------------------------------------------------------")
-    print(" | " + " Created dummy data for the first time...")
+    print(" | " + " Printing all users...")
     for u in User.objects.all().iterator():
+        print(" | ---------------------------------------------------- ")
         print(" | " + str(u))
-        print(f" | {u.pk=}:")
-        print(f" | {u.id=}:")
+        print(f" | {u.pk=}")
+        print(f" | {u.id=}")
         print(" | " + u.first_name)
         print(" | " + f"{u.mentor=}")
     print(" `-----------------------------------------------------------")
 
-
-
-# TODO(arwck): This doesn't work
-def clear_dummy_data():
-    y : bool = input(" > Are you sure you want to delete all data? y/n") == "y"
-    if y:
-        User.objects.all().delete()
-        print(" < Deleted all dummy data.")
-    else:
-        print(" < Did not delete.")
-
-
 create_dummy_data()
-User.print_all_users()
+print_all_users()
