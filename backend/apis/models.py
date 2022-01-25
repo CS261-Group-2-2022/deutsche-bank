@@ -4,6 +4,12 @@ from django.db import models
 from typing import *
 from dataclasses import dataclass
 
+
+@dataclass
+class UserById:  # avoid recursive user lookup
+    id: int
+
+
 @dataclass(init=False)
 class User(models.Model):
     id : int = models.AutoField(primary_key=True, unique=True)
@@ -23,7 +29,7 @@ class User(models.Model):
     # mentor : type['User']
     # mentor : type[User] # Only allowed if we import __future__ annotations
     # mentor : User # Only allowed if we import __future__ annotations
-    mentor : str = \
+    mentor : UserById = \
         models.ForeignKey('User',
                           null=True,
                           on_delete=models.SET_NULL)
