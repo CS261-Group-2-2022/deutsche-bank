@@ -14,17 +14,15 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     @action(detail=True, methods=['get'])
-    def get_expertise(self, request, pk=None) -> 'Response[Json[List[UserExperience]]]':
-        user: User = self.get_object()
-        expertises: QuerySet = user.userexpertise_set.all()
-        page = self.paginate_queryset(expertises)
+    def full(self, request, pk=None):
+        return Response(FullUserSerializer(self.get_object()).data)
 
-        if page is not None:
-            cereal = UserExpertiseSerializer(page, many=True)
-            return self.get_paginated_response(cereal.data)
-        else:
-            cereal = UserExpertiseSerializer(expertises, many=True)
-            return Response(cereal.data)
+    @action(detail=True, methods=['get'])
+    def expertise(self, request, pk=None) -> 'Response[Json[List[Expertise]]]':
+        user: User = self.get_object()
+
+        cereal = ExpertiseSerializer(user.expertise.all(), many=True)
+        return Response(cereal.data)
 
 
 class MeetingViewSet(viewsets.ModelViewSet):

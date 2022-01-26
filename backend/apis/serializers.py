@@ -2,7 +2,7 @@
 from typing import *
 
 from rest_framework.serializers import ModelSerializer
-from .models import User, Meeting, ActionPlan, Expertise, UserExpertise, BusinessArea
+from .models import User, Meeting, ActionPlan, Expertise, BusinessArea
 
 
 class UserSerializer(ModelSerializer):
@@ -23,12 +23,6 @@ class ActionPlanSerializer(ModelSerializer):
         exclude = []
 
 
-class UserExpertiseSerializer(ModelSerializer):
-    class Meta:
-        model = UserExpertise
-        exclude = []
-
-
 class ExpertiseSerializer(ModelSerializer):
     class Meta:
         model = Expertise
@@ -40,3 +34,8 @@ class BusinessAreaSerializer(ModelSerializer):
         model = BusinessArea
         exclude = []
 
+
+class FullUserSerializer(UserSerializer):
+    business_area = BusinessAreaSerializer()
+    expertise = ExpertiseSerializer(many=True)
+    mentor = UserSerializer()
