@@ -11,7 +11,6 @@ from .models import User
 """ This file contains code for creating dummy data.
 """
 
-
 def add_dummy_expertise_to(user: 'User'):
     number_of_expertises_available = Expertise.objects.count()
     number_of_expertises_to_add = random.randint(2, number_of_expertises_available)
@@ -21,7 +20,18 @@ def add_dummy_expertise_to(user: 'User'):
         user.expertise.add(e)
     user.save()
 
+def create_dummy_action_plan(mentee, mentor):
+    action_plan_count: int = ActionPlan.objects.count()
 
+    if action_plan_count > 0:
+        return
+
+    Do_The_Project = ActionPlan.objects.create(name="Do the project.",
+                                               description="Complete and submit the CS261 Software Engineering project.",
+                                               mentee=mentee,
+                                               mentor=mentor,
+                                               creation_date=datetime.utcnow(),
+                                               completion_date=None)
 def create_dummy_users():
     user_count: int = User.objects.count()
 
@@ -52,7 +62,9 @@ def create_dummy_users():
                                 mentor=Arpad)
 
     add_dummy_expertise_to(Isaac)
+
     create_dummy_meetings(mentee=Isaac, mentor=Arpad)
+    create_dummy_action_plan(Arpad, Isaac)
 
     print(" ,-----------------------------------------------------------")
     print(" | " + " Created dummy users for the first time...")
@@ -72,7 +84,6 @@ def create_dummy_meetings(mentee: User, mentor: User):
         time=datetime.utcnow()
     )
 
-
 def create_dummy_business_areas():
     business_area_count: int = BusinessArea.objects.count()
 
@@ -88,7 +99,6 @@ def create_dummy_business_areas():
     Wealth_Management = BusinessArea.objects.create(name="Wealth Management")
     Deutsche_Asset_Management = BusinessArea.objects.create(name="Deutsche Asset Management")
 
-
 def create_dummy_expertise():
     expertise_count: int = Expertise.objects.count()
 
@@ -103,10 +113,6 @@ def create_dummy_expertise():
     Private_and_Commercial_Banking_Expert = Expertise.objects.create(name="Private and Commercial Banking Expert")
     Wealth_Management_Expert = Expertise.objects.create(name="Wealth Management Expert")
     Deutsche_Asset_Management_Expert = Expertise.objects.create(name="Deutsche Asset Management Expert")
-
-
-from pdb import set_trace as bp
-
 
 def create_dummy_data():
     try:
