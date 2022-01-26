@@ -109,7 +109,7 @@ class ActionPlan(models.Model):
     mentor: User = models.ForeignKey('User', null=True, related_name='actionplan_mentor',
                                      on_delete=models.SET_NULL)  # if the mentor is deleted set mentor to null
     creation_date: datetime = models.DateTimeField()  # creation date of action plan
-    completion_date: datetime = models.DateTimeField()  # completion date of action plan
+    completion_date: datetime = models.DateTimeField(null=True)  # completion date of action plan
 
 
 from .dummy_data import *
