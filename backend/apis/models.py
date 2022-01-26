@@ -104,8 +104,10 @@ class Meeting(models.Model):
 
 @dataclass(init=False)
 class ActionPlan(models.Model):
-    mentee: User = models.ForeignKey('User', null=True, related_name='actionplan_mentee',
-                                     on_delete=models.SET_NULL)  # if the mentee is deleted set mentee to null
+    name: str = models.CharField(max_length=100)
+    description: str = models.CharField(max_length=1000)
+    mentee: User = models.ForeignKey('User', related_name='actionplan_mentee',
+                                     on_delete=models.CASCADE)  # if the mentee is delete action plans
     mentor: User = models.ForeignKey('User', null=True, related_name='actionplan_mentor',
                                      on_delete=models.SET_NULL)  # if the mentor is deleted set mentor to null
     creation_date: datetime = models.DateTimeField()  # creation date of action plan
