@@ -45,9 +45,6 @@ class User(models.Model):
                           on_delete=models.SET_NULL)
     expertise: List[Expertise] = models.ManyToManyField('Expertise')
 
-    def get_expertise(self) -> List[Type[User]]:
-        return self.userexpertise_set.all()
-
     # TODO(arwck): Make an endpoint for this
     def get_mentees(self) -> List[Type[User]]:
         """ Retrieves the list of mentees for this user.
@@ -64,33 +61,6 @@ class Expertise(models.Model):
     Further, this is also used in the storage of this information - see UserExpertise.
     """
     name: str = models.CharField(max_length=100, unique=True)
-
-
-@dataclass(init=False)
-class UserExpertise(models.Model):
-    """ Database model that encodes that a given user has a given expertise.
-
-    Any user can have multiple areas of expertise, and any expertise may have many users that are
-    experts in that field, therefore we need a database table like this to encode this information.
-
-    Attributes
-    ----------
-    user
-        The User object that this expertise belongs to.
-        This is related by a foreign key relation.
-        Also, this has the type hint 'UserById', so that when we serialize to JSON, the whole User
-        object doesn't get sent.
-    expertise
-        The Expertise object that this link relates to.
-        This denotes what the person is actually an expert in.
-        This is related by a foreign key relation.
-    """
-    user: User = models.ForeignKey('User',
-                                   null=False,
-                                   on_delete=models.CASCADE)
-    expertise: Expertise = models.ForeignKey('Expertise',
-                                             null=False,
-                                             on_delete=models.CASCADE)
 
 
 @dataclass(init=False)
