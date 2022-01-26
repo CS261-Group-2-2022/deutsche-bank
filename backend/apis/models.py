@@ -61,7 +61,6 @@ class User(models.Model):
     def get_action_plans(self) -> QuerySet[List[ActionPlan]]:
         return self.get_mentor_action_plans().union(self.get_mentee_action_plans())
 
-    # TODO(arwck): Make an endpoint for this
     def get_mentees(self) -> List[Type[User]]:
         """ Retrieves the list of mentees for this user.
         :return the set of users who have this user as their mentor.

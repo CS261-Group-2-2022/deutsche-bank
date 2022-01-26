@@ -18,6 +18,13 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(FullUserSerializer(self.get_object()).data)
 
     @action(detail=True, methods=['get'])
+    def mentees(self, request, pk=None) -> List[User]:
+        user: User = self.get_object()
+
+        cereal = UserSerializer(user.get_mentees(), many=True)
+        return Response(cereal.data)
+
+    @action(detail=True, methods=['get'])
     def expertise(self, request, pk=None) -> List[Expertise]:
         user: User = self.get_object()
 
