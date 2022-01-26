@@ -1,9 +1,23 @@
 #!/usr/bin/env python3
 from typing import *
 
-from rest_framework_dataclasses import serializers
-from .models import User
+from rest_framework.serializers import ModelSerializer
+from .models import User, Meeting, ActionPlan
 
-class UserSerializer(serializers.DataclassSerializer):
+
+class UserSerializer(ModelSerializer):
     class Meta:
-        dataclass = User
+        model = User
+        exclude = ['password']
+
+
+class MeetingSerializer(ModelSerializer):
+    class Meta:
+        model = Meeting
+        exclude = []
+
+
+class ActionPlanSerializer(ModelSerializer):
+    class Meta:
+        model = ActionPlan
+        exclude = []
