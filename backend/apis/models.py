@@ -43,14 +43,23 @@ class User(models.Model):
 
     expertise: List[Expertise] = models.ManyToManyField('Expertise')
 
-    def get_mentor_meetings(self) -> QuerySet[List[Type[Meeting]]]:
+    def get_mentor_meetings(self) -> QuerySet[List[Meeting]]:
         return self.meeting_mentor.all()
 
-    def get_mentee_meetings(self) -> QuerySet[List[Type[Meeting]]]:
+    def get_mentee_meetings(self) -> QuerySet[List[Meeting]]:
         return self.meeting_mentee.all()
 
-    def get_meetings(self) -> QuerySet[List[Type[Meeting]]]:
+    def get_meetings(self) -> QuerySet[List[Meeting]]:
         return self.get_mentor_meetings().union(self.get_mentee_meetings())
+
+    def get_mentee_action_plans(self) -> QuerySet[List[ActionPlan]]:
+        return self.actionplan_mentee.all()
+
+    def get_mentor_action_plans(self) -> QuerySet[List[ActionPlan]]:
+        return self.actionplan_mentor.all()
+
+    def get_action_plans(self) -> QuerySet[List[ActionPlan]]:
+        return self.get_mentor_action_plans().union(self.get_mentee_action_plans())
 
     # TODO(arwck): Make an endpoint for this
     def get_mentees(self) -> List[Type[User]]:

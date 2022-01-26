@@ -45,6 +45,27 @@ class UserViewSet(viewsets.ModelViewSet):
         cereal = MeetingSerializer(user.get_mentee_meetings(), many=True)
         return Response(cereal.data)
 
+    @action(detail=True, methods=['get'])
+    def mentee_plan(self, request, pk=None) -> List[ActionPlan]:
+        user: User = self.get_object()
+
+        cereal = ActionPlanSerializer(user.get_mentee_action_plans(), many=True)
+        return Response(cereal.data)
+
+    @action(detail=True, methods=['get'])
+    def mentor_plan(self, request, pk=None) -> List[ActionPlan]:
+        user: User = self.get_object()
+
+        cereal = ActionPlanSerializer(user.get_mentor_action_plans(), many=True)
+        return Response(cereal.data)
+
+    @action(detail=True, methods=['get'])
+    def plan(self, request, pk=None) -> List[ActionPlan]:
+        user: User = self.get_object()
+
+        cereal = ActionPlanSerializer(user.get_action_plans(), many=True)
+        return Response(cereal.data)
+
 class MeetingViewSet(viewsets.ModelViewSet):
     queryset = Meeting.objects.all()
     serializer_class = MeetingSerializer
