@@ -39,11 +39,18 @@ class User(models.Model):
 
     password: str = models.CharField(max_length=100)  # TODO(arwck): Shouldn't be chars.
 
-    mentor: User = \
-        models.ForeignKey('User',
-                          null=True,
-                          on_delete=models.SET_NULL)
+    mentor: User = models.ForeignKey('User', null=True, on_delete=models.SET_NULL)
+
     expertise: List[Expertise] = models.ManyToManyField('Expertise')
+
+    def get_mentor_meetings(self) -> QuerySet[List[Type[Meeting]]]:
+        return self.meeting_mentor.all()
+
+    def get_mentee_meetings(self) -> QuerySet[List[Type[Meeting]]]:
+        return self.meeting_mentee.all()
+
+    def get_meetings(self) -> QuerySet[List[Type[Meeting]]]:
+        return self.get_mentor_meetings().union(self.get_mentee_meetings())
 
     # TODO(arwck): Make an endpoint for this
     def get_mentees(self) -> List[Type[User]]:

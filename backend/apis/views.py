@@ -18,12 +18,32 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(FullUserSerializer(self.get_object()).data)
 
     @action(detail=True, methods=['get'])
-    def expertise(self, request, pk=None) -> 'Response[Json[List[Expertise]]]':
+    def expertise(self, request, pk=None) -> List[Expertise]:
         user: User = self.get_object()
 
         cereal = ExpertiseSerializer(user.expertise.all(), many=True)
         return Response(cereal.data)
 
+    @action(detail=True, methods=['get'])
+    def meetings(self, request, pk=None) -> List[Meeting]:
+        user: User = self.get_object()
+
+        cereal = MeetingSerializer(user.get_meetings(), many=True)
+        return Response(cereal.data)
+
+    @action(detail=True, methods=['get'])
+    def mentor_meetings(self, request, pk=None) -> List[Meeting]:
+        user: User = self.get_object()
+
+        cereal = MeetingSerializer(user.get_mentor_meetings(), many=True)
+        return Response(cereal.data)
+
+    @action(detail=True, methods=['get'])
+    def mentee_meetings(self, request, pk=None) -> List[Meeting]:
+        user: User = self.get_object()
+
+        cereal = MeetingSerializer(user.get_mentee_meetings(), many=True)
+        return Response(cereal.data)
 
 class MeetingViewSet(viewsets.ModelViewSet):
     queryset = Meeting.objects.all()
