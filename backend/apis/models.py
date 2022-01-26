@@ -63,7 +63,6 @@ class Expertise(models.Model):
     This can then be searched through during account creation to select your areas of expertise.
     Further, this is also used in the storage of this information - see UserExpertise.
     """
-    id: int = models.AutoField(primary_key=True, unique=True)
     name: str = models.CharField(max_length=100, unique=True)
 
 
