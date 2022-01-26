@@ -49,6 +49,7 @@ def create_dummy_users():
                         mentor = Arpad)
 
     add_dummy_expertise_to(Isaac)
+    create_dummy_meetings(mentee=Isaac, mentor=Arpad)
 
     print(" ,-----------------------------------------------------------")
     print(" | " + " Created dummy users for the first time...")
@@ -59,6 +60,15 @@ def create_dummy_users():
         print(" | " + u.first_name)
         print(" | " + f"{u.mentor=}")
     print(" `-----------------------------------------------------------")
+
+
+def create_dummy_meetings(mentee: User, mentor: User):
+    arpad_isaac_meeting = Meeting.objects.create(
+        mentee=mentee,
+        mentor=mentor,
+        time=datetime.utcnow()
+    )
+
 
 def create_dummy_business_areas():
     business_area_count: int = BusinessArea.objects.count()
