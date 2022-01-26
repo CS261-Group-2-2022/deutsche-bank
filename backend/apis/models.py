@@ -28,9 +28,9 @@ class User(models.Model):
     first_name: str = models.CharField(max_length=100)
     last_name: str = models.CharField(max_length=100)
 
-    business_area: BusinessArea | None = models.ForeignKey('BusinessArea',
-                                                           null=True,
-                                                           on_delete=models.SET_NULL)
+    business_area: BusinessArea = models.ForeignKey('BusinessArea',
+                                                    null=True,
+                                                    on_delete=models.SET_NULL)
     # Users also are experts in a set of fields. See get_expertise below.
     # This is encoded by the UserExpertise model, which relates them together.
 
