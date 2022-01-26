@@ -116,13 +116,16 @@ from .dummy_data import *
 def print_all_users() -> None:
     print(" ,-----------------------------------------------------------")
     print(" | " + " Printing all users...")
-    for u in User.objects.all().iterator():
-        print(" | ---------------------------------------------------- ")
-        print(" | " + str(u))
-        print(f" | {u.pk=}")
-        print(f" | {u.id=}")
-        print(" | " + u.first_name)
-        print(" | " + f"{u.mentor=}")
+    try:
+        for u in User.objects.all().iterator():
+            print(" | ---------------------------------------------------- ")
+            print(" | " + str(u))
+            print(f" | {u.pk=}")
+            print(f" | {u.id=}")
+            print(" | " + u.first_name)
+            print(" | " + f"{u.mentor=}")
+    except OperationalError:
+        pass
     print(" `-----------------------------------------------------------")
 
 create_dummy_data()

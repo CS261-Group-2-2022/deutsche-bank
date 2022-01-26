@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 from typing import *
+
+from django.db import OperationalError
+
 from .models import *
 import random
 
 """ This file contains code for creating dummy data.
 """
+
 
 def add_dummy_expertise_to(user: 'User'):
     number_of_expertises_available = Expertise.objects.count()
@@ -88,7 +92,11 @@ def create_dummy_expertise():
 
 from pdb import set_trace as bp
 
+
 def create_dummy_data():
-    create_dummy_business_areas()
-    create_dummy_expertise()
-    create_dummy_users()
+    try:
+        create_dummy_business_areas()
+        create_dummy_expertise()
+        create_dummy_users()
+    except OperationalError:
+        pass
