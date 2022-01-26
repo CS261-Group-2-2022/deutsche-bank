@@ -43,6 +43,7 @@ class User(models.Model):
         models.ForeignKey('User',
                           null=True,
                           on_delete=models.SET_NULL)
+    expertise: List[Expertise] = models.ManyToManyField('Expertise')
 
     def get_expertise(self) -> List[Type[User]]:
         return self.userexpertise_set.all()

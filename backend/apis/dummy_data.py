@@ -18,8 +18,8 @@ def add_dummy_expertise_to(user: 'User'):
     expertises = random.sample([e for e in Expertise.objects.all().iterator()], number_of_expertises_to_add)
 
     for e in expertises:
-        userExpertise: UserExpertise
-        userExpertise = UserExpertise.objects.create(user=user, expertise=e)
+        user.expertise.add(e)
+    user.save()
 
 
 def create_dummy_users():
