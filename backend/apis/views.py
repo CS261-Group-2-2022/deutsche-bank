@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from typing import *
 
+from django.db.models import QuerySet
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response

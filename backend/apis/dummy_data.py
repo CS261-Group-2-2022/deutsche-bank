@@ -6,6 +6,8 @@ from django.db import OperationalError
 from .models import *
 import random
 
+from .models import User
+
 """ This file contains code for creating dummy data.
 """
 
@@ -19,8 +21,9 @@ def add_dummy_expertise_to(user: 'User'):
         userExpertise: UserExpertise
         userExpertise = UserExpertise.objects.create(user=user, expertise=e)
 
+
 def create_dummy_users():
-    user_count : int = User.objects.count()
+    user_count: int = User.objects.count()
 
     if user_count > 0:
         return
@@ -30,23 +33,23 @@ def create_dummy_users():
     business_areas: List[BusinessArea]
     business_areas = random.sample([b for b in BusinessArea.objects.all().iterator()], number_of_users_to_create)
 
-    Arpad = User.objects.create(first_name = 'Arpad',
-                        last_name = 'Kiss',
-                        business_area = business_areas[0],
-                        email = 'arpad.kiss@warwick.ac.uk',
-                        is_email_verified = False,
-                        password = 'nunya',
-                        mentor = None)
+    Arpad = User.objects.create(first_name='Arpad',
+                                last_name='Kiss',
+                                business_area=business_areas[0],
+                                email='arpad.kiss@warwick.ac.uk',
+                                is_email_verified=False,
+                                password='nunya',
+                                mentor=None)
 
     add_dummy_expertise_to(Arpad)
 
-    Isaac = User.objects.create(first_name = 'Isaac',
-                        last_name = 'IDFK',
-                        business_area = business_areas[1],
-                        email = 'isaac.idfk@warwick.ac.uk',
-                        is_email_verified = False,
-                        password = 'aynun',
-                        mentor = Arpad)
+    Isaac = User.objects.create(first_name='Isaac',
+                                last_name='IDFK',
+                                business_area=business_areas[1],
+                                email='isaac.idfk@warwick.ac.uk',
+                                is_email_verified=False,
+                                password='aynun',
+                                mentor=Arpad)
 
     add_dummy_expertise_to(Isaac)
     create_dummy_meetings(mentee=Isaac, mentor=Arpad)
@@ -85,6 +88,7 @@ def create_dummy_business_areas():
     Wealth_Management = BusinessArea.objects.create(name="Wealth Management")
     Deutsche_Asset_Management = BusinessArea.objects.create(name="Deutsche Asset Management")
 
+
 def create_dummy_expertise():
     expertise_count: int = Expertise.objects.count()
 
@@ -99,6 +103,7 @@ def create_dummy_expertise():
     Private_and_Commercial_Banking_Expert = Expertise.objects.create(name="Private and Commercial Banking Expert")
     Wealth_Management_Expert = Expertise.objects.create(name="Wealth Management Expert")
     Deutsche_Asset_Management_Expert = Expertise.objects.create(name="Deutsche Asset Management Expert")
+
 
 from pdb import set_trace as bp
 

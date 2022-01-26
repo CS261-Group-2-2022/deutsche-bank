@@ -18,7 +18,7 @@ class BusinessArea(models.Model):
     Further, this is also used in the storage of this information - see the User model's
     business_area field.
     """
-    name: str = models.CharField(max_length = 100, unique=True)
+    name: str = models.CharField(max_length=100, unique=True)
 
 
 @dataclass(init=False)
@@ -28,9 +28,9 @@ class User(models.Model):
     first_name: str = models.CharField(max_length=100)
     last_name: str = models.CharField(max_length=100)
 
-    business_area : BusinessArea | None = models.ForeignKey('BusinessArea',
-                                                            null=True,
-                                                            on_delete=models.SET_NULL)
+    business_area: BusinessArea | None = models.ForeignKey('BusinessArea',
+                                                           null=True,
+                                                           on_delete=models.SET_NULL)
     # Users also are experts in a set of fields. See get_expertise below.
     # This is encoded by the UserExpertise model, which relates them together.
 
@@ -63,7 +63,7 @@ class Expertise(models.Model):
     Further, this is also used in the storage of this information - see UserExpertise.
     """
     id: int = models.AutoField(primary_key=True, unique=True)
-    name: str = models.CharField(max_length = 100, unique=True)
+    name: str = models.CharField(max_length=100, unique=True)
 
 
 @dataclass(init=False)
@@ -111,7 +111,9 @@ class ActionPlan(models.Model):
     creation_date: datetime = models.DateTimeField()  # creation date of action plan
     completion_date: datetime = models.DateTimeField()  # completion date of action plan
 
+
 from .dummy_data import *
+
 
 def print_all_users() -> None:
     print(" ,-----------------------------------------------------------")
@@ -127,6 +129,7 @@ def print_all_users() -> None:
     except OperationalError:
         pass
     print(" `-----------------------------------------------------------")
+
 
 create_dummy_data()
 print_all_users()
