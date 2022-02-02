@@ -41,7 +41,13 @@ class GroupSessionSerializer(ModelSerializer):
         exclude = []
 
 
+class MentorshipSerializer(ModelSerializer):
+    class Meta:
+        model = Mentorship
+        exclude = []
+
+
 class FullUserSerializer(UserSerializer):
     business_area = BusinessAreaSerializer()
     expertise = ExpertiseSerializer(many=True)
-    mentor = UserSerializer()
+    mentorship = MentorshipSerializer()

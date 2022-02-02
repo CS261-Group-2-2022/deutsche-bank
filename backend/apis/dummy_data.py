@@ -6,12 +6,13 @@ from django.db import OperationalError
 from .models import *
 import random
 
-from .models import User
+from .models import User, Expertise, BusinessArea
 
 """ This file contains code for creating dummy data.
 """
 
-def add_dummy_expertise_to(user: 'User'):
+
+def add_dummy_expertise_to(user: User):
     number_of_expertises_available = Expertise.objects.count()
     number_of_expertises_to_add = random.randint(2, number_of_expertises_available)
     expertises = random.sample([e for e in Expertise.objects.all().iterator()], number_of_expertises_to_add)
@@ -20,7 +21,8 @@ def add_dummy_expertise_to(user: 'User'):
         user.expertise.add(e)
     user.save()
 
-def create_dummy_action_plan(mentee, mentor):
+
+def create_dummy_action_plan(user):
     action_plan_count: int = ActionPlan.objects.count()
 
     if action_plan_count > 0:
@@ -28,15 +30,16 @@ def create_dummy_action_plan(mentee, mentor):
 
     Do_The_Project = ActionPlan.objects.create(name="Do the project.",
                                                description="Complete and submit the CS261 Software Engineering project.",
-                                               mentee=mentee,
-                                               mentor=mentor,
+                                               user=user,
                                                creation_date=datetime.utcnow(),
                                                completion_date=None)
 def create_dummy_users():
+    print(f'Debug 1')
     user_count: int = User.objects.count()
 
     if user_count > 0:
         return
+    print(f'Debug 2')
 
     number_of_users_to_create = 2
 
@@ -49,22 +52,33 @@ def create_dummy_users():
                                 email='arpad.kiss@warwick.ac.uk',
                                 is_email_verified=False,
                                 password='nunya',
-                                mentor=None)
-
+                                mentorship=None)
+    print(f'Debug 3')
     add_dummy_expertise_to(Arpad)
 
+    print(f'Debug 3')
     Isaac = User.objects.create(first_name='Isaac',
                                 last_name='IDFK',
                                 business_area=business_areas[1],
                                 email='isaac.idfk@warwick.ac.uk',
                                 is_email_verified=False,
                                 password='aynun',
-                                mentor=Arpad)
-
+                                mentorship=None)
     add_dummy_expertise_to(Isaac)
 
-    create_dummy_meetings(mentee=Isaac, mentor=Arpad)
-    create_dummy_action_plan(Arpad, Isaac)
+    print(f'Setting up mentorship...')
+    mentorship = Mentorship.objects.create(
+        mentee=Isaac,
+        mentor=Arpad
+    )
+    Arpad.mentorship = mentorship
+    Arpad.save(update_fields=['mentorship'])
+    print(f'Saved new arpad user with mentorship {Arpad.mentorship}')
+
+    add_dummy_expertise_to(user=Isaac)
+
+    create_dummy_meetings(mentorship=mentorship)
+    create_dummy_action_plan(user=Arpad)
 
     print(" ,-----------------------------------------------------------")
     print(" | " + " Created dummy users for the first time...")
@@ -77,10 +91,9 @@ def create_dummy_users():
     print(" `-----------------------------------------------------------")
 
 
-def create_dummy_meetings(mentee: User, mentor: User):
+def create_dummy_meetings(mentorship: Mentorship):
     arpad_isaac_meeting = Meeting.objects.create(
-        mentee=mentee,
-        mentor=mentor,
+        mentorship=mentorship,
         time=datetime.utcnow()
     )
 
@@ -120,4 +133,5 @@ def create_dummy_data():
         create_dummy_expertise()
         create_dummy_users()
     except OperationalError:
+        print(f'Error')
         pass

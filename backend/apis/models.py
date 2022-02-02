@@ -5,8 +5,20 @@ from typing import *
 from dataclasses import dataclass
 from datetime import datetime
 
+from django.db.models import QuerySet
+
 """ This file contains the database models and some associated utilities.
 """
+
+
+class Expertise(models.Model):
+    """ Database model that holds all the 'kinds' of expertise users may have.
+
+    This can then be searched through during account creation to select your areas of expertise.
+    Further, this is also used in the storage of this information - see UserExpertise.
+    """
+    name: str = models.CharField(max_length=100, unique=True)
+
 
 class BusinessArea(models.Model):
     """ Database model that stores the business areas that are in the company.
@@ -17,6 +29,23 @@ class BusinessArea(models.Model):
     business_area field.
     """
     name: str = models.CharField(max_length=100, unique=True)
+
+
+class Mentorship(models.Model):
+    """ Mentorship between mentor and mentee
+    """
+
+    mentee: User = models.ForeignKey('User', related_name='relationship_mentee', on_delete=models.CASCADE)
+    mentor: User = models.ForeignKey('User', related_name='relationship_mentor', on_delete=models.CASCADE)
+    rating: int = models.SmallIntegerField(null=True)
+    feedback: str = models.CharField(null=True, max_length=1000)
+
+
+class Request(models.Model):
+    """ Mentorship request from a mentee to a mentor
+    """
+    mentee: User = models.ForeignKey('User', related_name='request_mentee', on_delete=models.CASCADE)
+    mentor: User = models.ForeignKey('User', related_name='request_mentor', on_delete=models.CASCADE)
 
 
 class User(models.Model):
@@ -34,11 +63,11 @@ class User(models.Model):
 
     password: str = models.CharField(max_length=100)  # TODO(arwck): Shouldn't be chars.
 
-    mentor: User = models.ForeignKey('User', null=True, on_delete=models.SET_NULL)
-    mentee_intent: bool = models.BooleanField(default=False)
+    mentorship: Mentorship = models.ForeignKey(Mentorship, null=True, on_delete=models.SET_NULL)
+    mentor_intent: bool = models.BooleanField(default=False)
 
-    interests: List[Expertise] = models.ManyToManyField('Expertise', related_name='user_interests')
-    expertise: List[Expertise] = models.ManyToManyField('Expertise', related_name='user_expertise')
+    interests: List[Expertise] = models.ManyToManyField(Expertise, related_name='user_interests')
+    expertise: List[Expertise] = models.ManyToManyField(Expertise, related_name='user_expertise')
 
     def get_mentor_meetings(self) -> QuerySet[List[Meeting]]:
         return self.meeting_mentor.all()
@@ -50,7 +79,7 @@ class User(models.Model):
         return self.get_mentor_meetings().union(self.get_mentee_meetings())
 
     def get_mentee_action_plans(self) -> QuerySet[List[ActionPlan]]:
-        return self.actionplan_mentee.all()
+        return self.actionplan_user.all()
 
     def get_mentor_action_plans(self) -> QuerySet[List[ActionPlan]]:
         return self.actionplan_mentor.all()
@@ -65,21 +94,8 @@ class User(models.Model):
         return self.user_set.all()
 
 
-@dataclass(init=False)
-class Expertise(models.Model):
-    """ Database model that holds all the 'kinds' of expertise users may have.
-
-    This can then be searched through during account creation to select your areas of expertise.
-    Further, this is also used in the storage of this information - see UserExpertise.
-    """
-    name: str = models.CharField(max_length=100, unique=True)
-
-
 class Meeting(models.Model):
-    mentee: User = models.ForeignKey('User', null=True, related_name='meeting_mentee',
-                                     on_delete=models.SET_NULL)  # if the mentee is deleted set mentee to null
-    mentor: User = models.ForeignKey('User', null=True, related_name='meeting_mentor',
-                                     on_delete=models.SET_NULL)  # if the mentor is deleted set mentor to null
+    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
     time: datetime = models.DateTimeField()  # time of meeting
     notes: str = models.CharField(max_length=1000)
 
@@ -87,22 +103,29 @@ class Meeting(models.Model):
 class ActionPlan(models.Model):
     name: str = models.CharField(max_length=100)
     description: str = models.CharField(max_length=1000)
-    mentee: User = models.ForeignKey('User', related_name='actionplan_mentee',
-                                     on_delete=models.CASCADE)  # if the mentee is delete action plans
-    mentor: User = models.ForeignKey('User', null=True, related_name='actionplan_mentor',
-                                     on_delete=models.SET_NULL)  # if the mentor is deleted set mentor to null
+    user: User = models.ForeignKey(User, on_delete=models.CASCADE)  # if the user is deleted action plans
     creation_date: datetime = models.DateTimeField()  # creation date of action plan
     completion_date: datetime = models.DateTimeField(null=True)  # completion date of action plan
 
 
+class Notification(models.Model):
+    user: User = models.ForeignKey(User, on_delete=models.CASCADE)
+    name: str = models.CharField(max_length=100)
+    description: str = models.CharField(max_length=1000)
+    date: datetime = models.DateTimeField()
+    actioned: bool = models.BooleanField()  # user has acted on notification
+
+
 class GroupSession(models.Model):
+    name: str = models.CharField(max_length=100)
+    location: str = models.CharField(null=True, max_length=100)
+    description: str = models.CharField(null=True, max_length=500)
     host: User = models.ForeignKey(User, related_name='session_host',
                                    on_delete=models.CASCADE)  # if host is deleted, delete session
+    capacity: int = models.IntegerField(null=True)
     expertise: Expertise = models.ForeignKey(Expertise,
                                              on_delete=models.CASCADE)  # if expertise is deleted, delete session
     date: datetime = models.DateTimeField()
-    datetime.utcnow()
-
     users: List[User] = models.ManyToManyField(User)
 
 
@@ -119,7 +142,7 @@ def print_all_users() -> None:
             print(f" | {u.pk=}")
             print(f" | {u.id=}")
             print(" | " + u.first_name)
-            print(" | " + f"{u.mentor=}")
+            print(" | " + 'None' if u.mentorship is None else f'{u.mentorship.mentor}')
     except OperationalError:
         pass
     print(" `-----------------------------------------------------------")
