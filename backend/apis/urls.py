@@ -9,6 +9,7 @@ router: routers.DefaultRouter = routers.DefaultRouter()
 router.register(r'user', UserViewSet)
 router.register(r'meeting', MeetingViewSet)
 router.register(r'plan', ActionPlanViewSet)
+router.register(r'session', GroupSessionViewSet)
 
 urlpatterns: List[str] = [
     path('', include(router.urls)),

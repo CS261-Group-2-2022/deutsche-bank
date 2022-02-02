@@ -73,6 +73,12 @@ class UserViewSet(viewsets.ModelViewSet):
         cereal = ActionPlanSerializer(user.get_action_plans(), many=True)
         return Response(cereal.data)
 
+
+class GroupSessionViewSet(viewsets.ModelViewSet):
+    queryset = GroupSession.objects.all()
+    serializer_class = GroupSessionSerializer
+
+
 class MeetingViewSet(viewsets.ModelViewSet):
     queryset = Meeting.objects.all()
     serializer_class = MeetingSerializer

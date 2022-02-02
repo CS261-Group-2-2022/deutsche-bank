@@ -2,7 +2,7 @@
 from typing import *
 
 from rest_framework.serializers import ModelSerializer
-from .models import User, Meeting, ActionPlan, Expertise, BusinessArea
+from .models import *
 
 
 class UserSerializer(ModelSerializer):
@@ -32,6 +32,12 @@ class ExpertiseSerializer(ModelSerializer):
 class BusinessAreaSerializer(ModelSerializer):
     class Meta:
         model = BusinessArea
+        exclude = []
+
+
+class GroupSessionSerializer(ModelSerializer):
+    class Meta:
+        model = GroupSession
         exclude = []
 
 

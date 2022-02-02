@@ -8,8 +8,6 @@ from datetime import datetime
 """ This file contains the database models and some associated utilities.
 """
 
-
-@dataclass(init=False)
 class BusinessArea(models.Model):
     """ Database model that stores the business areas that are in the company.
 
@@ -21,16 +19,13 @@ class BusinessArea(models.Model):
     name: str = models.CharField(max_length=100, unique=True)
 
 
-@dataclass(init=False)
 class User(models.Model):
     """ Database model that describes a single User.
     """
     first_name: str = models.CharField(max_length=100)
     last_name: str = models.CharField(max_length=100)
 
-    business_area: BusinessArea = models.ForeignKey('BusinessArea',
-                                                    null=True,
-                                                    on_delete=models.SET_NULL)
+    business_area: BusinessArea = models.ForeignKey('BusinessArea', null=True, on_delete=models.SET_NULL)
     # Users also are experts in a set of fields. See get_expertise below.
     # This is encoded by the UserExpertise model, which relates them together.
 
@@ -40,8 +35,10 @@ class User(models.Model):
     password: str = models.CharField(max_length=100)  # TODO(arwck): Shouldn't be chars.
 
     mentor: User = models.ForeignKey('User', null=True, on_delete=models.SET_NULL)
+    mentee_intent: bool = models.BooleanField(default=False)
 
-    expertise: List[Expertise] = models.ManyToManyField('Expertise')
+    interests: List[Expertise] = models.ManyToManyField('Expertise', related_name='user_interests')
+    expertise: List[Expertise] = models.ManyToManyField('Expertise', related_name='user_expertise')
 
     def get_mentor_meetings(self) -> QuerySet[List[Meeting]]:
         return self.meeting_mentor.all()
@@ -78,16 +75,15 @@ class Expertise(models.Model):
     name: str = models.CharField(max_length=100, unique=True)
 
 
-@dataclass(init=False)
 class Meeting(models.Model):
     mentee: User = models.ForeignKey('User', null=True, related_name='meeting_mentee',
                                      on_delete=models.SET_NULL)  # if the mentee is deleted set mentee to null
     mentor: User = models.ForeignKey('User', null=True, related_name='meeting_mentor',
                                      on_delete=models.SET_NULL)  # if the mentor is deleted set mentor to null
     time: datetime = models.DateTimeField()  # time of meeting
+    notes: str = models.CharField(max_length=1000)
 
 
-@dataclass(init=False)
 class ActionPlan(models.Model):
     name: str = models.CharField(max_length=100)
     description: str = models.CharField(max_length=1000)
@@ -97,6 +93,17 @@ class ActionPlan(models.Model):
                                      on_delete=models.SET_NULL)  # if the mentor is deleted set mentor to null
     creation_date: datetime = models.DateTimeField()  # creation date of action plan
     completion_date: datetime = models.DateTimeField(null=True)  # completion date of action plan
+
+
+class GroupSession(models.Model):
+    host: User = models.ForeignKey(User, related_name='session_host',
+                                   on_delete=models.CASCADE)  # if host is deleted, delete session
+    expertise: Expertise = models.ForeignKey(Expertise,
+                                             on_delete=models.CASCADE)  # if expertise is deleted, delete session
+    date: datetime = models.DateTimeField()
+    datetime.utcnow()
+
+    users: List[User] = models.ManyToManyField(User)
 
 
 from .dummy_data import *
