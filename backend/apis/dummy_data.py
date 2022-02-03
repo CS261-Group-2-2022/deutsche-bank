@@ -6,16 +6,16 @@ from django.db import OperationalError
 from .models import *
 import random
 
-from .models import User, Expertise, BusinessArea
+from .models import User, Skill, BusinessArea
 
 """ This file contains code for creating dummy data.
 """
 
 
 def add_dummy_expertise_to(user: User):
-    number_of_expertises_available = Expertise.objects.count()
+    number_of_expertises_available = Skill.objects.count()
     number_of_expertises_to_add = random.randint(2, number_of_expertises_available)
-    expertises = random.sample([e for e in Expertise.objects.all().iterator()], number_of_expertises_to_add)
+    expertises = random.sample([e for e in Skill.objects.all().iterator()], number_of_expertises_to_add)
 
     for e in expertises:
         user.expertise.add(e)
@@ -112,25 +112,26 @@ def create_dummy_business_areas():
     Wealth_Management = BusinessArea.objects.create(name="Wealth Management")
     Deutsche_Asset_Management = BusinessArea.objects.create(name="Deutsche Asset Management")
 
-def create_dummy_expertise():
-    expertise_count: int = Expertise.objects.count()
+
+def create_dummy_skills():
+    expertise_count: int = Skill.objects.count()
 
     if expertise_count > 0:
         return
 
-    Corporate_Finance_Expert = Expertise.objects.create(name="Corporate Finance Expert")
-    Equities_Expert = Expertise.objects.create(name="Equities Expert")
-    Global_Capital_Markets_Expert = Expertise.objects.create(name="Global Capital Markets Expert")
-    Global_Transaction_Banking_Expert = Expertise.objects.create(name="Global Transaction Banking Expert")
-    Deutsche_Bank_Research_Expert = Expertise.objects.create(name="Deutsche Bank Research Expert")
-    Private_and_Commercial_Banking_Expert = Expertise.objects.create(name="Private and Commercial Banking Expert")
-    Wealth_Management_Expert = Expertise.objects.create(name="Wealth Management Expert")
-    Deutsche_Asset_Management_Expert = Expertise.objects.create(name="Deutsche Asset Management Expert")
+    Corporate_Finance_Expert = Skill.objects.create(name="Corporate Finance Expert")
+    Equities_Expert = Skill.objects.create(name="Equities Expert")
+    Global_Capital_Markets_Expert = Skill.objects.create(name="Global Capital Markets Expert")
+    Global_Transaction_Banking_Expert = Skill.objects.create(name="Global Transaction Banking Expert")
+    Deutsche_Bank_Research_Expert = Skill.objects.create(name="Deutsche Bank Research Expert")
+    Private_and_Commercial_Banking_Expert = Skill.objects.create(name="Private and Commercial Banking Expert")
+    Wealth_Management_Expert = Skill.objects.create(name="Wealth Management Expert")
+    Deutsche_Asset_Management_Expert = Skill.objects.create(name="Deutsche Asset Management Expert")
 
 def create_dummy_data():
     try:
         create_dummy_business_areas()
-        create_dummy_expertise()
+        create_dummy_skills()
         create_dummy_users()
     except OperationalError:
         print(f'Error')

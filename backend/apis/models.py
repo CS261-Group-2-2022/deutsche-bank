@@ -11,7 +11,7 @@ from django.db.models import QuerySet
 """
 
 
-class Expertise(models.Model):
+class Skill(models.Model):
     """ Database model that holds all the 'kinds' of expertise users may have.
 
     This can then be searched through during account creation to select your areas of expertise.
@@ -66,8 +66,8 @@ class User(models.Model):
     mentorship: Mentorship = models.OneToOneField(Mentorship, null=True, on_delete=models.SET_NULL)
     mentor_intent: bool = models.BooleanField(default=False)  # whether a user wishes to become a mentor
 
-    interests: List[Expertise] = models.ManyToManyField(Expertise, related_name='user_interests')
-    expertise: List[Expertise] = models.ManyToManyField(Expertise, related_name='user_expertise')
+    interests: List[Skill] = models.ManyToManyField(Skill, related_name='user_interests')
+    expertise: List[Skill] = models.ManyToManyField(Skill, related_name='user_expertise')
 
     def get_mentor_meetings(self) -> QuerySet[List[Meeting]]:
         return self.meeting_mentor.all()
@@ -123,8 +123,7 @@ class GroupSession(models.Model):
     host: User = models.ForeignKey(User, related_name='session_host',
                                    on_delete=models.CASCADE)  # if host is deleted, delete session
     capacity: int = models.IntegerField(null=True)
-    expertise: Expertise = models.ForeignKey(Expertise,
-                                             on_delete=models.CASCADE)  # if expertise is deleted, delete session
+    skills: List[Skill] = models.ManyToManyField(Skill)
     date: datetime = models.DateTimeField()
     users: List[User] = models.ManyToManyField(User)
 

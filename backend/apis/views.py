@@ -25,10 +25,10 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(cereal.data)
 
     @action(detail=True, methods=['get'])
-    def expertise(self, request, pk=None) -> List[Expertise]:
+    def expertise(self, request, pk=None) -> List[Skill]:
         user: User = self.get_object()
 
-        cereal = ExpertiseSerializer(user.expertise.all(), many=True)
+        cereal = SkillSerializer(user.expertise.all(), many=True)
         return Response(cereal.data)
 
     @action(detail=True, methods=['get'])

@@ -23,9 +23,9 @@ class ActionPlanSerializer(ModelSerializer):
         exclude = []
 
 
-class ExpertiseSerializer(ModelSerializer):
+class SkillSerializer(ModelSerializer):
     class Meta:
-        model = Expertise
+        model = Skill
         exclude = []
 
 
@@ -49,5 +49,5 @@ class MentorshipSerializer(ModelSerializer):
 
 class FullUserSerializer(UserSerializer):
     business_area = BusinessAreaSerializer()
-    expertise = ExpertiseSerializer(many=True)
+    expertise = SkillSerializer(many=True)
     mentorship = MentorshipSerializer()
