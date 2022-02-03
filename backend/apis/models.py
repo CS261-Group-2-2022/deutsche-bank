@@ -63,8 +63,8 @@ class User(models.Model):
 
     password: str = models.CharField(max_length=100)  # TODO(arwck): Shouldn't be chars.
 
-    mentorship: Mentorship = models.ForeignKey(Mentorship, null=True, on_delete=models.SET_NULL)
-    mentor_intent: bool = models.BooleanField(default=False)
+    mentorship: Mentorship = models.OneToOneField(Mentorship, null=True, on_delete=models.SET_NULL)
+    mentor_intent: bool = models.BooleanField(default=False)  # whether a user wishes to become a mentor
 
     interests: List[Expertise] = models.ManyToManyField(Expertise, related_name='user_interests')
     expertise: List[Expertise] = models.ManyToManyField(Expertise, related_name='user_expertise')
