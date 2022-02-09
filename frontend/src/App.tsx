@@ -1,154 +1,156 @@
-import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-class BusinessArea {
-  id: number = 0
-  name: string = ""
+import Home from "./pages/Home";
+import Error404 from "./pages/Error404";
+import { BareFetcher, SWRConfig } from "swr";
+import UserProvider from "./utils/authentication";
+import Mentoring from "./pages/Mentoring";
 
-  constructor(from: Partial<BusinessArea>) {
-    Object.assign(this, from);
-  }
-}
+const fetcher: BareFetcher = (resource, init) =>
+  fetch(resource, init).then((res) => res.json());
 
-class Expertise {
-  id: number = 0
-  name: string = ""
+// class BusinessArea {
+//   id: number = 0
+//   name: string = ""
 
-  constructor(from: Partial<Expertise>) {
-    Object.assign(this, from);
-  }
-}
+//   constructor(from: Partial<BusinessArea>) {
+//     Object.assign(this, from);
+//   }
+// }
 
-class UserExpertise {
-  user?: User = undefined
-  expertise?: Expertise = undefined
+// class Expertise {
+//   id: number = 0
+//   name: string = ""
 
-  constructor(from: Partial<UserExpertise>) {
-    Object.assign(this, from);
-  }
-}
+//   constructor(from: Partial<Expertise>) {
+//     Object.assign(this, from);
+//   }
+// }
 
-/// Typescript version of the model in backend/apis/models.py
-class User {
-  id : number = 0
+// class UserExpertise {
+//   user?: User = undefined
+//   expertise?: Expertise = undefined
 
-  first_name : string = ""
-  last_name : string = ""
+//   constructor(from: Partial<UserExpertise>) {
+//     Object.assign(this, from);
+//   }
+// }
 
-  business_area : BusinessArea | null = null
+// /// Typescript version of the model in backend/apis/models.py
+// class User {
+//   id : number = 0
 
-  email : string = ""
-  is_email_verified : boolean = false
+//   first_name : string = ""
+//   last_name : string = ""
 
-  password : string = "" // TODO(arwck): This shouldn't be serialized.
+//   business_area : BusinessArea | null = null
 
-  /// This is an object of the form: mentor = { id: 5 }.
-  mentor? : Partial<User> | null = null
+//   email : string = ""
+//   is_email_verified : boolean = false
 
-  async getExpertise() : Promise<UserExpertise[]> {
-    let r = await fetch(`http://localhost:8000/api/v1/users/${this.id}/get_expertise`);
+//   password : string = "" // TODO(arwck): This shouldn't be serialized.
 
-    if (r.status !== 200) {
-      debugger;
-    }
+//   /// This is an object of the form: mentor = { id: 5 }.
+//   mentor? : Partial<User> | null = null
 
-    let j : Partial<UserExpertise>[] = await r.json();
-    let ues : UserExpertise[] = j.map(ue => new UserExpertise(ue));
+//   async getExpertise() : Promise<UserExpertise[]> {
+//     let r = await fetch(`http://localhost:8000/api/v1/users/${this.id}/get_expertise`);
 
-    return ues;
-  }
+//     if (r.status !== 200) {
+//       debugger;
+//     }
 
-  async getMentor() : Promise<User | null> {
-    // If the mentor is undefined, we don't have a mentor. Return undefined.
-    if (this.mentor === null) {
-      return null;
-    }
+//     let j : Partial<UserExpertise>[] = await r.json();
+//     let ues : UserExpertise[] = j.map(ue => new UserExpertise(ue));
 
-    // If we already have the mentor fetched, then just return it.
-    if (this.mentor?.first_name !== undefined) {
-      return new User(this.mentor);
-    }
+//     return ues;
+//   }
 
-    // Otherwise, we have to fetch it ourselves from the backend.
-    let r = await fetch(`http://localhost:8000/api/v1/users/${this.mentor?.id}`);
+//   async getMentor() : Promise<User | null> {
+//     // If the mentor is undefined, we don't have a mentor. Return undefined.
+//     if (this.mentor === null) {
+//       return null;
+//     }
 
-    if (r.status !== 200) {
-      debugger;
-    }
+//     // If we already have the mentor fetched, then just return it.
+//     if (this.mentor?.first_name !== undefined) {
+//       return new User(this.mentor);
+//     }
 
-    let j : Partial<User> = await r.json();
-    let u : User = new User(j);
+//     // Otherwise, we have to fetch it ourselves from the backend.
+//     let r = await fetch(`http://localhost:8000/api/v1/users/${this.mentor?.id}`);
 
-    // Save the mentor user for later.
-    this.mentor = u;
+//     if (r.status !== 200) {
+//       debugger;
+//     }
 
-    // And return it.
-    return u;
-  }
+//     let j : Partial<User> = await r.json();
+//     let u : User = new User(j);
 
-  constructor(from: Partial<User>) {
-    Object.assign(this, from);
-  }
-}
+//     // Save the mentor user for later.
+//     this.mentor = u;
 
-/// Retrieves the list of all users using the REST API, returning them as User instances.
-let getAllUsers : () => Promise<User[]> =
-  async () => {
-    let r = await fetch('http://localhost:8000/api/v1/users/');
+//     // And return it.
+//     return u;
+//   }
 
-    if (r.status !== 200) {
-      debugger;
-    }
+//   constructor(from: Partial<User>) {
+//     Object.assign(this, from);
+//   }
+// }
 
-    let j : Partial<User>[] = await r.json();
+// /// Retrieves the list of all users using the REST API, returning them as User instances.
+// let getAllUsers : () => Promise<User[]> =
+//   async () => {
+//     let r = await fetch('http://localhost:8000/api/v1/users/');
 
-    return j.map(u => new User(u));
-  }
+//     if (r.status !== 200) {
+//       debugger;
+//     }
 
-getAllUsers()
+//     let j : Partial<User>[] = await r.json();
 
-  // Let's print out all the mentorship relationships
-  .then(us => {
-    us.forEach(u => {
-        u.getMentor().then(m => {
-          console.log(u.first_name + ' is mentored by ' + m?.first_name);
-      });
-    });
+//     return j.map(u => new User(u));
+//   }
 
-    return us;
-  })
+// getAllUsers()
 
-  // Let's print out all the expertises
-  .then(us => {
-    us.forEach(u => {
-      u.getExpertise().then(
-        ues => ues.forEach(ue => {
-          console.log(u.first_name + ' has expertise "' + ue.expertise?.name + '"');
-        })
-      )
-    })
-  });
+//   // Let's print out all the mentorship relationships
+//   .then(us => {
+//     us.forEach(u => {
+//         u.getMentor().then(m => {
+//           console.log(u.first_name + ' is mentored by ' + m?.first_name);
+//       });
+//     });
 
+//     return us;
+//   })
 
-let App = () => {
+//   // Let's print out all the expertises
+//   .then(us => {
+//     us.forEach(u => {
+//       u.getExpertise().then(
+//         ues => ues.forEach(ue => {
+//           console.log(u.first_name + ' has expertise "' + ue.expertise?.name + '"');
+//         })
+//       )
+//     })
+//   });
+
+function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Hello! Check the console to see the list of users.
-        </a>
-      </header>
-    </div>
+    <SWRConfig value={{ fetcher }}>
+      <UserProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="mentoring" element={<Mentoring />} />
+            {/* <Route path="groups" element={<GroupSessions />} /> */}
+            <Route path="*" element={<Error404 />} />
+          </Routes>
+        </BrowserRouter>
+      </UserProvider>
+    </SWRConfig>
   );
 }
 
