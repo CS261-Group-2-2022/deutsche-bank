@@ -78,11 +78,13 @@ class GroupSessionViewSet(viewsets.ModelViewSet):
     queryset = GroupSession.objects.all()
     serializer_class = GroupSessionSerializer
 
+class MentorshipViewSet(viewsets.ModelViewSet):
+    queryset = Mentorship.objects.all()
+    serializer_class = MentorshipSerializer
 
 class MeetingViewSet(viewsets.ModelViewSet):
     queryset = Meeting.objects.all()
     serializer_class = MeetingSerializer
-
 
 class ActionPlanViewSet(viewsets.ModelViewSet):
     queryset = ActionPlan.objects.all()

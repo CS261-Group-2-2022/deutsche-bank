@@ -84,11 +84,11 @@ class User(models.Model):
     def get_action_plans(self) -> QuerySet[List[ActionPlan]]:
         return self.get_mentor_action_plans().union(self.get_mentee_action_plans())
 
-    def get_mentees(self) -> List[Type[User]]:
+    def get_mentees(self) -> QuerySet[List[Type[User]]]:
         """ Retrieves the list of mentees for this user.
         :return the set of users who have this user as their mentor.
         """
-        return self.user_set.all()
+        return User.objects.all().filter(mentorship__mentor__pk__exact=self.pk).exclude(pk__exact=self.pk)
 
 
 class Meeting(models.Model):
