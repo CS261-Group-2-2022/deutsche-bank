@@ -20,13 +20,21 @@ function DashboardUserHero({ name, businessArea }: DashboardUserHeroProps) {
       <div className="flex flex-row lg:items-center lg:justify-between w-full mx-auto py-4 px-4 sm:px-6 lg:px-8 z-20">
         <div className="flex flex-row items-center gap-5">
           <div className="flex-shrink-0">
-            <RoundedImage
+            {/* <RoundedImage
               src={
                 "https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
               }
               alt="profile picture"
               size={24}
-            />
+            /> */}
+
+            <a href="#" className="block relative">
+              <img
+                alt="profil"
+                src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
+                className="mx-auto object-cover rounded-full h-24 w-24"
+              />
+            </a>
           </div>
           <h2>
             <span className="block text-3xl sm:text-4xl font-bold">
@@ -53,13 +61,20 @@ function Action({ actionText, buttonText = "View", onClick }: ActionProps) {
     <div className="shadow rounded-2xl bg-white p-4">
       <div className="flex-row gap-4 flex justify-center items-center">
         <div className="flex-shrink-0">
-          <RoundedImage
+          <a href="#" className="block relative">
+            <img
+              alt="profil"
+              src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
+              className="mx-auto object-cover rounded-full h-8 w-8"
+            />
+          </a>
+          {/* <RoundedImage
             src={
               "https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
             }
             alt="profile picture"
             size={8}
-          />
+          /> */}
         </div>
         <div className="flex flex-col w-full">
           <p className="text-gray-800 font-medium">{actionText}</p>
@@ -154,7 +169,7 @@ function GroupSessionsInfo() {
         <div className="flex flex-col">
           <Link
             to="/groups"
-            className="py-2 px-4 flex justify-center items-center  bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
+            className="py-2 px-10 flex justify-center items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg shadow-md"
           >
             Visit Sessions
             <span>
@@ -190,7 +205,7 @@ export default function Home() {
     <>
       <Topbar />
       <DashboardUserHero
-        name={user?.name ?? "NOT LOGGED IN"}
+        name={user?.name ?? "John Doe"}
         businessArea={user?.business_area ?? "Trading"}
       />
       <div className="bg-white w-full">
