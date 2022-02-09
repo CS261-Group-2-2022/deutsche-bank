@@ -10,7 +10,6 @@ from django.db.models import QuerySet
 """ This file contains the database models and some associated utilities.
 """
 
-
 class Skill(models.Model):
     """ Database model that holds all the 'kinds' of expertise users may have.
 
@@ -55,8 +54,6 @@ class User(models.Model):
     last_name: str = models.CharField(max_length=100)
 
     business_area: BusinessArea = models.ForeignKey('BusinessArea', null=True, on_delete=models.SET_NULL)
-    # Users also are experts in a set of fields. See get_expertise below.
-    # This is encoded by the UserExpertise model, which relates them together.
 
     email: str = models.EmailField(max_length=100)
     is_email_verified: bool = models.BooleanField()
@@ -147,5 +144,5 @@ def print_all_users() -> None:
     print(" `-----------------------------------------------------------")
 
 
-create_dummy_data()
-print_all_users()
+#create_dummy_data()
+#print_all_users()
