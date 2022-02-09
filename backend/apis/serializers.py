@@ -1,11 +1,53 @@
 #!/usr/bin/env python3
 from typing import *
 
-from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
+from .models import *
 
-from .models import StuffModel
 
-class StuffSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(ModelSerializer):
     class Meta:
-        model = StuffModel
-        fields : List[str] = ['title']
+        model = User
+        exclude = ['password']
+
+
+class MeetingSerializer(ModelSerializer):
+    class Meta:
+        model = Meeting
+        exclude = []
+
+
+class ActionPlanSerializer(ModelSerializer):
+    class Meta:
+        model = ActionPlan
+        exclude = []
+
+
+class SkillSerializer(ModelSerializer):
+    class Meta:
+        model = Skill
+        exclude = []
+
+
+class BusinessAreaSerializer(ModelSerializer):
+    class Meta:
+        model = BusinessArea
+        exclude = []
+
+
+class GroupSessionSerializer(ModelSerializer):
+    class Meta:
+        model = GroupSession
+        exclude = []
+
+
+class MentorshipSerializer(ModelSerializer):
+    class Meta:
+        model = Mentorship
+        exclude = []
+
+
+class FullUserSerializer(UserSerializer):
+    business_area = BusinessAreaSerializer()
+    expertise = SkillSerializer(many=True)
+    mentorship = MentorshipSerializer()
