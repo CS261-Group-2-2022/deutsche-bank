@@ -82,8 +82,12 @@ WSGI_APPLICATION = 'deutschebank.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'deutschebank', # The name of the postgresql database to access
+        'USER': 'django_app_user', # The name of the database user django should sign in as
+        'PASSWORD': 'django_app_user_password',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
