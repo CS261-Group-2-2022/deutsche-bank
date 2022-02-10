@@ -8,10 +8,32 @@ from rest_framework.response import Response
 from .serializers import *
 from .models import *
 
+from .matching_algorithm import matching_algorithm
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    @action(detail=True, methods=['get'])
+    def matching(self, request, pk=None):
+        user: User = self.get_object()
+        all_users: List[User] = list(User.objects.all())
+        users_who_want_to_mentor: List[User] = list(User.objects.all().filter(mentor_intent=true))
+        all_mentorships: List[Mentorship] = list(Mentorship.objects.all())
+        current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
+        all_requests: List[Request] = list(Request.objects.all())
+
+        potential_mentors: List[User] = matching_algorithm(user,
+                                                           all_users,
+                                                           users_who_want_to_mentor,
+                                                           all_mentorships,
+                                                           current_mentorships,
+                                                           all_requests)
+
+        cereal = UserSerializer(potential_mentors, many=True)
+
+        return Response(cereal.data)
 
     @action(detail=True, methods=['get'])
     def full(self, request, pk=None):
