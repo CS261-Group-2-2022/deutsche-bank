@@ -34,8 +34,8 @@ def create_dummy_users():
 
         email_domain = "deutschebank.com"
 
-        interests=random.sample(skills, random.randrange(0,7))
-        expertise=random.sample(skills, random.randrange(0,4))
+        interests=random.sample(skills, random.randrange(1,7))
+        expertise=random.sample(skills, random.randrange(1,4))
 
         u = User.objects.create(first_name=first_name,
                             last_name=last_name,

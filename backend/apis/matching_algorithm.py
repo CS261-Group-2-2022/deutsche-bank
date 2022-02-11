@@ -2,6 +2,8 @@
 from typing import *
 
 from .models import *
+from .topic_modelling import sort_by_interest_description_match, sort_by_self_description_similarity
+# TODO Maybe make use of these.
 
 def matching_algorithm(user_looking_for_mentor: User,
 

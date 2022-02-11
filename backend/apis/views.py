@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from typing import *
+from pprint import pprint
 
 from django.db.models import QuerySet
 from rest_framework import viewsets
@@ -9,7 +10,7 @@ from .serializers import *
 from .models import *
 
 from .matching_algorithm import matching_algorithm
-
+from .topic_modelling import *
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -25,7 +26,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def matching(self, request, pk=None):
         user: User = self.get_object()
         all_users: List[User] = list(User.objects.all())
-        users_who_want_to_mentor: List[User] = list(User.objects.all().filter(mentor_intent=true))
+        users_who_want_to_mentor: List[User] = list(User.objects.all().filter(mentor_intent=True))
         all_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         all_requests: List[Request] = list(Request.objects.all())
@@ -36,6 +37,12 @@ class UserViewSet(viewsets.ModelViewSet):
                                                            all_mentorships,
                                                            current_mentorships,
                                                            all_requests)
+
+        print("sort by topic match:")
+        pprint(sort_by_interest_description_match(user, potential_mentors))
+
+        print("sort by personality match:")
+        pprint(sort_by_self_description_similarity(user, potential_mentors))
 
         cereal = UserSerializer(potential_mentors, many=True)
 
