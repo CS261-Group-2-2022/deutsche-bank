@@ -16,6 +16,12 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     @action(detail=True, methods=['get'])
+    def reset(self, request, pk=None):
+        clear_database()
+        create_dummy_data()
+        return Response("Reset database.")
+
+    @action(detail=True, methods=['get'])
     def matching(self, request, pk=None):
         user: User = self.get_object()
         all_users: List[User] = list(User.objects.all())

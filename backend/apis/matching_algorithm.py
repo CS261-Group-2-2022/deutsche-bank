@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from typing import *
 
+from .models import *
+
 def matching_algorithm(user_looking_for_mentor: User,
 
                        all_users: List[User],

@@ -90,6 +90,8 @@ class User(models.Model):
         """
         return User.objects.all().filter(mentorship__mentor__pk__exact=self.pk).exclude(pk__exact=self.pk)
 
+    def has_mentees(self) -> bool:
+        return self.get_mentees().count() > 0
 
 class Meeting(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
@@ -143,6 +145,3 @@ def print_all_users() -> None:
         pass
     print(" `-----------------------------------------------------------")
 
-
-#create_dummy_data()
-#print_all_users()
