@@ -8,6 +8,7 @@ import Mentoring from "./pages/Mentoring";
 import Login from "./pages/Login";
 //import ProtectedPage from "./pages/ProtectedPage";
 import Signup from "./pages/Signup";
+import Settings from "./pages/Settings";
 
 const fetcher: BareFetcher = (resource, init) =>
   fetch(resource, init).then((res) => res.json());
@@ -151,6 +152,7 @@ function App() {
             {/* <Route path="groups" element={<GroupSessions />} /> */}
             <Route path="login" element={<Login />} />
             <Route path="signup" element={<Signup />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="*" element={<Error404 />} />
           </Routes>
         </BrowserRouter>
