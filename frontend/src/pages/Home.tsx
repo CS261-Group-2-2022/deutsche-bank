@@ -5,7 +5,7 @@ import {
   UserGroupIcon,
 } from "@heroicons/react/solid";
 import { Link } from "react-router-dom";
-import RoundedImage from "../components/RoundedImage";
+//import RoundedImage from "../components/RoundedImage";
 import Topbar from "../components/Topbar";
 import { useUser } from "../utils/authentication";
 

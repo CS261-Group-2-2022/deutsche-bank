@@ -5,6 +5,9 @@ import Error404 from "./pages/Error404";
 import { BareFetcher, SWRConfig } from "swr";
 import UserProvider from "./utils/authentication";
 import Mentoring from "./pages/Mentoring";
+import Login from "./pages/Login";
+//import ProtectedPage from "./pages/ProtectedPage";
+import Signup from "./pages/Signup";
 
 const fetcher: BareFetcher = (resource, init) =>
   fetch(resource, init).then((res) => res.json());
@@ -146,6 +149,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="mentoring" element={<Mentoring />} />
             {/* <Route path="groups" element={<GroupSessions />} /> */}
+            <Route path="login" element={<Login />} />
+            <Route path="signup" element={<Signup />} />
             <Route path="*" element={<Error404 />} />
           </Routes>
         </BrowserRouter>
