@@ -1,50 +1,9 @@
 //import { LockClosedIcon } from "@heroicons/react/solid";
 import { Link } from "react-router-dom";
-
-type FormInputProps = {
-  id: string;
-  name: string;
-  type: string;
-  autoComplete?: string;
-  placeholder: string;
-};
-
-const FormInput = ({
-  id,
-  name,
-  type,
-  autoComplete,
-  placeholder,
-}: FormInputProps) => {
-  return (
-    <div>
-      <label htmlFor={id} className="sr-only">
-        {placeholder}
-      </label>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        autoComplete={autoComplete}
-        required
-        className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-        placeholder={placeholder}
-      />
-    </div>
-  );
-};
+import Topbar from "../components/Topbar";
+import { FormInput } from "../components/FormInput";
 
 export default function Signup() {
-  // const onLoginClick = () => {
-  //     fetch('/api/login', {
-  //         email:'',
-  //     }, {
-  //         method: 'POST',
-  //     }).then(res => res.json()).then(data => {
-  //         // logged in
-  //     });
-  // };
-
   return (
     <>
       <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
