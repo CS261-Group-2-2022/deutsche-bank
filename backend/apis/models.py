@@ -53,6 +53,7 @@ class Request(models.Model):
     mentor: User = models.ForeignKey('User', related_name='request_mentor', on_delete=models.CASCADE)
 
 
+# TODO: Remove PermissionsMixin if it is not required
 class User(AbstractBaseUser, PermissionsMixin):
     """ Database model that describes a single User.
     """
@@ -61,10 +62,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     business_area: BusinessArea = models.ForeignKey('BusinessArea', null=True, on_delete=models.SET_NULL)
 
-    email: str = models.EmailField(max_length=100,unique=True)
+    email: str = models.EmailField(max_length=100, unique=True)  # identifies each user instead of username
     is_email_verified: bool = models.BooleanField()
-
-    # password: str = models.CharField(max_length=100)  # TODO(arwck): Shouldn't be chars.
 
     mentorship: Mentorship = models.OneToOneField(Mentorship, null=True, on_delete=models.SET_NULL)
     mentor_intent: bool = models.BooleanField(default=False)  # whether a user wishes to become a mentor
