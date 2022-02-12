@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from typing import *
 
+from django.contrib.auth import authenticate
+from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from .models import *
 
@@ -11,8 +13,11 @@ class UserSerializer(ModelSerializer):
         exclude = ['password']
 
 
-# Register Serializer
 class RegisterSerializer(ModelSerializer):
+    """
+    Serializes data sent to register a new user
+    """
+
     class Meta:
         model = User
         fields = ('id', 'email', 'first_name', 'last_name', 'business_area', 'password')
@@ -23,6 +28,33 @@ class RegisterSerializer(ModelSerializer):
                                         first_name=validated_data['first_name'], last_name=validated_data['last_name'],
                                         business_area=validated_data['business_area'])
         return user
+
+
+class LoginSerializer(ModelSerializer):
+    """
+    Serializes data sent to login a user
+    """
+    token = serializers.CharField(label="Token", read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('email', 'password', 'token')
+        extra_kwargs = {
+            'email': {'write_only': True},
+            'password': {'write_only': True, 'style': {'input_type': 'password'}}, 'trim_whitespace': False
+        }
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+        user = authenticate(request=self.context.get('request'), username=email, password=password)
+
+        if not user:
+            msg = 'Unable to log in with provided credentials.'
+            raise serializers.ValidationError(msg, code='authorization')
+
+        attrs['user'] = user
+        return attrs
 
 
 class MeetingSerializer(ModelSerializer):

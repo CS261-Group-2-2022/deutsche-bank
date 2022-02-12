@@ -99,9 +99,10 @@ class RegisterView(generics.GenericAPIView):
 
 class LoginView(KnoxLoginView):
     permission_classes = (permissions.AllowAny,)
+    serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = AuthTokenSerializer(data=request.data)
+        serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         login(request, user)
