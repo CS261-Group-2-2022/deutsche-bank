@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'django_extensions',
+    'knox',  # https://james1345.github.io/django-rest-knox/
 
     'apis',
     'openapi',
@@ -140,3 +141,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # User model
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-user-model
 AUTH_USER_MODEL = 'apis.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+}

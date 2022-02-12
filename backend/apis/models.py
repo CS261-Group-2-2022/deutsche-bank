@@ -63,7 +63,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     business_area: BusinessArea = models.ForeignKey('BusinessArea', null=True, on_delete=models.SET_NULL)
 
     email: str = models.EmailField(max_length=100, unique=True)  # identifies each user instead of username
-    is_email_verified: bool = models.BooleanField()
+    is_email_verified: bool = models.BooleanField(default=False)
 
     mentorship: Mentorship = models.OneToOneField(Mentorship, null=True, on_delete=models.SET_NULL)
     mentor_intent: bool = models.BooleanField(default=False)  # whether a user wishes to become a mentor
@@ -74,7 +74,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'business_area']
 
     class Meta:
         verbose_name = 'user'
