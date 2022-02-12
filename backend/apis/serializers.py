@@ -33,6 +33,8 @@ class RegisterSerializer(ModelSerializer):
 class LoginSerializer(ModelSerializer):
     """
     Serializes data sent to login a user
+
+    Email and password are inputted and a token is outputted
     """
     token = serializers.CharField(label="Token", read_only=True)
 
