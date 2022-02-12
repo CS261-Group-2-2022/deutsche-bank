@@ -54,7 +54,7 @@ class Request(models.Model):
 
 
 # TODO: Remove PermissionsMixin if it is not required
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser):
     """ Database model that describes a single User.
     """
     first_name: str = models.CharField(max_length=100)
