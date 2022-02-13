@@ -2,12 +2,15 @@
 from typing import *
 
 from django.contrib.auth import login
+from django.contrib.auth.models import AnonymousUser
 from django.db.models import QuerySet
 from knox.models import AuthToken
 from rest_framework import viewsets, generics, permissions
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializers import *
 from .models import *
@@ -107,6 +110,14 @@ class LoginView(KnoxLoginView):
         user = serializer.validated_data['user']  # Get user from serializer
         login(request, user)  # Login user object
         return super(LoginView, self).post(request, format=None)  # Create auth token
+
+
+class CurrentUserView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to get user
+
+    def get(self, request, *args, **kwargs):
+        serializer = UserSerializer(request.user)  # Serialize current user
+        return Response(serializer.data)
 
 
 class GroupSessionViewSet(viewsets.ModelViewSet):
