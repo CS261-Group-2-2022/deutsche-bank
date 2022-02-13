@@ -1,7 +1,35 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import FormDropdown from "../components/FormDropdown";
 import { FormInput } from "../components/FormInput";
 
+// TODO: retrieve these from the backend
+const BUSINESS_AREAS = [
+  {
+    id: 1,
+    text: "Trading",
+  },
+  {
+    id: 2,
+    text: "Sales",
+  },
+  {
+    id: 3,
+    text: "Operations",
+  },
+  {
+    id: 3,
+    text: "Engineering",
+  },
+  {
+    id: 4,
+    text: "Research",
+  },
+];
+
 export default function Signup() {
+  const [businessArea, setBusinessArea] = useState(BUSINESS_AREAS[0]);
+
   return (
     <>
       <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -51,6 +79,12 @@ export default function Signup() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Retype Password"
+              />
+              <FormDropdown
+                title="Business Area"
+                options={BUSINESS_AREAS}
+                selected={businessArea}
+                setSelected={setBusinessArea}
               />
             </div>
 
