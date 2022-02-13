@@ -1,6 +1,4 @@
-//import { LockClosedIcon } from "@heroicons/react/solid";
 import { Link } from "react-router-dom";
-import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
 
 export default function Signup() {
@@ -17,6 +15,22 @@ export default function Signup() {
           <form className="mt-8 space-y-6" action="#" method="POST">
             <input type="hidden" name="remember" defaultValue="true" />
             <div className="rounded-md shadow-sm space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <FormInput
+                  id="firstname"
+                  name="firstname"
+                  type="text"
+                  autoComplete="fname"
+                  placeholder="First Name"
+                />
+                <FormInput
+                  id="lastname"
+                  name="lastname"
+                  type="text"
+                  autoComplete="lname"
+                  placeholder="Last Name"
+                />
+              </div>
               <FormInput
                 id="email-address"
                 name="email"
@@ -38,12 +52,6 @@ export default function Signup() {
                 autoComplete="current-password"
                 placeholder="Retype Password"
               />
-              <FormInput
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Full name"
-              />
             </div>
 
             <div className="space-y-2">
@@ -51,12 +59,6 @@ export default function Signup() {
                 type="submit"
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                {/* <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                  <LockClosedIcon
-                    className="h-5 w-5 text-blue-500 group-hover:text-blue-400"
-                    aria-hidden="true"
-                  />
-  </span> */}
                 Create Account
               </button>
 
@@ -64,7 +66,7 @@ export default function Signup() {
                 Or{" "}
                 <Link
                   to="/login"
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                  className="font-medium text-blue-600 hover:text-blue-500"
                 >
                   log in to an existing account
                 </Link>
