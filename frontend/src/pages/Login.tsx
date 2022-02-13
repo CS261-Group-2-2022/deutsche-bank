@@ -1,17 +1,8 @@
 import { LockClosedIcon } from "@heroicons/react/solid";
 import { Link } from "react-router-dom";
+import { FormInput } from "../components/FormInput";
 
 export default function Login() {
-  // const onLoginClick = () => {
-  //     fetch('/api/login', {
-  //         email:'',
-  //     }, {
-  //         method: 'POST',
-  //     }).then(res => res.json()).then(data => {
-  //         // logged in
-  //     });
-  // };
-
   return (
     <>
       <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -21,37 +12,23 @@ export default function Login() {
               Sign in to your account
             </h2>
           </div>
-          <form className="mt-8 space-y-6" action="#" method="POST">
+          <form className="mt-8 space-y-4" action="#" method="POST">
             <input type="hidden" name="remember" defaultValue="true" />
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="email-address" className="sr-only">
-                  Email address
-                </label>
-                <input
-                  id="email-address"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Email address"
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Password"
-                />
-              </div>
+            <div className="space-y-3">
+              <FormInput
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="Email address"
+              />
+              <FormInput
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Password"
+              />
             </div>
 
             <div className="flex items-center justify-between">
@@ -93,7 +70,7 @@ export default function Login() {
                 </span>
                 Sign in
               </button>
-              <p className="text-center">or</p>
+              <p className="text-center font-semibold">or</p>
               <Link
                 to="/signup"
                 className="flex justify-center w-full py-2 px-4 bg-gray-300 hover:bg-gray-400 focus:ring-gray-500 focus:ring-offset-gray-200 text-gray-700 transition ease-in duration-100 font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
