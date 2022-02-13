@@ -28,6 +28,11 @@ const BUSINESS_AREAS = [
 ];
 
 export default function Signup() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [retypedPasssword, setRetypedPassword] = useState("");
   const [businessArea, setBusinessArea] = useState(BUSINESS_AREAS[0]);
 
   return (
@@ -50,6 +55,8 @@ export default function Signup() {
                   type="text"
                   autoComplete="fname"
                   placeholder="First Name"
+                  text={firstName}
+                  onChange={setFirstName}
                 />
                 <FormInput
                   id="lastname"
@@ -57,6 +64,8 @@ export default function Signup() {
                   type="text"
                   autoComplete="lname"
                   placeholder="Last Name"
+                  text={lastName}
+                  onChange={setLastName}
                 />
               </div>
               <FormInput
@@ -65,6 +74,8 @@ export default function Signup() {
                 type="email"
                 autoComplete="email"
                 placeholder="Email address"
+                text={email}
+                onChange={setEmail}
               />
               <FormInput
                 id="password"
@@ -72,6 +83,8 @@ export default function Signup() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Password"
+                text={password}
+                onChange={setPassword}
               />
               <FormInput
                 id="retyped-password"
@@ -79,6 +92,8 @@ export default function Signup() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Retype Password"
+                text={retypedPasssword}
+                onChange={setRetypedPassword}
               />
               <FormDropdown
                 title="Business Area"

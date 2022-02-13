@@ -1,8 +1,12 @@
 import { LockClosedIcon } from "@heroicons/react/solid";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FormInput } from "../components/FormInput";
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   return (
     <>
       <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -21,6 +25,8 @@ export default function Login() {
                 type="email"
                 autoComplete="email"
                 placeholder="Email address"
+                text={email}
+                onChange={setEmail}
               />
               <FormInput
                 id="password"
@@ -28,6 +34,8 @@ export default function Login() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Password"
+                text={password}
+                onChange={setPassword}
               />
             </div>
 

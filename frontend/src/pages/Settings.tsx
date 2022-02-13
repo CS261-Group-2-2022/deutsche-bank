@@ -1,7 +1,13 @@
 import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
+import { useState } from "react";
 
 export default function Signup() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [password, setPassword] = useState("");
+  const [retypedPasssword, setRetypedPassword] = useState("");
+
   return (
     <>
       <Topbar />
@@ -23,6 +29,8 @@ export default function Signup() {
                   type="text"
                   autoComplete="fname"
                   placeholder="First Name"
+                  text={firstName}
+                  onChange={setFirstName}
                 />
                 <FormInput
                   id="lastname"
@@ -30,6 +38,8 @@ export default function Signup() {
                   type="text"
                   autoComplete="lname"
                   placeholder="Last Name"
+                  text={lastName}
+                  onChange={setLastName}
                 />
               </div>
               <FormInput
@@ -38,6 +48,8 @@ export default function Signup() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Password"
+                text={password}
+                onChange={setPassword}
               />
               <FormInput
                 id="retyped-password"
@@ -45,6 +57,8 @@ export default function Signup() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Retype Password"
+                text={retypedPasssword}
+                onChange={setRetypedPassword}
               />
             </div>
 
