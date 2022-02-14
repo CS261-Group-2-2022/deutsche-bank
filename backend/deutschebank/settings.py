@@ -42,12 +42,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_extensions',
     'knox',  # https://james1345.github.io/django-rest-knox/
+    'corsheaders',  # https://pypi.org/project/django-cors-headers/
 
     'apis',
     'openapi',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -127,7 +129,13 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
 ]
 
-CORS_ORIGIN_WHITELIST = [
+CORS_ORIGIN_WHITELIST = [  # TODO: Remove
+    # Whitelist default local React ports
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
+
+CORS_ALLOWED_ORIGINS = [
     # Whitelist default local React ports
     'http://localhost:3000',
     'http://127.0.0.1:3000',
