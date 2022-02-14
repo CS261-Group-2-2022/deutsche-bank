@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations  # This allows us to use type hints of a class inside that class.
+
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from typing import *
 from dataclasses import dataclass
@@ -7,8 +10,11 @@ from datetime import datetime
 
 from django.db.models import QuerySet
 
+from .managers import UserManager
+
 """ This file contains the database models and some associated utilities.
 """
+
 
 class Skill(models.Model):
     """ Database model that holds all the 'kinds' of expertise users may have.
@@ -47,7 +53,8 @@ class Request(models.Model):
     mentor: User = models.ForeignKey('User', related_name='request_mentor', on_delete=models.CASCADE)
 
 
-class User(models.Model):
+# TODO: Remove PermissionsMixin if it is not required
+class User(AbstractBaseUser):
     """ Database model that describes a single User.
     """
     first_name: str = models.CharField(max_length=100)
@@ -55,16 +62,36 @@ class User(models.Model):
 
     business_area: BusinessArea = models.ForeignKey('BusinessArea', null=True, on_delete=models.SET_NULL)
 
-    email: str = models.EmailField(max_length=100)
-    is_email_verified: bool = models.BooleanField()
-
-    password: str = models.CharField(max_length=100)  # TODO(arwck): Shouldn't be chars.
+    email: str = models.EmailField(max_length=100, unique=True)  # identifies each user instead of username
+    is_email_verified: bool = models.BooleanField(default=False)
 
     mentorship: Mentorship = models.OneToOneField(Mentorship, null=True, on_delete=models.SET_NULL)
     mentor_intent: bool = models.BooleanField(default=False)  # whether a user wishes to become a mentor
 
     interests: List[Skill] = models.ManyToManyField(Skill, related_name='user_interests')
     expertise: List[Skill] = models.ManyToManyField(Skill, related_name='user_expertise')
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'business_area']
+
+    class Meta:
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
+
+    def get_full_name(self):
+        """
+        Returns the first_name plus the last_name, with a space in between.
+        """
+        full_name = '%s %s' % (self.first_name, self.last_name)
+        return full_name.strip()
+
+    def get_short_name(self):
+        """
+        Returns the short name for the user.
+        """
+        return self.first_name
 
     def get_mentor_meetings(self) -> QuerySet[List[Meeting]]:
         return self.meeting_mentor.all()
