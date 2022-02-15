@@ -205,8 +205,8 @@ export default function Home() {
     <>
       <Topbar />
       <DashboardUserHero
-        name={user?.name ?? "John Doe"}
-        businessArea={user?.business_area ?? "Trading"}
+        name={user ? `${user.first_name} ${user.last_name}` : `UNKNOWN`}
+        businessArea={user?.business_area.toString() ?? "Trading"} // TODO: business area?
       />
       <div className="bg-white w-full">
         <div className="grid grid-cols-3 mx-5 gap-5">
