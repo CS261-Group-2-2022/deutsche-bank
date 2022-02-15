@@ -9,9 +9,19 @@ import Login from "./pages/Login";
 //import ProtectedPage from "./pages/ProtectedPage";
 import Signup from "./pages/Signup";
 import Settings from "./pages/Settings";
+import { getAuthToken } from "./utils/endpoints";
 
-const fetcher: BareFetcher = (resource, init) =>
-  fetch(resource, init).then((res) => res.json());
+const fetcher: BareFetcher = async (resource) => {
+  const token = getAuthToken();
+
+  const res = await fetch(resource, {
+    headers: {
+      "Content-Type": "application/json",
+      authorization: token ? `Token ${token}` : "",
+    },
+  });
+  return await res.json();
+};
 
 // class BusinessArea {
 //   id: number = 0
