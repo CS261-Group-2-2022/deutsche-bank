@@ -57,7 +57,6 @@ export default function Login() {
     if (isLoginSuccess(res, body)) {
       // Succesfully logged in
       setAuthToken(body.token, rememberMe);
-      navigateBack();
     } else {
       setEmailError(body.email?.join(" "));
       setPasswordError(body.password?.join(" "));

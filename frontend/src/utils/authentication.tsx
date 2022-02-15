@@ -25,7 +25,7 @@ export default function UserProvider({ children }: UserProviderProps) {
   return (
     <UserContext.Provider
       value={{
-        user,
+        user: !error ? user : undefined,
         error,
         isLoading: !error && !user,
         isLoggedIn: !error && user !== undefined,
