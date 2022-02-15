@@ -17,14 +17,18 @@ export const getAuthToken = () => {
  */
 export const setAuthToken = (token: string, remember: boolean) => {
   // Clear old tokens
-  window.sessionStorage.removeItem("token");
-  window.localStorage.removeItem("token");
+  clearAuthToken();
 
   if (remember) {
     window.localStorage.setItem("token", token);
   } else {
     window.sessionStorage.setItem("token", token);
   }
+};
+
+export const clearAuthToken = () => {
+  window.sessionStorage.removeItem("token");
+  window.localStorage.removeItem("token");
 };
 
 export type User = {

@@ -22,7 +22,7 @@ const isLoginSuccess = (
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useUser();
+  const { isLoggedIn } = useUser();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,10 +38,10 @@ export default function Login() {
   // Effect which runs if we have a user logged in.
   // If we are logged in, we need to redirect to where we came from, as we don't need to login again
   useEffect(() => {
-    if (user) {
+    if (isLoggedIn) {
       navigateBack();
     }
-  }, [user]);
+  }, [isLoggedIn]);
 
   // Function to send off a login request, and handle the response from it
   const sendLoginRequest = async () => {

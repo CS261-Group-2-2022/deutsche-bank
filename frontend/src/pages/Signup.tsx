@@ -25,7 +25,7 @@ const isRegisterSuccess = (
 export default function Signup() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { isLoggedIn } = useUser();
   const { areas } = useBusinessAreas();
 
   const [firstName, setFirstName] = useState("");
@@ -56,10 +56,10 @@ export default function Signup() {
   // Effect which runs if we have a user logged in.
   // If we are logged in, we need to redirect to where we came from, as we don't need to signup again
   useEffect(() => {
-    if (user) {
+    if (isLoggedIn) {
       navigateBack();
     }
-  }, [user]);
+  }, [isLoggedIn]);
 
   const clearErrors = () => {
     setFirstNameError(undefined);

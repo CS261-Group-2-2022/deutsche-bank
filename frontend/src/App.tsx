@@ -11,6 +11,7 @@ import Signup from "./pages/Signup";
 import Settings from "./pages/Settings";
 import { getAuthToken } from "./utils/endpoints";
 import BusinessAreaProvider from "./utils/business_area";
+import Logout from "./pages/Logout";
 
 const fetcher: BareFetcher = async (resource) => {
   const token = getAuthToken();
@@ -170,6 +171,7 @@ function App() {
               <Route path="mentoring" element={<Mentoring />} />
               {/* <Route path="groups" element={<GroupSessions />} /> */}
               <Route path="login" element={<Login />} />
+              <Route path="logout" element={<Logout />} />
               <Route path="signup" element={<Signup />} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<Error404 />} />

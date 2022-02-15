@@ -6,9 +6,13 @@ type UserContext = {
   user?: User;
   error?: unknown;
   isLoading: boolean;
+  isLoggedIn: boolean;
 };
 
-export const UserContext = createContext<UserContext>({ isLoading: false });
+export const UserContext = createContext<UserContext>({
+  isLoading: false,
+  isLoggedIn: false,
+});
 export const useUser = () => useContext(UserContext);
 
 type UserProviderProps = {
@@ -24,6 +28,7 @@ export default function UserProvider({ children }: UserProviderProps) {
         user,
         error,
         isLoading: !error && !user,
+        isLoggedIn: !error && user !== undefined,
       }}
     >
       {children}
