@@ -12,6 +12,6 @@ export default function ProtectedPage({ children }: ProtectedPageProps) {
   return user !== undefined ? (
     <>{children}</>
   ) : (
-    <Navigate to="/login" replace state={{ path: location.pathname }} />
+    <Navigate to="/login" replace state={{ from: location }} />
   );
 }

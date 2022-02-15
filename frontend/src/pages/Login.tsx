@@ -1,13 +1,15 @@
 import { LockClosedIcon } from "@heroicons/react/solid";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FormInput } from "../components/FormInput";
+import { useUser } from "../utils/authentication";
 import {
   LoginBody,
   LoginSuccess,
   LOGIN_ENDPOINT,
   setAuthToken,
 } from "../utils/endpoints";
+import { LocationState } from "../utils/location_state";
 
 /** Verifies whether a login response is succesful or not (and type guards the body) */
 const isLoginSuccess = (
@@ -18,6 +20,10 @@ const isLoginSuccess = (
 };
 
 export default function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useUser();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -25,6 +31,19 @@ export default function Login() {
   const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
 
+  /** Navigates back to the page we originated from, or the home page if we don't know where from */
+  const navigateBack = () =>
+    navigate((location.state as LocationState)?.from?.pathname ?? "/");
+
+  // Effect which runs if we have a user logged in.
+  // If we are logged in, we need to redirect to where we came from, as we don't need to login again
+  useEffect(() => {
+    if (user) {
+      navigateBack();
+    }
+  }, [user]);
+
+  // Function to send off a login request, and handle the response from it
   const sendLoginRequest = async () => {
     const res = await fetch(LOGIN_ENDPOINT, {
       method: "POST",
@@ -38,6 +57,7 @@ export default function Login() {
     if (isLoginSuccess(res, body)) {
       // Succesfully logged in
       setAuthToken(body.token, rememberMe);
+      navigateBack();
     } else {
       setEmailError(body.email?.join(" "));
       setPasswordError(body.password?.join(" "));
@@ -138,6 +158,7 @@ export default function Login() {
               <p className="text-center font-semibold">or</p>
               <Link
                 to="/signup"
+                state={location.state}
                 className="flex justify-center w-full py-2 px-4 bg-gray-300 hover:bg-gray-400 focus:ring-gray-500 focus:ring-offset-gray-200 text-gray-700 transition ease-in duration-100 font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
               >
                 Sign up
