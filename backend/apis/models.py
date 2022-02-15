@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from django.db.models import QuerySet
+from django.db.models import Avg
 
 """ This file contains the database models and some associated utilities.
 """
@@ -30,6 +31,7 @@ class BusinessArea(models.Model):
     name: str = models.CharField(max_length=100, unique=True)
 
 
+@dataclass(init=False)
 class Mentorship(models.Model):
     """ Mentorship between mentor and mentee
     """
@@ -95,6 +97,13 @@ class User(models.Model):
 
     def has_mentees(self) -> bool:
         return self.get_mentees().count() > 0
+
+    def get_mentorships_where_user_is_mentor(self) -> QuerySet[List[Type[User]]]:
+        return Mentorship.objects.all().filter(mentor__pk__exact=self.pk)
+
+    def get_mentor_rating_average(self) -> float:
+        return self.get_mentorships_where_user_is_mentor().aggregate(Avg('rating'))['rating__avg']
+
 
 class Meeting(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)

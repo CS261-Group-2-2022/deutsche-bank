@@ -38,12 +38,6 @@ class UserViewSet(viewsets.ModelViewSet):
                                                            current_mentorships,
                                                            all_requests)
 
-        print("sort by topic match:")
-        pprint(sort_by_interest_description_match(user, potential_mentors))
-
-        print("sort by personality match:")
-        pprint(sort_by_self_description_similarity(user, potential_mentors))
-
         cereal = UserSerializer(potential_mentors, many=True)
 
         return Response(cereal.data)
