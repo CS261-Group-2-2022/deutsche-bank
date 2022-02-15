@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 //import RoundedImage from "../components/RoundedImage";
 import Topbar from "../components/Topbar";
 import { useUser } from "../utils/authentication";
+import { useBusinessAreas } from "../utils/business_area";
 
 type DashboardUserHeroProps = {
   name: string;
@@ -200,13 +201,17 @@ function UpcomingSessionsColumn() {
 
 export default function Home() {
   const { user } = useUser();
+  const { areas } = useBusinessAreas();
 
   return (
     <>
       <Topbar />
       <DashboardUserHero
         name={user ? `${user.first_name} ${user.last_name}` : `UNKNOWN`}
-        businessArea={user?.business_area.toString() ?? "Trading"} // TODO: business area?
+        businessArea={
+          areas.find((area) => area.id == user?.business_area)?.name ??
+          "Unknown"
+        }
       />
       <div className="bg-white w-full">
         <div className="grid grid-cols-3 mx-5 gap-5">

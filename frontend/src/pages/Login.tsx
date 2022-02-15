@@ -16,7 +16,7 @@ const isLoginSuccess = (
   res: Response,
   body: LoginBody
 ): body is LoginSuccess => {
-  return res.status == 200;
+  return res.ok;
 };
 
 export default function Login() {

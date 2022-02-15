@@ -4,7 +4,9 @@ import FormDropdown from "../components/FormDropdown";
 import { FormInput } from "../components/FormInput";
 import PasswordStrengthIndicator from "../components/PasswordStrengthIndicator";
 import { useUser } from "../utils/authentication";
+import { useBusinessAreas } from "../utils/business_area";
 import {
+  BusinessArea,
   RegisterBody,
   RegisterSuccess,
   setAuthToken,
@@ -12,49 +14,28 @@ import {
 } from "../utils/endpoints";
 import { LocationState } from "../utils/location_state";
 
-// TODO: retrieve these from the backend
-const BUSINESS_AREAS = [
-  {
-    id: 1,
-    text: "Trading",
-  },
-  {
-    id: 2,
-    text: "Sales",
-  },
-  {
-    id: 3,
-    text: "Operations",
-  },
-  {
-    id: 3,
-    text: "Engineering",
-  },
-  {
-    id: 4,
-    text: "Research",
-  },
-];
-
 /** Verifies whether a login response is succesful or not (and type guards the body) */
 const isRegisterSuccess = (
   res: Response,
   body: RegisterBody
 ): body is RegisterSuccess => {
-  return res.status == 200;
+  return res.ok;
 };
 
 export default function Signup() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useUser();
+  const { areas } = useBusinessAreas();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [retypedPasssword, setRetypedPassword] = useState("");
-  const [businessArea, setBusinessArea] = useState(BUSINESS_AREAS[0]);
+  const [businessArea, setBusinessArea] = useState<BusinessArea | undefined>(
+    areas[0]
+  );
 
   const [firstNameError, setFirstNameError] = useState<string | undefined>();
   const [lastNameError, setLastNameError] = useState<string | undefined>();
@@ -97,6 +78,12 @@ export default function Signup() {
       return false;
     } else {
       setRetypedPasswordError(undefined);
+    }
+
+    // Check business area is set
+    if (!businessArea) {
+      setBusinessAreaError("You must select a business area");
+      return false;
     }
 
     const res = await fetch(SIGNUP_ENDPOINT, {
@@ -207,10 +194,11 @@ export default function Signup() {
               />
               <FormDropdown
                 title="Business Area"
-                options={BUSINESS_AREAS}
+                options={areas}
                 selected={businessArea}
                 setSelected={setBusinessArea}
-                // error={businessAreaError} // TODO
+                error={businessAreaError}
+                placeholder="Select an area"
               />
             </div>
 
