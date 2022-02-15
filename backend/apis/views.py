@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
-from typing import *
 
 from django.contrib.auth import login
-from django.contrib.auth.models import AnonymousUser
-from django.db.models import QuerySet
 from knox.models import AuthToken
+from knox.views import LoginView as KnoxLoginView
 from rest_framework import viewsets, generics, permissions
-from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import *
 from .models import *
-from knox.views import LoginView as KnoxLoginView
+from .serializers import *
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -138,3 +133,8 @@ class MeetingViewSet(viewsets.ModelViewSet):
 class ActionPlanViewSet(viewsets.ModelViewSet):
     queryset = ActionPlan.objects.all()
     serializer_class = ActionPlanSerializer
+
+
+class BusinessAreaViewSet(viewsets.ModelViewSet):
+    queryset = BusinessArea.objects.all()
+    serializer_class = BusinessAreaSerializer
