@@ -1,6 +1,7 @@
 export const LOGIN_ENDPOINT = "http://localhost:8000/api/v1/auth/login/";
 export const SIGNUP_ENDPOINT = "http://localhost:8000/api/v1/auth/register/";
 export const PROFILE_ENDPOINT = "http://localhost:8000/api/v1/auth/profile/";
+export const BUSINESS_AREAS_ENDPOINT = "http://localhost:8000/api/v1/area/";
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -78,3 +79,11 @@ export type ProfileError = {
 };
 
 export type ProfileResponse = ProfileSuccess | ProfileError;
+
+// Business Areas
+export type BusinessArea = {
+  id: number;
+  name: string;
+};
+
+export type BusinessAreaResponse = BusinessArea[];

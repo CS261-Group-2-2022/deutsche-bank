@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Settings from "./pages/Settings";
 import { getAuthToken } from "./utils/endpoints";
+import BusinessAreaProvider from "./utils/business_area";
 
 const fetcher: BareFetcher = async (resource) => {
   const token = getAuthToken();
@@ -20,7 +21,14 @@ const fetcher: BareFetcher = async (resource) => {
       authorization: token ? `Token ${token}` : "",
     },
   });
-  return await res.json();
+
+  const response = await res.json();
+
+  if (res.ok) {
+    return response;
+  } else {
+    throw new Error(response);
+  }
 };
 
 // class BusinessArea {
@@ -154,19 +162,21 @@ const fetcher: BareFetcher = async (resource) => {
 function App() {
   return (
     <SWRConfig value={{ fetcher }}>
-      <UserProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="mentoring" element={<Mentoring />} />
-            {/* <Route path="groups" element={<GroupSessions />} /> */}
-            <Route path="login" element={<Login />} />
-            <Route path="signup" element={<Signup />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="*" element={<Error404 />} />
-          </Routes>
-        </BrowserRouter>
-      </UserProvider>
+      <BusinessAreaProvider>
+        <UserProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="mentoring" element={<Mentoring />} />
+              {/* <Route path="groups" element={<GroupSessions />} /> */}
+              <Route path="login" element={<Login />} />
+              <Route path="signup" element={<Signup />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="*" element={<Error404 />} />
+            </Routes>
+          </BrowserRouter>
+        </UserProvider>
+      </BusinessAreaProvider>
     </SWRConfig>
   );
 }
