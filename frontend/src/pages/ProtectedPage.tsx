@@ -6,10 +6,10 @@ type ProtectedPageProps = {
 };
 
 export default function ProtectedPage({ children }: ProtectedPageProps) {
-  const { user } = useUser();
+  const { isLoggedIn } = useUser();
   const location = useLocation();
 
-  return user !== undefined ? (
+  return isLoggedIn ? (
     <>{children}</>
   ) : (
     <Navigate to="/login" replace state={{ from: location }} />

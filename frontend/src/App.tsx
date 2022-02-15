@@ -12,6 +12,7 @@ import Settings from "./pages/Settings";
 import { getAuthToken } from "./utils/endpoints";
 import BusinessAreaProvider from "./utils/business_area";
 import Logout from "./pages/Logout";
+import ProtectedPage from "./pages/ProtectedPage";
 
 const fetcher: BareFetcher = async (resource) => {
   const token = getAuthToken();
@@ -167,13 +168,34 @@ function App() {
         <UserProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="mentoring" element={<Mentoring />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedPage>
+                    <Home />
+                  </ProtectedPage>
+                }
+              />
+              <Route
+                path="mentoring"
+                element={
+                  <ProtectedPage>
+                    <Mentoring />
+                  </ProtectedPage>
+                }
+              />
               {/* <Route path="groups" element={<GroupSessions />} /> */}
               <Route path="login" element={<Login />} />
               <Route path="logout" element={<Logout />} />
               <Route path="signup" element={<Signup />} />
-              <Route path="settings" element={<Settings />} />
+              <Route
+                path="settings"
+                element={
+                  <ProtectedPage>
+                    <Settings />
+                  </ProtectedPage>
+                }
+              />
               <Route path="*" element={<Error404 />} />
             </Routes>
           </BrowserRouter>
