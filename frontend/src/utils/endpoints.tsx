@@ -1,5 +1,6 @@
 export const LOGIN_ENDPOINT = "http://localhost:8000/api/v1/auth/login/";
 export const SIGNUP_ENDPOINT = "http://localhost:8000/api/v1/auth/register/";
+export const PROFILE_ENDPOINT = "http://localhost:8000/api/v1/auth/profile/";
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -25,8 +26,22 @@ export const setAuthToken = (token: string, remember: boolean) => {
   }
 };
 
+export type User = {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_email_verified: boolean;
+  mentor_intent: boolean;
+  business_area: number;
+  mentorship: null;
+  interests: string[];
+  expertise: string[];
+};
+
+// Login
 export type LoginSuccess = {
-  user: unknown;
+  user: User;
   token: string;
 };
 
@@ -38,17 +53,28 @@ export type LoginError = {
 
 export type LoginBody = LoginSuccess | LoginError;
 
-// export type UserData = {
-//   email: string;
-//   first_name: string;
-//   last_name: string;
-//   business_area: string;
-//   password: string;
-// };
+// Register
+export type RegisterSuccess = {
+  user: User;
+  token: string;
+};
 
-// export const signupUser = async (data: UserData) => {
-//   return await fetch("/auth/register", {
-//     method: "POST",
-//     body: JSON.stringify(data),
-//   }).then((res) => res.json());
-// };
+export type RegisterError = {
+  email?: string[];
+  first_name?: string[];
+  last_name?: string[];
+  password?: string[];
+  business_area?: string[];
+  non_field_errors?: string[];
+};
+
+export type RegisterBody = RegisterSuccess | RegisterError;
+
+// Profile
+export type ProfileSuccess = User;
+
+export type ProfileError = {
+  detail: string;
+};
+
+export type ProfileResponse = ProfileSuccess | ProfileError;
