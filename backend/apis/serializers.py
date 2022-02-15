@@ -42,7 +42,7 @@ class LoginSerializer(ModelSerializer):
         model = User
         fields = ('email', 'password', 'token')
         extra_kwargs = {
-            'email': {'write_only': True},
+            'email': {'write_only': True, 'validators': []},
             'password': {'write_only': True, 'style': {'input_type': 'password'}}, 'trim_whitespace': False
         }
 
