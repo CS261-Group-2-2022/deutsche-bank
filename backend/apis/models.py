@@ -2,13 +2,7 @@
 from __future__ import annotations  # This allows us to use type hints of a class inside that class.
 
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.auth.models import PermissionsMixin
 from django.db import models
-from typing import *
-from dataclasses import dataclass
-from datetime import datetime
-
-from django.db.models import QuerySet
 
 from .managers import UserManager
 
@@ -128,7 +122,7 @@ class ActionPlan(models.Model):
     name: str = models.CharField(max_length=100)
     description: str = models.CharField(max_length=1000)
     user: User = models.ForeignKey(User, on_delete=models.CASCADE)  # if the user is deleted action plans
-    creation_date: datetime = models.DateTimeField()  # creation date of action plan
+    creation_date: datetime = models.DateTimeField(auto_now_add=True)  # creation date of action plan
     completion_date: datetime = models.DateTimeField(null=True)  # completion date of action plan
 
 
@@ -136,7 +130,7 @@ class Notification(models.Model):
     user: User = models.ForeignKey(User, on_delete=models.CASCADE)
     name: str = models.CharField(max_length=100)
     description: str = models.CharField(max_length=1000)
-    date: datetime = models.DateTimeField()
+    date: datetime = models.DateTimeField(auto_now_add=True)
     actioned: bool = models.BooleanField()  # user has acted on notification
 
 
