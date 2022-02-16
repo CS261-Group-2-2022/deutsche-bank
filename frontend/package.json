@@ -18,7 +18,8 @@
     "react-scripts": "5.0.0",
     "swr": "^1.1.2",
     "typescript": "^4.5.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "zxcvbn": "^4.4.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -45,6 +46,7 @@
     ]
   },
   "devDependencies": {
+    "@types/zxcvbn": "^4.4.1",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
     "autoprefixer": "^10.4.2",
