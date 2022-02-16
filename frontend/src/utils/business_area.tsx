@@ -23,13 +23,9 @@ type ProviderProps = {
 };
 
 export default function BusinessAreaProvider({ children }: ProviderProps) {
-  const {
-    data: areas,
-    error,
-    isValidating,
-  } = useSWR<BusinessAreaResponse>(BUSINESS_AREAS_ENDPOINT);
-
-  console.log("retrieved areas:", areas, isValidating);
+  const { data: areas, error } = useSWR<BusinessAreaResponse>(
+    BUSINESS_AREAS_ENDPOINT
+  );
 
   return (
     <BusinessAreaContext.Provider
