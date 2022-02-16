@@ -1,5 +1,5 @@
-import { BellIcon } from "@heroicons/react/solid";
-import { NavLink } from "react-router-dom";
+import { BellIcon, CogIcon, LogoutIcon } from "@heroicons/react/solid";
+import { Link, NavLink } from "react-router-dom";
 
 type MenuButtonProps = {
   text: string;
@@ -43,6 +43,22 @@ export default function Topbar() {
               className={"text-gray-600 ml-2 h-5 w-5 group-hover:text-gray-500"}
               aria-hidden="true"
             />
+            <Link to="/settings">
+              <CogIcon
+                className={
+                  "text-gray-600 ml-2 h-5 w-5 group-hover:text-gray-500"
+                }
+                aria-hidden="true"
+              />
+            </Link>
+            <Link to="/logout">
+              <LogoutIcon
+                className={
+                  "text-gray-600 ml-2 h-5 w-5 group-hover:text-gray-500"
+                }
+                aria-hidden="true"
+              />
+            </Link>
           </div>
         </div>
       </div>
