@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, Navigate } from "react-router-dom";
 import FormDropdown from "../components/FormDropdown";
 import { FormInput } from "../components/FormInput";
 import PasswordStrengthIndicator from "../components/PasswordStrengthIndicator";
@@ -106,6 +106,7 @@ export default function Signup() {
     if (isRegisterSuccess(res, body)) {
       // Succesfully logged in
       setAuthToken(body.token, false);
+      window.open("/","_self");
     } else {
       setFirstNameError(body.first_name?.join(" "));
       setLastNameError(body.last_name?.join(" "));
