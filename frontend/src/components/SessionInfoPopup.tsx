@@ -38,7 +38,7 @@ export default function SessionInfoPopup({
         />
         <p className="ml-3">Fullname</p>
       </div>
-      <LocationText location={session?.location ?? ""} />
+      <LocationText location={session?.location ?? ""} link={session?.link} />
       <DateText date={session?.date ?? ""} />
       <div className="my-2">
         <p className="text-sm text-gray-500">{session?.description}</p>

@@ -111,12 +111,14 @@ export default function GroupSessions() {
       id: 2,
       name: "Session B",
       location: "Mars",
+      link: "https://github.com",
       date: "in 3 days",
     },
     {
       id: 3,
       name: "Session C",
       location: "James's Basement",
+      link: "https://google.com",
       date: "in 3 days",
     },
   ];
