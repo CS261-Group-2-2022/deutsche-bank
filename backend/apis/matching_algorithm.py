@@ -3,8 +3,10 @@ from typing import *
 
 from pprint import pprint
 
+import numpy as np
+
 from .models import *
-from .topic_modelling import get_interest_description_similarities, get_self_description_similarities
+from .topic_modelling import *
 # TODO Maybe make use of these.
 
 class NoPossibleMentorsError(Exception):
@@ -68,19 +70,40 @@ def matching_algorithm(user_looking_for_mentor: User,
                has_not_had_relationship_before(mentor) and \
                is_not_already_offered(mentor)
 
-    v1 = possible_mentors = list(filter(is_valid_mentor_option, users_who_want_to_mentor))
+    possible_mentors = list(filter(is_valid_mentor_option, users_who_want_to_mentor))
+
+    print(f"{len(possible_mentors)=}")
 
     if len(possible_mentors) == 0:
         raise NoPossibleMentorsError("")
 
     # TODO Could be optimised, could get average of all possible_mentors straight in SQL.
-    v2 = mentor_ratings = [m.get_mentor_rating_average() for m in possible_mentors]
-    v3 = mentor_overlapping_skill_counts = [count_overlapping_skills(m) for m in possible_mentors]
-    v4 = mentor_current_mentee_counts = [m.get_mentees().count() for m in possible_mentors]
-    v5 = mentor_interest_description_sim = \
+
+    v1 = np.zeros((len(possible_mentors), 1))
+    v2 = np.zeros((len(possible_mentors), 1))
+    v3 = np.zeros((len(possible_mentors), 1))
+    v4 = np.zeros((len(possible_mentors), 1))
+    v5 = np.zeros((len(possible_mentors), 1))
+    i = 0
+    for mentor in possible_mentors:
+        v1[i][0] = i
+        v2[i][0] = mentor.get_mentor_rating_average() # TODO NAN for matching user 778
+        v3[i][0] = count_overlapping_skills(mentor) 
+        v4[i][0] = mentor.get_mentees().count()
+        i += 1
+
+    #v2 = mentor_ratings = [m.get_mentor_rating_average() for m in possible_mentors]
+
+    #v3 = mentor_overlapping_skill_counts = [count_overlapping_skills(m) for m in possible_mentors]
+    # TODO
+    # for each mentor
+    # v4[mentors row] number of pending requer of pending requests they have waiting for them + factor * number of mentees they alreaddy have
+    #v4 = mentor_current_mentee_counts = [m.get_mentees().count() for m in possible_mentors]
+
+    newv5 = mentor_interest_description_sim = \
         get_interest_description_similarities(user_looking_for_mentor, possible_mentors)
     print("v5, mentor_interest_description_similarities is")
-    pprint(v5)
+    pprint(newv5)
     v6 = mentor_self_description_sim = \
         get_self_description_similarities(user_looking_for_mentor, possible_mentors)
 
@@ -92,14 +115,27 @@ def matching_algorithm(user_looking_for_mentor: User,
     # TODO Factor in v5, mentor_interest_description_sim and v6, mentor_self_description_sim.
     # These encode similarities of user's interest descriptions and self descriptions.
     # TODO Review that I did this scoring calculation right.
-    def score(i):
-        return mentor_ratings[i] / mentor_overlapping_skill_counts[i] \
-               - factor * mentor_current_mentee_counts[i]
+    #def score(i):
+    #    return (v2 * v3) / len(user_interest) + factor * (1) # TODO(toni) get the factor sauce
+        #return mentor_ratings[i] / mentor_overlapping_skill_counts[i] \
+        #       - factor * mentor_current_mentee_counts[i]:119
 
-    v5 = [(i, score(i)) for i in range(len(possible_mentors))]
-    v5.sort(key=lambda p: p[1], reverse=True) # Sort by score
+    def score():
+        return (v2 * v3) / len(user_interests) + factor * (1) 
+    print("score is")
+    pprint(score())
 
-    return [possible_mentors[i] for (i, _) in v5] # Return the mentors sorted by score.
+    v5 = np.stack((v1, score()),axis=1)
+    print("v5 is:")
+    pprint(v5) 
+
+    breakpoint()
+
+    #v5 = [(i, score(i)) for i in range(len(possible_mentors))]
+    #v5.sort(key=lambda p: p[1], reverse=True) # Sort by score
+
+    return possible_mentors
+    #return [possible_mentors[i] for (i, _) in v5] # Return the mentors sorted by score.
 
 if __name__ == "__main__":
     user_looking_for_mentor = User(first_name="Guy",

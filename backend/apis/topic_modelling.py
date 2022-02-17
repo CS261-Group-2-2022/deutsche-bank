@@ -27,6 +27,9 @@ def sort_by_interest_description_match(user: User, mentor_pool: [User]) -> [User
     return mentors_and_similarities
 
 def get_interest_description_similarities(user: User, mentors: [User]) -> [float]:
+    if len(mentors) == 0:
+        raise ValueError("Got empty mentors list.")
+
     kw_extractor = yake.KeywordExtractor(dedupFunc='jaro')
     user_interests_kws = dict(kw_extractor.extract_keywords(user.interests_description))
 
@@ -39,7 +42,9 @@ def get_interest_description_similarities(user: User, mentors: [User]) -> [float
             if k in user_interests_kws:
                 matches = matches + 1
 
-        return matches / max(min(len(user_interests_kws), len(kws)), 1)
+        return matches / max(max(len(user_interests_kws),
+                                 len(kws)),
+                             1)
 
     return [keyword_similarity(m) for m in mentors]
 
