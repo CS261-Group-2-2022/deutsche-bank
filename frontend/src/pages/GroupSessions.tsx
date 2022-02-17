@@ -165,6 +165,13 @@ export default function GroupSessions() {
           </div>
         </div>
 
+        <h2>Sessions youre signed up to</h2>
+        <SessionInfo
+          session={data[0]}
+          selectSession={() => setSelectedSession(undefined)}
+        />
+        <hr></hr>
+
         <div className="space-y-2">
           {filteredSessions.map((session) => (
             <SessionInfo

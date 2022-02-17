@@ -18,7 +18,7 @@ export default function CreateSessionPopup({
     <Popup
       isOpen={isOpen}
       closeModal={closeModal}
-      successButtonText="Join Session"
+      successButtonText="Create Session"
     >
       <Dialog.Title
         as="h3"
