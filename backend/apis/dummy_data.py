@@ -12,7 +12,7 @@ from .models import User, Skill, BusinessArea
 """ This file contains code for creating dummy data.
 """
 
-def create_dummy_users():
+def create_dummy_users(quiet = False):
     user_count: int = User.objects.count()
 
     from .dummy_data_dataset import dataset
@@ -51,18 +51,20 @@ def create_dummy_users():
     number_of_users_to_create = 50
 
     for _ in range(number_of_users_to_create):
-        print("create guy")
         new()
 
-    print(" ,-----------------------------------------------------------")
-    print(" | " + " Created dummy users for the first time...")
-    for u in User.objects.all().iterator():
-        print(" | " + str(u))
-        print(f" | {u.pk=}:")
-        print(f" | {u.id=}:")
-        print(" | " + u.first_name)
-        print(" | " + f"{u.mentorship=}")
-    print(" `-----------------------------------------------------------")
+    if quiet:
+        return
+    else:
+        print(" ,-----------------------------------------------------------")
+        print(" | " + " Created dummy users for the first time...")
+        for u in User.objects.all().iterator():
+            print(" | " + str(u))
+            print(f" | {u.pk=}:")
+            print(f" | {u.id=}:")
+            print(" | " + u.first_name)
+            print(" | " + f"{u.mentorship=}")
+        print(" `-----------------------------------------------------------")
 
 def compatible(mentor, mentee):
     for i in mentee.interests.all().iterator():
@@ -116,7 +118,9 @@ def create_dummy_mentorships():
 def lorem_random(word_count = 50):
     return "Lorem " * random.randrange(1, word_count - 2) + "ipsum"
 
-time_start = datetime(2022, 2, 11, 10, 0, 0, 0)
+import pytz
+time_start = datetime(2022, 2, 11, 10, 0, 0, 0, pytz.UTC)
+
 def random_delta():
     return timedelta(days = random.randrange(0, 30),
                      hours = random.randrange(0, 8),
@@ -310,14 +314,14 @@ def create_dummy_skills():
     new("Statistical Modeling")
 
 
-def create_dummy_data():
+def create_dummy_data(quiet=False, seed="We're literally the best software eng team."):
     try:
         print("Creating dummy data.")
-        random.seed("We're literally the best software eng team.")
+        random.seed(seed)
 
         create_dummy_business_areas()
         create_dummy_skills()
-        create_dummy_users()
+        create_dummy_users(quiet)
         create_dummy_mentorships()
         create_dummy_meetings()
         create_dummy_action_plans()
@@ -329,10 +333,10 @@ def create_dummy_data():
 
 from django.apps import apps
 
-def clear_database():
+def clear_database(force = False):
     print("Are you sure you want to clear db?")
     res = input("[y/n]>").lower()
-    if res == 'y':
+    if res == 'y' or force:
         models = apps.all_models['apis']
         for model in models:
             models[model].objects.all().delete()
