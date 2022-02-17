@@ -1,21 +1,21 @@
 import { Dialog } from "@headlessui/react";
 import { GroupSession } from "../utils/endpoints";
 import SessionTopicLabel from "./SessionTopicLabel";
-import LocationText from "../components/LocationText";
-import DateText from "../components/DateText";
+import LocationText from "./LocationText";
+import DateText from "./DateText";
 import Popup from "./Popup";
 
-type GroupPopupProps = {
+type SessionInfoPopupProps = {
   session?: GroupSession;
   isOpen: boolean;
   closeModal: () => unknown;
 };
 
-export default function GroupPopup({
+export default function SessionInfoPopup({
   session,
   isOpen,
   closeModal,
-}: GroupPopupProps) {
+}: SessionInfoPopupProps) {
   return (
     <Popup
       isOpen={isOpen}

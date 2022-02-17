@@ -11,12 +11,13 @@ import {
   LIST_GROUP_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 import useSWR from "swr";
-import GroupPopup from "../components/GroupPopup";
+import SessionInfoPopup from "../components/SessionInfoPopup";
 import { useState } from "react";
 import SessionTopicLabel from "../components/SessionTopicLabel";
 
 import LocationText from "../components/LocationText";
 import DateTextProps from "../components/DateText";
+import CreateSessionPopup from "../components/CreateSessionPopup";
 
 type SearchBarProps = {
   searchText: string;
@@ -40,10 +41,11 @@ function SearchBar({ searchText, onChange }: SearchBarProps) {
   );
 }
 
-function CreateSessionsButton() {
+function CreateSessionsButton({ onClick }: { onClick: () => unknown }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="py-1 px-2 flex items-center justify-center bg-gray-50 hover:bg-gray-100 border border-gray-400 focus:ring-gray-500 focus:ring-offset-gray-200 text-gray-600 transition ease-in duration-100 text-center text-base font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
     >
       <PlusIcon className="w-5 h-5 mr-1" />
@@ -74,8 +76,8 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
               <SessionTopicLabel key={skill} name={skill} />
             ))}
           </div>
-          <LocationText location={session.location ?? "the moon"} />
-          <DateTextProps date={session.date ?? "in 3 days"} />
+          <LocationText location={session.location} />
+          <DateTextProps date={session.date} />
         </div>
 
         <div>
@@ -122,6 +124,7 @@ export default function GroupSessions() {
   const [selectedSession, setSelectedSession] = useState<
     GroupSession | undefined
   >();
+  const [creatingSession, setCreatingSession] = useState(false);
 
   const [searchText, changeSearchText] = useState("");
   const lowerSearchText = searchText.toLowerCase().trim();
@@ -142,14 +145,18 @@ export default function GroupSessions() {
   return (
     <>
       <Topbar />
-      <GroupPopup
+      <SessionInfoPopup
         session={selectedSession}
         isOpen={selectedSession !== undefined}
         closeModal={() => setSelectedSession(undefined)}
       />
-      <div className="relative mx-5">
+      <CreateSessionPopup
+        isOpen={creatingSession}
+        closeModal={() => setCreatingSession(false)}
+      />
+      <div className="relative mx-5 space-y-3">
         <div className="grid grid-cols-6 gap-3">
-          <CreateSessionsButton />
+          <CreateSessionsButton onClick={() => setCreatingSession(true)} />
 
           <div className="col-span-5">
             <SearchBar searchText={searchText} onChange={changeSearchText} />
