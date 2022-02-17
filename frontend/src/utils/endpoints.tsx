@@ -105,6 +105,9 @@ export type GroupSession = {
   host?: string;
   skills?: string[];
   users?: string[];
+
+  // TODO: backend???
+  link?: string;
 };
 
 export type GroupSessionResponse = GroupSession[];

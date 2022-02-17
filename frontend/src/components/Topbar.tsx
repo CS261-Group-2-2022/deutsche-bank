@@ -34,7 +34,7 @@ export default function Topbar() {
           <nav className="hidden md:flex space-x-10">
             <MenuButton text="Home" to="/" />
             <MenuButton text="Mentoring" to="/mentoring" />
-            <MenuButton text="Group Sessions" to="/groups" />
+            <MenuButton text="Group Events" to="/groups" />
           </nav>
 
           {/* RHS Panel */}

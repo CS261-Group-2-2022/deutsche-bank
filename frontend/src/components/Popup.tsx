@@ -1,22 +1,19 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useEffect, useState } from "react";
-import { GroupSession } from "../utils/endpoints";
-import SessionTopicLabel from "./SessionTopicLabel";
-import RoundedImage from "../components/RoundedImage";
-import LocationText from "../components/LocationText";
-import DateText from "../components/DateText";
 
-type GroupPopupProps = {
-  session?: GroupSession;
+type PopupProps = {
   isOpen: boolean;
   closeModal: () => unknown;
+  successButtonText: string;
+  children: React.ReactNode;
 };
 
-export default function GroupPopup({
-  session,
+export default function Popup({
   isOpen,
   closeModal,
-}: GroupPopupProps) {
+  successButtonText,
+  children,
+}: PopupProps) {
   const [isClosing, setIsClosing] = useState(false);
 
   // When we want to start closing the modal, we want to let the animation
@@ -73,41 +70,14 @@ export default function GroupPopup({
               leaveTo="opacity-0 scale-95"
             >
               <div className="inline-block w-full max-w-3xl p-3 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-                <Dialog.Title
-                  as="h3"
-                  className="leading-6 text-gray-900 space-x-2"
-                >
-                  <span className="text-3xl font-black uppercase">
-                    {session?.name}
-                  </span>{" "}
-                  <span className="space-x-1 text-lg">
-                    {session?.skills?.map((skill) => (
-                      <SessionTopicLabel key={skill} name={skill} />
-                    ))}
-                  </span>
-                </Dialog.Title>
-                <div className="my-2 flex items-center">
-                  <img
-                    alt="Session Image"
-                    src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-                    className="h-14 rounded-lg"
-                  />
-                  <p className="ml-3">Fullname</p>
-                </div>
-                <LocationText location={session?.location ?? ""} />
-                <DateText date={session?.date ?? ""} />
-                <div className="my-2">
-                  <p className="text-sm text-gray-500">
-                    {session?.description}
-                  </p>
-                </div>
+                {children}
                 <div className="grid grid-cols-10 gap-2">
                   <button
                     type="button"
                     className="inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none"
                     onClick={tempCloseModal}
                   >
-                    Sign up
+                    {successButtonText}
                   </button>
                   <button
                     type="button"
