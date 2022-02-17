@@ -2,6 +2,8 @@ export const LOGIN_ENDPOINT = "http://localhost:8000/api/v1/auth/login/";
 export const SIGNUP_ENDPOINT = "http://localhost:8000/api/v1/auth/register/";
 export const PROFILE_ENDPOINT = "http://localhost:8000/api/v1/auth/profile/";
 export const BUSINESS_AREAS_ENDPOINT = "http://localhost:8000/api/v1/area/";
+export const LIST_GROUP_SESSIONS_ENDPOINT =
+  "http://localhost:8000/api/v1/session";
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -91,3 +93,18 @@ export type BusinessArea = {
 };
 
 export type BusinessAreaResponse = BusinessArea[];
+
+// Group Sessions
+export type GroupSession = {
+  id: number;
+  name: string;
+  location: string;
+  description?: string;
+  capacity?: number;
+  date: string;
+  host?: string;
+  skills?: string[];
+  users?: string[];
+};
+
+export type GroupSessionResponse = GroupSession[];
