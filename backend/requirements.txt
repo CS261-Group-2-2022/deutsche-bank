@@ -1,0 +1,5 @@
+gunicorn
+django
+django-rest-framework
+django-extensions
+psycopg2-binary

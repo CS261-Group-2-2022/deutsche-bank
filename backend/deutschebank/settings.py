@@ -21,13 +21,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-i#!gl500yq#@^odppp6whok!r&mph8tvn#7bajb8c3o2aux_fy'
+SECRET_KEY = os.getenv('SECRET_KEY')
+if SECRET_KEY is None:
+    print("[Security Warning]: ",
+          "Running django app with default secret key. DO NOT do this in production.",
+          "Please set the environment variable 'SECRET_KEY' to False in order to fix this.")
+    DEBUG = True
+    SECRET_KEY = 'django-insecure-i#!gl500yq#@^odppp6whok!r&mph8tvn#7bajb8c3o2aux_fy'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
+if DEBUG is None:
+    print("[Security Warning]: ",
+          "Running django app with DEBUG mode. DO NOT do this in production.\n",
+          "Please set the environment variable 'DEBUG' to False in order to fix this.\n",
+          "You can do this in the docker-compose.yml file")
+    DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['api']
 
 # Application definition
 
@@ -84,9 +96,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'deutschebank', # The name of the postgresql database to access
-        'USER': 'django_app_user', # The name of the database user django should sign in as
-        'PASSWORD': 'django_app_user_password',
-        'HOST': 'localhost',
+        # TODO NOCOMMIT NODEPLOY postgres pwd
+        'USER': 'django_app_user',
+        'PASSWORD': 'a',
+        #'USER': 'postgres',
+        #'PASSWORD': 'postgres',
+        #'USER': 'django_app_user', # The name of the database user django should sign in as
+        #'PASSWORD': 'django_app_user_password',
+        'HOST': 'postgresdb',
         'PORT': '5432',
     }
 }
@@ -131,6 +148,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
 ]
 
+# TODO NOCOMMIT Not required anymore.
 CORS_ORIGIN_WHITELIST = [
     # Whitelist default local React ports
     'http://localhost:3000',

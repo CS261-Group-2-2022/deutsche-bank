@@ -1,0 +1,78 @@
+version: '3'
+
+services: # 'services' are the containers that we're going to run together.
+  postgresdb: # postgres container
+    # TODOs for this container;
+    #  - TODO Make it so that on first startup/database initialization, the following things happen:
+    #    - the sql script in ./postgresdb/postgres-database-initialisation-script.sql runs
+    #      This script sets up connection parameters as well as creates the database user.
+    #  - TODO Make the secrets (such as the username and password of the django_app_user) actually
+    #         secret.
+
+    build: ./postgresdb
+    ports:
+      - 5432:5432
+
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=deutschebank
+
+      # Ensure compatibility with django
+      - PGTZ=utc
+      - PGCLIENTENCODING=utf8
+
+      # Set the folder in which postgres will store its data. (mapped to volume `database`)
+      - PGDATA=/var/lib/postgres/data/pgdata
+
+    restart: always # Keep restarting the db if it goes down.
+
+    volumes:
+      # Map the volume called 'database' to the folder '/var/lib/postgres/data' inside the container.
+      - database:/var/lib/postgres/data
+
+  backend: # django app
+    # TODOs for this container:
+    #  - TODO Make the secrets used by this container (such as the username and password to connect
+    #    to the database) actually secret and properly handled.
+    depends_on:
+      - postgresdb
+    build: ./backend
+    ports:
+      - 8000:8000 # django (gunicorn) talks on port 8000, as set in `backend/Dockerfile`.
+
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=FAKE_SECRET_KEY_USED_IN_DEVELOP
+
+  frontend: # just here to automatically run `npm run build`.
+    build: ./frontend
+    volumes:
+      # Map the directory ./frontend/build to the static volume so that when we build the frontend,
+      # the output files e.g. index.html (which get placed into ./frontend/build by npm run build)
+      # are accessible to the other containers in the volume 'static'
+      - static:/build/
+
+  nginx: # nginx web server to serve our static files and redirect to django
+    depends_on:
+      - backend
+      - frontend
+    build: ./nginx
+    ports:
+      - 80:80
+
+    volumes:
+      - static:/static/:ro # Mount the static volume into the folder `/static` as read-only.
+
+volumes: # 'volumes' are storage spaces (directories) shared between individual containers.
+  # The 'static' volume will hold the static front-end files (html, css, js).
+  # Basically, the output of 'npm run build' gets placed into this volume, and then this is served
+  # by nginx.
+  static:
+
+  # The 'database' volume will hold the database data.
+  # Basically, the postgres database will store its data inside of this volume.
+  # Having a seperate volume is helpful so we can restart all the containers,
+  # including the postgres container, without needing to rebuild the actual
+  # database.
+  database:
