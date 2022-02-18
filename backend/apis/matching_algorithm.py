@@ -31,7 +31,8 @@ def matching_algorithm(user_looking_for_mentor: User,
     #      (user_current_requests)
     # 1.3) List of all requested mentors where the mentor has rejected the request.
     #      (user_requests_rejected_by_mentor)
-    # 1.3) List of all mentors with currently pending requests.
+    # 1.4) List of all mentors with currently pending requests.
+    # 1.5) List of current mentorships (just all the mentor mentee pairings currently active)
 
     # Step 2:
     # Filter out unwanted mentors out of users_who_want_to_mentor.
