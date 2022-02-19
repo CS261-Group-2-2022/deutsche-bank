@@ -8,7 +8,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import *
 from .serializers import *
 
 
@@ -21,7 +20,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def full(self, request, pk=None):
-        return Response(FullUserSerializer(self.get_object()).data)
+        return Response(UserSerializerFull(self.get_object()).data)
 
     @action(detail=True, methods=['get'])
     def mentees(self, request, pk=None) -> List[User]:
@@ -78,6 +77,11 @@ class UserViewSet(viewsets.ModelViewSet):
 
         cereal = ActionPlanSerializer(user.get_action_plans(), many=True)
         return Response(cereal.data)
+
+    @action(detail=True, methods=['get'])
+    def find_sessions(self, request, pk=None) -> Response:
+        user: User = self.get_object()
+        return Response(GroupSessionSerializerFull(user.find_group_sessions(), many=True).data)
 
 
 class RegisterView(generics.GenericAPIView):

@@ -2,13 +2,7 @@
 from __future__ import annotations  # This allows us to use type hints of a class inside that class.
 
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.contrib.auth.models import PermissionsMixin
 from django.db import models
-from typing import *
-from dataclasses import dataclass
-from datetime import datetime
-
-from django.db.models import QuerySet
 
 from .managers import UserManager
 
@@ -117,6 +111,14 @@ class User(AbstractBaseUser):
         """
         return User.objects.all().filter(mentorship__mentor__pk__exact=self.pk).exclude(pk__exact=self.pk)
 
+    def find_group_sessions(self) -> QuerySet[List[GroupSession]]:
+        """ Retrieves set of suggested group sessions for this user
+        :return: set of suggested group sessions for this user
+        """
+        # skills__in=self.interests.all()
+        return GroupSession.objects.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).exclude(
+            users__pk__contains=self.pk)
+
 
 class Meeting(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
@@ -170,6 +172,5 @@ def print_all_users() -> None:
         pass
     print(" `-----------------------------------------------------------")
 
-
-#create_dummy_data()
-#print_all_users()
+# create_dummy_data()
+# print_all_users()
