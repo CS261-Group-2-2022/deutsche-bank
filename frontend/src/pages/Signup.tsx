@@ -106,7 +106,7 @@ export default function Signup() {
     if (isRegisterSuccess(res, body)) {
       // Succesfully logged in
       setAuthToken(body.token, false);
-      window.open("/","_self");
+      window.open("/", "_self");
     } else {
       setFirstNameError(body.first_name?.join(" "));
       setLastNameError(body.last_name?.join(" "));
