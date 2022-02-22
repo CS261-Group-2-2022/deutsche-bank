@@ -22,16 +22,25 @@ export default function CreateSessionPopup({
   const [sessionTitle, setSessionTitle] = useState("");
   const [location, setLocation] = useState("");
   const [virtualLink, setVirtualLink] = useState("");
+  const [description, setDescription] = useState("");
+  const [capacity, setCapacity] = useState("");
+  const [datetime, setDatetime] = useState("");
 
 
   const [sessionTitleError, setSessionTitleError] = useState<string | undefined>();
   const [locationError, setLocationError] = useState<string | undefined>(); 
-  const [virtualLinkError, setVirtualLinkError] = useState<string | undefined>(); 
+  const [virtualLinkError, setVirtualLinkError] = useState<string | undefined>();
+  const [descriptionError, setDescriptionError] = useState<string | undefined>();
+  const [capacityError, setCapacityError] = useState<string | undefined>();
+  const [datetimeError, setDatetimeError] = useState<string | undefined>();
 
   const clearErrors = () => {
     setSessionTitleError(undefined);
     setLocationError(undefined);
     setVirtualLinkError(undefined);
+    setDescriptionError(undefined);
+    setCapacityError(undefined);
+    setDatetimeError(undefined);
   };
 
   const createSessionRequest = async () => {
@@ -43,9 +52,9 @@ export default function CreateSessionPopup({
       body: JSON.stringify({
         name: sessionTitle,
         location,
-        description: "temp description",
-        capacity: 10,
-        date: "2001-11-30T09:30:00Z",
+        description,
+        capacity,
+        date: datetime,
         host: 1,
         skills: [2,3,4],
         users: [2,4,5],
@@ -117,8 +126,44 @@ export default function CreateSessionPopup({
         onChange={setVirtualLink}
         error={virtualLinkError}
         />
+        </div>
+
+        <FormInput 
+        id="description"
+        name="Group Session Description"
+        type="text"
+        autoComplete="false"
+        placeholder="Group Session Description"
+        text={description}
+        onChange={setDescription}
+        error={descriptionError}
+        />
+        <hr></hr>
+        <div className="grid grid-cols-2 gap-3">
+        <FormInput 
+        id="capacity"
+        name="Capacity"
+        type="number"
+        autoComplete="false"
+        placeholder="Max Capacity"
+        text={capacity}
+        onChange={setCapacity}
+        error={capacityError}
+        />
+
+        <FormInput 
+        id="datetime"
+        name="Date and Time"
+        type="datetime-local"
+        autoComplete="false"
+        placeholder=""
+        text={datetime}
+        onChange={setDatetime}
+        error={datetimeError}
+        />
 
         </div>
+
             
         <button
                 type="submit"
