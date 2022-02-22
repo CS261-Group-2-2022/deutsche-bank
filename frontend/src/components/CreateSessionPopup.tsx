@@ -48,6 +48,7 @@ export default function CreateSessionPopup({
   };
 
   const createSessionRequest = async () => {
+    // TODO: check response
     fetch(LIST_GROUP_SESSIONS_ENDPOINT, {
       method: "POST",
       headers: {
@@ -66,24 +67,35 @@ export default function CreateSessionPopup({
     });
 
     clearErrors();
+    initiateClose();
   };
+
+  const [isClosing, setIsClosing] = useState(false);
+
+  // When we want to start closing the modal, we want to let the animation
+  // start hiding the modal BEFORE we clear the session. Once the animation
+  // has complete. we will then call `closeModal()` officially.
+  const initiateClose = () => {
+    setIsClosing(true);
+  };
+
+  useEffect(() => {
+    setIsClosing(false);
+  }, [isOpen]);
 
   return (
     <Popup
       isOpen={isOpen}
+      isClosing={isClosing}
+      initiateClose={initiateClose}
       closeModal={closeModal}
-      successButtonText="Create Session"
     >
       <Dialog.Title
         as="h3"
         className="leading-6 text-gray-900 space-x-2"
       ></Dialog.Title>
 
-      <div className="min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 space-y-3 {/*max-w-md*/} w-full">
-        <label htmlFor="inputid1" className="sr-only">
-          placeholder
-        </label>
-
+      <div className="min-h-full items-center justify-center space-y-3 w-full">
         <form
           className="mt-8 space-y-6"
           onSubmit={(e) => {
@@ -163,19 +175,21 @@ export default function CreateSessionPopup({
               error={datetimeError}
             />
           </div>
-
-          <button
-            type="submit"
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Proper Create Session
-          </button>
-          <button
-            type="button"
-            className="inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
-          >
-            Close
-          </button>
+          <div className="grid grid-cols-10 gap-2">
+            <button
+              type="submit"
+              className="inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none"
+            >
+              Create Session
+            </button>
+            <button
+              type="button"
+              className="inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+              onClick={initiateClose}
+            >
+              Close
+            </button>
+          </div>
         </form>
       </div>
     </Popup>
