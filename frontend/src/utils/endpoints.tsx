@@ -3,7 +3,7 @@ export const SIGNUP_ENDPOINT = "http://localhost:8000/api/v1/auth/register/";
 export const PROFILE_ENDPOINT = "http://localhost:8000/api/v1/auth/profile/";
 export const BUSINESS_AREAS_ENDPOINT = "http://localhost:8000/api/v1/area/";
 export const LIST_GROUP_SESSIONS_ENDPOINT =
-  "http://localhost:8000/api/v1/session";
+  "http://localhost:8000/api/v1/session/";
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {

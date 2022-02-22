@@ -7,6 +7,7 @@ import Popup from "./Popup";
 import { FormInput } from "./FormInput";
 import { useEffect, useState } from "react";
 import { Console } from "console";
+import {LIST_GROUP_SESSIONS_ENDPOINT} from "../utils/endpoints"
 
 type CreateSessionPopupProps = {
   isOpen: boolean;
@@ -27,8 +28,32 @@ export default function CreateSessionPopup({
   const [locationError, setLocationError] = useState<string | undefined>(); 
   const [virtualLinkError, setVirtualLinkError] = useState<string | undefined>(); 
 
+  const clearErrors = () => {
+    setSessionTitleError(undefined);
+    setLocationError(undefined);
+    setVirtualLinkError(undefined);
+  };
+
   const createSessionRequest = async () => {
-    console.log(sessionTitle);
+    fetch(LIST_GROUP_SESSIONS_ENDPOINT, { 
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name: sessionTitle,
+        location,
+        description: "temp description",
+        capacity: 10,
+        date: "2001-11-30T09:30:00Z",
+        host: 1,
+        skills: [2,3,4],
+        users: [2,4,5],
+      }),
+    });
+
+    clearErrors();
+
   };
 
 
@@ -94,13 +119,12 @@ export default function CreateSessionPopup({
         />
 
         </div>
-
             
         <button
                 type="submit"
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Create Session
+                Proper Create Session
               </button>
               <button
                     type="button"

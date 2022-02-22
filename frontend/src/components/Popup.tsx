@@ -50,7 +50,7 @@ export default function Popup({
               leaveFrom="opacity-50"
               leaveTo="opacity-0"
             >
-              <Dialog.Overlay className="fixed inset-0 bg-gray-700" />
+              <Dialog.Overlay className="fixed inset-0 bg-gray-100" />
             </Transition.Child>
 
             {/* This element is to trick the browser into centering the modal contents. */}
