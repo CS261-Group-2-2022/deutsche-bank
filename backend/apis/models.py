@@ -9,6 +9,9 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from django.db.models import QuerySet
+from django.db.models import Avg
+
+from .dummy_data_dataset import dataset
 
 from .managers import UserManager
 
@@ -36,6 +39,7 @@ class BusinessArea(models.Model):
     name: str = models.CharField(max_length=100, unique=True)
 
 
+@dataclass(init=False)
 class Mentorship(models.Model):
     """ Mentorship between mentor and mentee
     """
@@ -70,6 +74,8 @@ class User(AbstractBaseUser):
 
     interests: List[Skill] = models.ManyToManyField(Skill, related_name='user_interests')
     expertise: List[Skill] = models.ManyToManyField(Skill, related_name='user_expertise')
+
+    interests_description: str = models.CharField(max_length=500, default="")
 
     objects = UserManager()
 
@@ -117,6 +123,63 @@ class User(AbstractBaseUser):
         """
         return User.objects.all().filter(mentorship__mentor__pk__exact=self.pk).exclude(pk__exact=self.pk)
 
+    def has_mentees(self) -> bool:
+        return self.get_mentees().count() > 0
+
+    def get_mentorships_where_user_is_mentor(self) -> QuerySet[List[Type[User]]]:
+        return Mentorship.objects.all().filter(mentor__pk__exact=self.pk)
+
+    def get_mentor_rating_average(self) -> float:
+        ret = self.get_mentorships_where_user_is_mentor().aggregate(Avg('rating'))['rating__avg']
+        if ret == None:
+            return 4
+        else:
+            return ret
+
+    @classmethod
+    def choose_random(cls) -> Type[User]:
+        return random.choice(cls.objects.all())
+
+    @classmethod
+    def choose_list_at_random(cls) -> List[Type[User]]:
+        return random.sample(list(cls.objects.all()),
+                             random.randint(1, cls.objects.all().count()))
+
+    @classmethod
+    def make_random(cls,
+                    skills_pool : List[Skill] = None,
+                    business_area_pool : List[BusinessArea] = None,
+                    dataset = dataset,
+                    **kwargs_for_user_constructor) -> Type[User]:
+
+        if skills_pool == None:
+            skills_pool = list(Skill.objects.all())
+
+        if business_area_pool == None:
+            business_area_pool = list(BusinessArea.objects.all())
+
+        first_name=random.choice(dataset["first_names"])
+        last_name=random.choice(dataset["last_names"])
+
+        business_area=random.choice(business_area_pool)
+
+        email_domain = "deutschebank.com"
+
+        interests=random.sample(skills_pool, random.randrange(1,7))
+        expertise=random.sample(skills_pool, random.randrange(1,4))
+
+        u = cls.objects.create(first_name=first_name,
+                               last_name=last_name,
+                               business_area=business_area,
+                               email=(first_name + "." + last_name + "@" + email_domain),
+                               is_email_verified=True,
+                               password="nunya",
+                               mentor_intent=random.choice([False, True]),
+                               **kwargs_for_user_constructor)
+        u.interests.set(interests)
+        u.expertise.set(expertise)
+        u.save()
+        return u
 
 class Meeting(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
@@ -170,6 +233,3 @@ def print_all_users() -> None:
         pass
     print(" `-----------------------------------------------------------")
 
-
-#create_dummy_data()
-#print_all_users()
