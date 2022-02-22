@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations  # This allows us to use type hints of a class inside that class.
 
+from datetime import datetime
+
+from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
+from django.db.models import QuerySet
 
 from .managers import UserManager
 
