@@ -105,16 +105,11 @@ def matching_algorithm(user_looking_for_mentor: User,
         get_interest_description_similarities(user_looking_for_mentor, possible_mentors)
     print("v5, mentor_interest_description_similarities is")
     pprint(newv5)
-    v6 = mentor_self_description_sim = \
-        get_self_description_similarities(user_looking_for_mentor, possible_mentors)
-
-    print("v6, mentor_self_description_similarities is")
-    pprint(v6)
 
     factor = 0.3
 
-    # TODO Factor in v5, mentor_interest_description_sim and v6, mentor_self_description_sim.
-    # These encode similarities of user's interest descriptions and self descriptions.
+    # TODO Factor in v5, mentor_interest_description_sim
+    # These encode similarities of user's interest descriptions to the mentor description.
     # TODO Review that I did this scoring calculation right.
     #def score(i):
     #    return (v2 * v3) / len(user_interest) + factor * (1) # TODO(toni) get the factor sauce
@@ -129,8 +124,6 @@ def matching_algorithm(user_looking_for_mentor: User,
     v5 = np.stack((v1, score()),axis=1)
     print("v5 is:")
     pprint(v5) 
-
-    breakpoint()
 
     #v5 = [(i, score(i)) for i in range(len(possible_mentors))]
     #v5.sort(key=lambda p: p[1], reverse=True) # Sort by score

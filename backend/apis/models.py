@@ -71,7 +71,6 @@ class User(models.Model):
     expertise: List[Skill] = models.ManyToManyField(Skill, related_name='user_expertise')
 
     interests_description: str = models.CharField(max_length=500, default="")
-    self_description: str = models.CharField(max_length=500, default="")
 
     def get_mentor_meetings(self) -> QuerySet[List[Meeting]]:
         return self.meeting_mentor.all()
