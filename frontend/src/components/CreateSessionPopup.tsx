@@ -5,9 +5,12 @@ import LocationText from "../components/LocationText";
 import DateText from "../components/DateText";
 import Popup from "./Popup";
 import { FormInput } from "./FormInput";
+import FormDropdown from "./FormDropdown";
 import { useEffect, useState } from "react";
+import { useUser } from "../utils/authentication";
+import { useBusinessAreas } from "../utils/business_area";
 import { Console } from "console";
-import { LIST_GROUP_SESSIONS_ENDPOINT } from "../utils/endpoints";
+import { LIST_GROUP_SESSIONS_ENDPOINT, BusinessArea } from "../utils/endpoints";
 
 type CreateSessionPopupProps = {
   isOpen: boolean;
@@ -18,12 +21,21 @@ export default function CreateSessionPopup({
   isOpen,
   closeModal,
 }: CreateSessionPopupProps) {
+  const { user } = useUser();
+  const { areas } = useBusinessAreas();
+  // const {skills} = useSkills();
+
   const [sessionTitle, setSessionTitle] = useState("");
   const [location, setLocation] = useState("");
   const [virtualLink, setVirtualLink] = useState("");
   const [description, setDescription] = useState("");
   const [capacity, setCapacity] = useState("");
   const [datetime, setDatetime] = useState("");
+  const [businessArea, setBusinessArea] = useState<BusinessArea | undefined>(
+    areas[0]
+  ); //TODO change this to skills and extra users instead of this
+
+  
 
   const [sessionTitleError, setSessionTitleError] = useState<
     string | undefined
@@ -37,6 +49,9 @@ export default function CreateSessionPopup({
   >();
   const [capacityError, setCapacityError] = useState<string | undefined>();
   const [datetimeError, setDatetimeError] = useState<string | undefined>();
+  const [businessAreaError, setBusinessAreaError] = useState<
+    string | undefined
+  >();
 
   const clearErrors = () => {
     setSessionTitleError(undefined);
@@ -45,6 +60,7 @@ export default function CreateSessionPopup({
     setDescriptionError(undefined);
     setCapacityError(undefined);
     setDatetimeError(undefined);
+    setBusinessAreaError(undefined);
   };
 
   const createSessionRequest = async () => {
@@ -60,7 +76,7 @@ export default function CreateSessionPopup({
         description,
         capacity,
         date: datetime,
-        host: 1,
+        host: user?.id,
         skills: [2, 3, 4],
         users: [2, 4, 5],
       }),
@@ -174,6 +190,14 @@ export default function CreateSessionPopup({
               onChange={setDatetime}
               error={datetimeError}
             />
+            {/* <FormDropdown
+                title=""
+                options={areas}
+                selected={businessArea}
+                setSelected={setBusinessArea}
+                error={businessAreaError}
+                placeholder="Select an area"
+              /> */}
           </div>
           <div className="grid grid-cols-10 gap-2">
             <button
