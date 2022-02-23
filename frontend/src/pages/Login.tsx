@@ -101,6 +101,7 @@ export default function Login() {
                 text={email}
                 onChange={setEmail}
                 error={emailError}
+                required
               />
               <FormInput
                 id="password"
@@ -111,6 +112,7 @@ export default function Login() {
                 text={password}
                 onChange={setPassword}
                 error={passwordError}
+                required
               />
             </div>
 

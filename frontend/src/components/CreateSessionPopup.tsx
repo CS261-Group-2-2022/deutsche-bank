@@ -133,6 +133,7 @@ export default function CreateSessionPopup({
             text={sessionTitle}
             onChange={setSessionTitle}
             error={sessionTitleError}
+            required
           />
           <div className="grid grid-cols-2 gap-3">
             <FormInput
@@ -144,6 +145,7 @@ export default function CreateSessionPopup({
               text={location}
               onChange={setLocation}
               error={locationError}
+              required
             />
             <FormInput
               id="virtuallink"
@@ -178,6 +180,7 @@ export default function CreateSessionPopup({
               text={capacity}
               onChange={setCapacity}
               error={capacityError}
+              min={1}
             />
 
             <FormInput
@@ -189,6 +192,8 @@ export default function CreateSessionPopup({
               text={datetime}
               onChange={setDatetime}
               error={datetimeError}
+              min={Date.now()}
+              required
             />
             {/* <FormDropdown
                 title=""

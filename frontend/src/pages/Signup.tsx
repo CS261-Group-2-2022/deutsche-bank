@@ -146,6 +146,7 @@ export default function Signup() {
                   text={firstName}
                   onChange={setFirstName}
                   error={firstNameError}
+                  required
                 />
                 <FormInput
                   id="lastname"
@@ -156,6 +157,7 @@ export default function Signup() {
                   text={lastName}
                   onChange={setLastName}
                   error={lastNameError}
+                  required
                 />
               </div>
               <FormInput
@@ -167,6 +169,7 @@ export default function Signup() {
                 text={email}
                 onChange={setEmail}
                 error={emailError}
+                required
               />
               <FormInput
                 id="password"
@@ -177,6 +180,7 @@ export default function Signup() {
                 text={password}
                 onChange={setPassword}
                 error={passwordError}
+                required
               />
               <FormInput
                 id="retyped-password"
@@ -187,6 +191,7 @@ export default function Signup() {
                 text={retypedPasssword}
                 onChange={setRetypedPassword}
                 error={retypedPasswordError}
+                required
               />
               <PasswordStrengthIndicator
                 password={password}

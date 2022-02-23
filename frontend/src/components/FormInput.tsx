@@ -6,6 +6,9 @@ type FormInputProps = {
   placeholder: string;
   error?: string;
   text: string;
+  min?: string | number;
+  max?: string | number;
+  required?: boolean;
   onChange: (text: string) => unknown;
 };
 
@@ -17,6 +20,9 @@ export const FormInput = ({
   placeholder,
   error,
   text,
+  min,
+  max,
+  required,
   onChange,
 }: FormInputProps) => {
   const borderColour = error ? "red" : "gray";
@@ -32,11 +38,13 @@ export const FormInput = ({
         name={name}
         type={type}
         autoComplete={autoComplete}
-        required
+        required={required}
         className={`appearance-none relative block w-full px-3 py-2 border border-${borderColour}-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-${focusBorderColour}-500 focus:border-${focusBorderColour}-500 focus:z-10 sm:text-sm transition`}
         placeholder={placeholder}
         value={text}
         onChange={(e) => onChange(e.target.value)}
+        min={min}
+        max={max}
       />
       {error && (
         <div className="block text-sm m-1 font-medium text-red-700">
