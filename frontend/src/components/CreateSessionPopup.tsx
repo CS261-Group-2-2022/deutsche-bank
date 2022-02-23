@@ -16,7 +16,7 @@ import { useSkills } from "../utils/skills";
 import { mutate } from "swr";
 import { FormTextArea } from "./FormTextarea";
 
-/** Verifies whether a login response is succesful or not (and type guards the body) */
+/** Verifies whether a create response is succesful or not (and type guards the body) */
 const isCreateSuccess = (
   res: Response,
   body: CreateSessionResponse

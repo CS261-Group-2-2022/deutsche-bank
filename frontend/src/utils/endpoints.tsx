@@ -7,9 +7,13 @@ export const BUSINESS_AREAS_ENDPOINT = "http://localhost:8000/api/v1/area/";
 export const LIST_GROUP_SESSIONS_ENDPOINT =
   "http://localhost:8000/api/v1/session/";
 export const LIST_USER_JOINED_SESSIONS_ENDPOINT =
-  "http://localhost:8000/api/v1/user/{ID}/sessions/";
+  "http://localhost:8000/api/v1/session/user";
 export const CREATE_GROUP_SESSION_ENDPOINT =
   "http://localhost:8000/api/v1/session/";
+export const JOIN_SESSION_ENDPOINT =
+  "http://localhost:8000/api/v1/session/{ID}/join/";
+export const LEAVE_SESSION_ENDPOINT =
+  "http://localhost:8000/api/v1/session/{ID}/leave/";
 export const SKILLS_ENDPOINT = "http://localhost:8000/api/v1/skills/";
 
 /** Retrieves a stored session token */
@@ -115,9 +119,9 @@ export type GroupSession = {
   description?: string;
   capacity: number;
   date: string;
-  host: string;
+  host: User;
   skills?: Skill[];
-  users: string[];
+  users: User[];
 
   // TODO: backend???
   link?: string;
@@ -136,6 +140,13 @@ export type CreateSessionError = {
 };
 
 export type CreateSessionResponse = CreateSessionSuccess | CreateSessionError;
+
+export type JoinSessionSuccess = number;
+export type JoinSessionError = {
+  error: string;
+};
+
+export type JoinSessionResponse = JoinSessionSuccess | JoinSessionError;
 
 // Skills
 export type Skill = {

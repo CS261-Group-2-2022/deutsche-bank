@@ -9,7 +9,7 @@ import {
 import useSWR from "swr";
 import { useUser } from "../utils/authentication";
 import SessionInfoPopup from "../components/SessionInfoPopup";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SessionTopicLabel from "../components/SessionTopicLabel";
 
 import LocationText from "../components/LocationText";
@@ -93,19 +93,13 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
 }
 
 export default function GroupSessions() {
-  const { user } = useUser();
-  const { skills } = useSkills();
-
   // Pull in session data from backend
   const { data: apiData } = useSWR<GroupSessionResponse>(
     LIST_GROUP_SESSIONS_ENDPOINT
   );
   const data = apiData ?? [];
   const { data: joinedSessions } = useSWR<GroupSessionResponse>(
-    LIST_USER_JOINED_SESSIONS_ENDPOINT.replace(
-      "{ID}",
-      user?.id.toString() ?? "0"
-    )
+    LIST_USER_JOINED_SESSIONS_ENDPOINT
   );
 
   // Current component state
@@ -117,6 +111,15 @@ export default function GroupSessions() {
   const [searchText, changeSearchText] = useState("");
   const lowerSearchText = searchText.toLowerCase().trim();
   const isFiltering = lowerSearchText !== "";
+
+  useEffect(() => {
+    // When data updates, we should update the object stored in selected session so it uses new information
+    if (selectedSession) {
+      setSelectedSession(
+        data.find((session) => session.id == selectedSession.id)
+      );
+    }
+  }, [data]);
 
   const sessionFilter = (session: GroupSession) => {
     if (!isFiltering) return true;
@@ -136,13 +139,7 @@ export default function GroupSessions() {
     )
     .filter(sessionFilter) // Filter by the user searchbar input
     // .sort((a, b) => Date.parse(a.date) - Date.parse(b.date)); // Sort by the closest start date
-    .sort((a, b) => b.id - a.id) // TODO: DEBUG REMOVE
-    .map((session) =>
-      Object.assign({}, session, {
-        // @ts-expect-error because
-        skills: session.skills?.map((id) => skills.find((sk) => sk.id == id)),
-      })
-    ); // TODO: debug remove
+    .sort((a, b) => b.id - a.id); // TODO: DEBUG REMOVE
 
   return (
     <>
