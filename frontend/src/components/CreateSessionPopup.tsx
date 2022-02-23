@@ -2,22 +2,19 @@ import { Dialog } from "@headlessui/react";
 import {
   CreateSessionResponse,
   CreateSessionSuccess,
+  LIST_GROUP_SESSIONS_ENDPOINT,
   CREATE_GROUP_SESSION_ENDPOINT,
   getAuthToken,
-  GroupSession,
+  Skill,
 } from "../utils/endpoints";
-import SessionTopicLabel from "./SessionTopicLabel";
-import LocationText from "../components/LocationText";
-import DateText from "../components/DateText";
 import Popup from "./Popup";
 import { FormInput } from "./FormInput";
 import FormDropdown from "./FormDropdown";
 import { useEffect, useState } from "react";
 import { useUser } from "../utils/authentication";
-import { useBusinessAreas } from "../utils/business_area";
-import { LIST_GROUP_SESSIONS_ENDPOINT, BusinessArea } from "../utils/endpoints";
+import { useSkills } from "../utils/skills";
 import { mutate } from "swr";
-import { hrtime } from "process";
+import { FormTextArea } from "./FormTextarea";
 
 /** Verifies whether a login response is succesful or not (and type guards the body) */
 const isCreateSuccess = (
@@ -37,8 +34,7 @@ export default function CreateSessionPopup({
   closeModal,
 }: CreateSessionPopupProps) {
   const { user } = useUser();
-  const { areas } = useBusinessAreas();
-  // const {skills} = useSkills();
+  const { skills } = useSkills();
 
   const [sessionTitle, setSessionTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -46,8 +42,8 @@ export default function CreateSessionPopup({
   const [description, setDescription] = useState("");
   const [capacity, setCapacity] = useState("");
   const [datetime, setDatetime] = useState("");
-  const [businessArea, setBusinessArea] = useState<BusinessArea | undefined>(
-    areas[0]
+  const [assignedSkills, setAssignedSkills] = useState<Skill | undefined>(
+    skills[0]
   ); //TODO change this to skills and extra users instead of this
 
   const [sessionTitleError, setSessionTitleError] = useState<
@@ -62,6 +58,7 @@ export default function CreateSessionPopup({
   >();
   const [capacityError, setCapacityError] = useState<string | undefined>();
   const [datetimeError, setDatetimeError] = useState<string | undefined>();
+  const [skillsError, setSkillsError] = useState<string | undefined>();
   const [overallError, setOverallError] = useState<string | undefined>();
 
   const clearErrors = () => {
@@ -72,6 +69,7 @@ export default function CreateSessionPopup({
     setCapacityError(undefined);
     setDatetimeError(undefined);
     setOverallError(undefined);
+    setSkillsError(undefined);
   };
 
   const createSessionRequest = async () => {
@@ -87,9 +85,7 @@ export default function CreateSessionPopup({
         description,
         capacity,
         date: datetime,
-        // host: 1, // TODO: host?
         skills: [2, 3, 4], // TODO: use real skills
-        // users: [2, 4, 5], // TODO: empty users?
       }),
     });
 
@@ -134,15 +130,16 @@ export default function CreateSessionPopup({
       initiateClose={initiateClose}
       closeModal={closeModal}
     >
-      <Dialog.Title as="h3" className="leading-6 text-gray-900 space-x-2">
-        <h1 className="justify-center flex font-bold text-3xl">
-          Create Session
-        </h1>
+      <Dialog.Title
+        as="h1"
+        className="leading-6 text-gray-900 space-x-2 justify-center flex font-bold text-3xl my-1"
+      >
+        Create Session
       </Dialog.Title>
 
       <div className="min-h-full items-center justify-center space-y-3 w-full">
         <form
-          className="mt-8 space-y-3"
+          className="space-y-1"
           onSubmit={(e) => {
             e.preventDefault();
             createSessionRequest();
@@ -183,11 +180,17 @@ export default function CreateSessionPopup({
               error={virtualLinkError}
             />
           </div>
-
-          <FormInput
+          <FormDropdown
+            title="Skills"
+            options={skills}
+            selected={assignedSkills}
+            setSelected={setAssignedSkills}
+            error={skillsError}
+            placeholder="Select an area"
+          />
+          <FormTextArea
             id="description"
             name="Group Session Description"
-            type="text"
             autoComplete="false"
             placeholder="Group Session Description"
             text={description}
@@ -195,18 +198,6 @@ export default function CreateSessionPopup({
             error={descriptionError}
           />
           <div className="grid grid-cols-2 gap-3">
-            <FormInput
-              id="capacity"
-              name="Capacity"
-              type="number"
-              autoComplete="false"
-              placeholder="Max Capacity"
-              text={capacity}
-              onChange={setCapacity}
-              error={capacityError}
-              min={1}
-            />
-
             <FormInput
               id="datetime"
               name="Date and Time"
@@ -219,21 +210,25 @@ export default function CreateSessionPopup({
               min={Date.now()}
               required
             />
-            {/* <FormDropdown
-                title=""
-                options={areas}
-                selected={businessArea}
-                setSelected={setBusinessArea}
-                error={businessAreaError}
-                placeholder="Select an area"
-              /> */}
+            <FormInput
+              id="capacity"
+              name="Max Capacity"
+              type="number"
+              autoComplete="false"
+              placeholder="Max Capacity"
+              text={capacity}
+              onChange={setCapacity}
+              error={capacityError}
+              min={1}
+            />
           </div>
+
           {overallError && (
             <div className="block text-sm m-1 font-medium text-red-700">
               {overallError}
             </div>
           )}
-          <div className="grid grid-cols-10 gap-2">
+          <div className="grid grid-cols-10 gap-2 pt-2">
             <button
               type="submit"
               className="inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none"

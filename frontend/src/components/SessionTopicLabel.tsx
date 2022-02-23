@@ -2,7 +2,16 @@ export type SessionTopicLabelProps = {
   name: string;
 };
 
-const COLOURS = ["red", "orange", "yellow", "green", "blue"];
+const COLOURS = [
+  "red",
+  "orange",
+  "yellow",
+  "green",
+  "blue",
+  "teal",
+  "violet",
+  "rose",
+];
 
 /**
  * Converts a name string into a possible colour.
