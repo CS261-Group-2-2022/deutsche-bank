@@ -18,7 +18,6 @@ import SessionTopicLabel from "../components/SessionTopicLabel";
 import LocationText from "../components/LocationText";
 import DateTextProps from "../components/DateText";
 import CreateSessionPopup from "../components/CreateSessionPopup";
-import { createAsExpression } from "typescript";
 
 type SearchBarProps = {
   searchText: string;
@@ -62,7 +61,7 @@ type SessionInfoProps = {
 
 function SessionInfo({ session, selectSession }: SessionInfoProps) {
   return (
-    <div className="w-full bg-gray-50 rounded-lg p-2">
+    <div className="w-full rounded-lg p-2">
       <div className="flex items-center space-x-4">
         <img
           alt="Session Image"
@@ -96,60 +95,13 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
 }
 
 export default function GroupSessions() {
+  // Pull in session data from backend
   const { data: apiData } = useSWR<GroupSessionResponse>(
     LIST_GROUP_SESSIONS_ENDPOINT
   );
   const data = apiData ?? [];
 
-  // let data: GroupSession[] = [
-  //   {
-  //     id: 1,
-  //     name: "Session A",
-  //     description:
-  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  //     skills: ["Maths", "ML", "Python"],
-  //     location: "The Moon",
-  //     date: "in 3 days",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Session B",
-  //     description:
-  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  //     skills: ["Maths", "ML", "Python"],
-  //     location: "The Moon",
-  //     date: "in 3 days",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Session C",
-  //     description:
-  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  //     skills: ["Maths", "ML", "Python"],
-  //     location: "The Moon",
-  //     date: "in 3 days",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Session D",
-  //     description:
-  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  //     skills: ["Maths", "ML", "Python"],
-  //     location: "The Moon",
-  //     date: "in 3 days",
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "Session E",
-  //     description:
-  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  //     skills: ["Maths", "ML", "Python"],
-  //     location: "The Moon",
-  //     date: "in 3 days",
-  //   },
-
-  // ];
-
+  // Current component state
   const [selectedSession, setSelectedSession] = useState<
     GroupSession | undefined
   >();
@@ -201,8 +153,8 @@ export default function GroupSessions() {
           session={data[0]}
           selectSession={() => setSelectedSession(undefined)}
         /> */}
-        <hr></hr>
-        <h2>All sessions</h2>
+        {/* <hr></hr> */}
+        <h2 className="text-gray-900 font-bold text-2xl">All sessions</h2>
 
         <div className="space-y-2">
           {filteredSessions.map((session) => (
