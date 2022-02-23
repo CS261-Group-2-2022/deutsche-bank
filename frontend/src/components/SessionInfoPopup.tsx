@@ -5,6 +5,7 @@ import LocationText from "./LocationText";
 import DateText from "./DateText";
 import Popup from "./Popup";
 import { useEffect, useState } from "react";
+import CapacityText from "./CapacityText";
 
 type SessionInfoPopupProps = {
   session?: GroupSession;
@@ -41,7 +42,7 @@ export default function SessionInfoPopup({
         <span className="text-3xl font-black uppercase">{session?.name}</span>{" "}
         <span className="space-x-1 text-lg">
           {session?.skills?.map((skill) => (
-            <SessionTopicLabel key={skill} name={skill} />
+            <SessionTopicLabel key={skill.id} name={skill.name} />
           ))}
         </span>
       </Dialog.Title>
@@ -53,8 +54,17 @@ export default function SessionInfoPopup({
         />
         <p className="ml-3">Fullname</p>
       </div>
-      <LocationText location={session?.location ?? ""} link={session?.link} />
-      <DateText date={session?.date ?? ""} />
+
+      <div className="flex flex-col">
+        <LocationText location={session?.location ?? ""} link={session?.link} />
+        <DateText date={session?.date ?? ""} />
+
+        <CapacityText
+          capacity={session?.capacity ?? 1}
+          num_users={session?.users.length ?? 1}
+        />
+      </div>
+
       <div className="my-2">
         <p className="text-sm text-gray-500">{session?.description}</p>
       </div>
