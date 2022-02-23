@@ -1,6 +1,9 @@
 import { Dialog } from "@headlessui/react";
 import {
+  CreateSessionResponse,
+  CreateSessionSuccess,
   CREATE_GROUP_SESSION_ENDPOINT,
+  getAuthToken,
   GroupSession,
 } from "../utils/endpoints";
 import SessionTopicLabel from "./SessionTopicLabel";
@@ -14,6 +17,14 @@ import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
 import { LIST_GROUP_SESSIONS_ENDPOINT, BusinessArea } from "../utils/endpoints";
 import { mutate } from "swr";
+
+/** Verifies whether a login response is succesful or not (and type guards the body) */
+const isCreateSuccess = (
+  res: Response,
+  body: CreateSessionResponse
+): body is CreateSessionSuccess => {
+  return res.ok;
+};
 
 type CreateSessionPopupProps = {
   isOpen: boolean;
@@ -50,9 +61,7 @@ export default function CreateSessionPopup({
   >();
   const [capacityError, setCapacityError] = useState<string | undefined>();
   const [datetimeError, setDatetimeError] = useState<string | undefined>();
-  const [businessAreaError, setBusinessAreaError] = useState<
-    string | undefined
-  >();
+  const [overallError, setOverallError] = useState<string | undefined>();
 
   const clearErrors = () => {
     setSessionTitleError(undefined);
@@ -61,15 +70,15 @@ export default function CreateSessionPopup({
     setDescriptionError(undefined);
     setCapacityError(undefined);
     setDatetimeError(undefined);
-    setBusinessAreaError(undefined);
+    setOverallError(undefined);
   };
 
   const createSessionRequest = async () => {
-    // TODO: check response
-    await fetch(CREATE_GROUP_SESSION_ENDPOINT, {
+    const res = await fetch(CREATE_GROUP_SESSION_ENDPOINT, {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
       },
       body: JSON.stringify({
         name: sessionTitle,
@@ -77,15 +86,31 @@ export default function CreateSessionPopup({
         description,
         capacity,
         date: datetime,
-        // host: 1,
-        skills: [2, 3, 4],
-        // users: [2, 4, 5],
+        // host: 1, // TODO: host?
+        skills: [2, 3, 4], // TODO: use real skills
+        // users: [2, 4, 5], // TODO: empty users?
       }),
     });
 
+    // Clear any existing errors
     clearErrors();
-    initiateClose();
-    mutate(LIST_GROUP_SESSIONS_ENDPOINT);
+    const body: CreateSessionResponse = await res.json();
+
+    if (isCreateSuccess(res, body)) {
+      // Close the modal
+      initiateClose();
+
+      // Update the list of available group sessions
+      mutate(LIST_GROUP_SESSIONS_ENDPOINT);
+    } else {
+      setSessionTitleError(body.name?.join(" "));
+      setLocationError(body.location?.join(" "));
+      // setVirtualLinkError(body);
+      setDescriptionError(body.description?.join(" "));
+      setCapacityError(body.capacity?.join(" "));
+      setDatetimeError(body.date?.join(" "));
+      setOverallError(body.non_field_errors?.join(" "));
+    }
   };
 
   const [isClosing, setIsClosing] = useState(false);
@@ -206,6 +231,11 @@ export default function CreateSessionPopup({
                 placeholder="Select an area"
               /> */}
           </div>
+          {overallError && (
+            <div className="block text-sm m-1 font-medium text-red-700">
+              {overallError}
+            </div>
+          )}
           <div className="grid grid-cols-10 gap-2">
             <button
               type="submit"
