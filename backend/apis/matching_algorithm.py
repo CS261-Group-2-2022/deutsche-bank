@@ -130,7 +130,7 @@ def matching_algorithm(user_looking_for_mentor: User,
     matrix = np.zeros((len(possible_mentors), 2), dtype(object))
     for i in range(len(possible_mentors)):
         matrix[i][0] = scores[i][0]
-        marix[i][1] = possible_mentors[i]
+        matrix[i][1] = possible_mentors[i]
     sortedMatrix = matrix[np.argsort(matrix[:,0])]
     returnArray = [row[1] for row in sortedMatrix].reverse()
     #Toni code over
