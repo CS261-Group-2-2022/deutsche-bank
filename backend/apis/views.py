@@ -6,6 +6,7 @@ from knox.views import LoginView as KnoxLoginView
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -128,17 +129,22 @@ class GroupSessionViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def retrieve(self, request, *args, **kwargs) -> Response:
-        return Response(GroupSessionSerializerFull(GroupSession.objects.all(), many=True).data)
+    def list(self, request, *args, **kwargs) -> Response:
+        queryset = GroupSession.objects.all()
+        serializer = GroupSessionSerializerFull(queryset, many=True)
+        return Response(serializer.data)
 
+    @action(detail=False, methods=['get'])
     def user(self, request, *args, **kwargs) -> Response:  # Retrieves set of group sessions this user is in
         user: User = request.user
         return Response(GroupSessionSerializerFull(user.get_sessions(), many=True).data)
 
+    @action(detail=False, methods=['get'])
     def host(self, request, *args, **kwargse) -> Response:  # Retrieves set of hosted group sessions for this user
         user: User = request.user
         return Response(GroupSessionSerializerFull(user.get_host_sessions(), many=True).data)
 
+    @action(detail=False, methods=['get'])
     def find(self, request, *args, **kwargs) -> Response:  # Retrieves set of suggested group sessions for this user
         user: User = request.user
         return Response(GroupSessionSerializerFull(user.find_group_sessions(), many=True).data)
