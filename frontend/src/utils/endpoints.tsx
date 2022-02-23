@@ -1,8 +1,12 @@
+import { mutate } from "swr";
+
 export const LOGIN_ENDPOINT = "http://localhost:8000/api/v1/auth/login/";
 export const SIGNUP_ENDPOINT = "http://localhost:8000/api/v1/auth/register/";
 export const PROFILE_ENDPOINT = "http://localhost:8000/api/v1/auth/profile/";
 export const BUSINESS_AREAS_ENDPOINT = "http://localhost:8000/api/v1/area/";
 export const LIST_GROUP_SESSIONS_ENDPOINT =
+  "http://localhost:8000/api/v1/session/";
+export const CREATE_GROUP_SESSION_ENDPOINT =
   "http://localhost:8000/api/v1/session/";
 
 /** Retrieves a stored session token */
@@ -26,11 +30,17 @@ export const setAuthToken = (token: string, remember: boolean) => {
   } else {
     window.sessionStorage.setItem("token", token);
   }
+
+  // Update caches of user profiles
+  mutate(PROFILE_ENDPOINT);
 };
 
 export const clearAuthToken = () => {
   window.sessionStorage.removeItem("token");
   window.localStorage.removeItem("token");
+
+  // Force cache revalidation
+  mutate(PROFILE_ENDPOINT);
 };
 
 export type User = {
@@ -111,3 +121,14 @@ export type GroupSession = {
 };
 
 export type GroupSessionResponse = GroupSession[];
+
+export type CreateSessionSuccess = {};
+export type CreateSessionError = {
+  name?: string[];
+  location?: string[];
+  description?: string[];
+  capacity?: string[];
+  date: string[];
+};
+
+export type CreateSessionResponse = CreateSessionSuccess | CreateSessionError;

@@ -1,14 +1,10 @@
 /* Logout page */
 import { Link } from "react-router-dom";
-import { mutate } from "swr";
-import { clearAuthToken, PROFILE_ENDPOINT } from "../utils/endpoints";
+import { clearAuthToken } from "../utils/endpoints";
 
 export default function LogoutPage() {
   // Clear the session token
   clearAuthToken();
-
-  // Force a cache revalidation
-  mutate(PROFILE_ENDPOINT);
 
   return (
     <div className="flex items-center justify-center h-screen bg-white">
