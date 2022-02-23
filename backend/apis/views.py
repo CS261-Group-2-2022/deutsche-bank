@@ -143,7 +143,7 @@ class GroupSessionViewSet(viewsets.ModelViewSet):
         user: User = request.user
         return Response(GroupSessionSerializerFull(user.find_group_sessions(), many=True).data)
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['post'])
     def join(self, request, *args, **kwargs):  # Joins the session
         session: GroupSession = self.get_object()
         user: User = request.user
@@ -156,7 +156,7 @@ class GroupSessionViewSet(viewsets.ModelViewSet):
         user.save()
         return Response(GroupSessionSerializer(session).data)
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['post'])
     def leave(self, request, *args, **kwargs):  # Leaves the session
         session: GroupSession = self.get_object()
         user: User = request.user
