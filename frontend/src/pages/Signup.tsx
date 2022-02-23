@@ -139,7 +139,7 @@ export default function Signup() {
               <div className="grid grid-cols-2 gap-3">
                 <FormInput
                   id="firstname"
-                  name="firstname"
+                  name="First Name"
                   type="text"
                   autoComplete="fname"
                   placeholder="First Name"
@@ -150,7 +150,7 @@ export default function Signup() {
                 />
                 <FormInput
                   id="lastname"
-                  name="lastname"
+                  name="Last Name"
                   type="text"
                   autoComplete="lname"
                   placeholder="Last Name"
@@ -162,7 +162,7 @@ export default function Signup() {
               </div>
               <FormInput
                 id="email-address"
-                name="email"
+                name="Email"
                 type="email"
                 autoComplete="email"
                 placeholder="Email address"
@@ -173,7 +173,7 @@ export default function Signup() {
               />
               <FormInput
                 id="password"
-                name="password"
+                name="Password"
                 type="password"
                 autoComplete="current-password"
                 placeholder="Password"
@@ -184,7 +184,7 @@ export default function Signup() {
               />
               <FormInput
                 id="retyped-password"
-                name="retyped-password"
+                name="Retype Password"
                 type="password"
                 autoComplete="current-password"
                 placeholder="Retype Password"

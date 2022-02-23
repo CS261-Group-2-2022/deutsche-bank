@@ -17,6 +17,7 @@ import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
 import { LIST_GROUP_SESSIONS_ENDPOINT, BusinessArea } from "../utils/endpoints";
 import { mutate } from "swr";
+import { hrtime } from "process";
 
 /** Verifies whether a login response is succesful or not (and type guards the body) */
 const isCreateSuccess = (
@@ -133,23 +134,20 @@ export default function CreateSessionPopup({
       initiateClose={initiateClose}
       closeModal={closeModal}
     >
-      <Dialog.Title
-        as="h3"
-        className="leading-6 text-gray-900 space-x-2"
-      ></Dialog.Title>
+      <Dialog.Title as="h3" className="leading-6 text-gray-900 space-x-2">
+        <h1 className="justify-center flex font-bold text-3xl">
+          Create Session
+        </h1>
+      </Dialog.Title>
 
       <div className="min-h-full items-center justify-center space-y-3 w-full">
         <form
-          className="mt-8 space-y-6"
+          className="mt-8 space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
             createSessionRequest();
           }}
         >
-          <span className="justify-center flex font-bold text-3xl">
-            Create Session
-          </span>
-
           <input type="hidden" name="remember" defaultValue="true" />
           <FormInput
             id="sessiontitle"
@@ -196,7 +194,6 @@ export default function CreateSessionPopup({
             onChange={setDescription}
             error={descriptionError}
           />
-          <hr></hr>
           <div className="grid grid-cols-2 gap-3">
             <FormInput
               id="capacity"
