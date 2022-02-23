@@ -52,7 +52,9 @@ export default function SessionInfoPopup({
           src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
           className="h-14 rounded-lg"
         />
-        <p className="ml-3">Fullname</p>
+        <p className="ml-3">
+          {Firstname} {Lastname}
+        </p>
       </div>
 
       <div className="flex flex-col">

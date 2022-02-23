@@ -1,23 +1,21 @@
-import {
-  CalendarIcon,
-  LocationMarkerIcon,
-  PlusIcon,
-  SearchIcon,
-} from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/solid";
 import Topbar from "../components/Topbar";
 import {
   GroupSession,
   GroupSessionResponse,
   LIST_GROUP_SESSIONS_ENDPOINT,
+  LIST_USER_JOINED_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 import useSWR from "swr";
+import { useUser } from "../utils/authentication";
 import SessionInfoPopup from "../components/SessionInfoPopup";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SessionTopicLabel from "../components/SessionTopicLabel";
 
 import LocationText from "../components/LocationText";
 import DateTextProps from "../components/DateText";
 import CreateSessionPopup from "../components/CreateSessionPopup";
+import { useSkills } from "../utils/skills";
 
 type SearchBarProps = {
   searchText: string;
@@ -73,7 +71,7 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
           <h1 className="font-bold text-xl">{session.name}</h1>
           <div className="flex space-x-1">
             {session.skills?.map((skill) => (
-              <SessionTopicLabel key={skill} name={skill} />
+              <SessionTopicLabel key={skill.id} name={skill.name} />
             ))}
           </div>
           <LocationText location={session.location} />
@@ -95,11 +93,20 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
 }
 
 export default function GroupSessions() {
+  const { user } = useUser();
+  const { skills } = useSkills();
+
   // Pull in session data from backend
   const { data: apiData } = useSWR<GroupSessionResponse>(
     LIST_GROUP_SESSIONS_ENDPOINT
   );
   const data = apiData ?? [];
+  const { data: joinedSessions } = useSWR<GroupSessionResponse>(
+    LIST_USER_JOINED_SESSIONS_ENDPOINT.replace(
+      "{ID}",
+      user?.id.toString() ?? "0"
+    )
+  );
 
   // Current component state
   const [selectedSession, setSelectedSession] = useState<
@@ -123,9 +130,19 @@ export default function GroupSessions() {
 
   const filteredSessions = data
     // .filter((session) => Date.parse(session.date) >= Date.now()) // Only show sessions in the future
+    .filter(
+      (session) =>
+        !joinedSessions?.find((otherSession) => session.id == otherSession.id)
+    )
     .filter(sessionFilter) // Filter by the user searchbar input
     // .sort((a, b) => Date.parse(a.date) - Date.parse(b.date)); // Sort by the closest start date
-    .sort((a, b) => b.id - a.id); // TODO: DEBUG REMOVE
+    .sort((a, b) => b.id - a.id) // TODO: DEBUG REMOVE
+    .map((session) =>
+      Object.assign({}, session, {
+        // @ts-expect-error because
+        skills: session.skills?.map((id) => skills.find((sk) => sk.id == id)),
+      })
+    ); // TODO: debug remove
 
   return (
     <>
@@ -148,13 +165,26 @@ export default function GroupSessions() {
           </div>
         </div>
 
-        {/* <h2>Joined Sessions</h2>
-        <SessionInfo
-          session={data[0]}
-          selectSession={() => setSelectedSession(undefined)}
-        /> */}
-        {/* <hr></hr> */}
-        <h2 className="text-gray-900 font-bold text-2xl">All sessions</h2>
+        {joinedSessions && joinedSessions.length > 0 && (
+          <>
+            <h2 className="text-gray-900 font-bold text-2xl">
+              Sessions You{"'"}ve Joined
+            </h2>
+            <div className="space-y-2">
+              {joinedSessions.map((session) => (
+                <SessionInfo
+                  key={session.id}
+                  session={session}
+                  selectSession={() => setSelectedSession(session)}
+                />
+              ))}
+            </div>
+
+            <hr></hr>
+          </>
+        )}
+
+        <h2 className="text-gray-900 font-bold text-2xl">Available Sessions</h2>
 
         <div className="space-y-2">
           {filteredSessions.map((session) => (
