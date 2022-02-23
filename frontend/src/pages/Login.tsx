@@ -102,6 +102,7 @@ export default function Login() {
                 onChange={setEmail}
                 error={emailError}
                 required
+                hideRequiredAsterisk
               />
               <FormInput
                 id="password"
@@ -113,6 +114,7 @@ export default function Login() {
                 onChange={setPassword}
                 error={passwordError}
                 required
+                hideRequiredAsterisk
               />
             </div>
 
