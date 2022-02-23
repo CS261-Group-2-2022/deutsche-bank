@@ -7,10 +7,21 @@ import Popup from "./Popup";
 import { useEffect, useState } from "react";
 import CapacityText from "./CapacityText";
 
+const JOIN_BUTTON_COLOURS = [
+  "bg-blue-700 hover:bg-blue-800",
+  "text-blue-900 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-500",
+];
+const LEAVE_BUTTON_COLOURS = [
+  "bg-red-700 hover:bg-red-800",
+  "text-red-900 bg-red-100 hover:bg-red-200 focus-visible:ring-red-500",
+];
+
 type SessionInfoPopupProps = {
   session?: GroupSession;
   isOpen: boolean;
   closeModal: () => unknown;
+  // hasJoined: boolean;
+  // onClick: () => unknown;
 };
 
 export default function SessionInfoPopup({
@@ -30,6 +41,8 @@ export default function SessionInfoPopup({
   useEffect(() => {
     setIsClosing(false);
   }, [isOpen]);
+
+  const buttonColours = JOIN_BUTTON_COLOURS;
 
   return (
     <Popup
@@ -52,9 +65,7 @@ export default function SessionInfoPopup({
           src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
           className="h-14 rounded-lg"
         />
-        <p className="ml-3">
-          {Firstname} {Lastname}
-        </p>
+        <p className="ml-3">Fullname</p>
       </div>
 
       <div className="flex flex-col">
@@ -73,14 +84,14 @@ export default function SessionInfoPopup({
       <div className="grid grid-cols-10 gap-2">
         <button
           type="button"
-          className="inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none"
+          className={`inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md focus:outline-none ${buttonColours[0]}`}
           onClick={initiateClose}
         >
           Join Session
         </button>
         <button
           type="button"
-          className="inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+          className={`inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${buttonColours[1]}`}
           onClick={initiateClose}
         >
           Close
