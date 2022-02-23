@@ -93,24 +93,6 @@ class User(AbstractBaseUser):
         """
         return self.first_name
 
-    def get_mentor_meetings(self) -> QuerySet[List[Meeting]]:
-        return self.meeting_mentor.all()
-
-    def get_mentee_meetings(self) -> QuerySet[List[Meeting]]:
-        return self.meeting_mentee.all()
-
-    def get_meetings(self) -> QuerySet[List[Meeting]]:
-        return self.get_mentor_meetings().union(self.get_mentee_meetings())
-
-    def get_mentee_action_plans(self) -> QuerySet[List[ActionPlan]]:
-        return self.actionplan_user.all()
-
-    def get_mentor_action_plans(self) -> QuerySet[List[ActionPlan]]:
-        return self.actionplan_mentor.all()
-
-    def get_action_plans(self) -> QuerySet[List[ActionPlan]]:
-        return self.get_mentor_action_plans().union(self.get_mentee_action_plans())
-
     def get_mentees(self) -> QuerySet[List[Type[User]]]:
         """ Retrieves the list of mentees for this user.
         :return the set of users who have this user as their mentor.
