@@ -12,12 +12,13 @@ import {
 } from "../utils/endpoints";
 import useSWR from "swr";
 import SessionInfoPopup from "../components/SessionInfoPopup";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SessionTopicLabel from "../components/SessionTopicLabel";
 
 import LocationText from "../components/LocationText";
 import DateTextProps from "../components/DateText";
 import CreateSessionPopup from "../components/CreateSessionPopup";
+import { createAsExpression } from "typescript";
 
 type SearchBarProps = {
   searchText: string;
@@ -95,33 +96,72 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
 }
 
 export default function GroupSessions() {
-  // const { data } = useSWR<GroupSessionResponse>(LIST_GROUP_SESSIONS_ENDPOINT);
+  const { data: apiData } = useSWR<GroupSessionResponse>(LIST_GROUP_SESSIONS_ENDPOINT);
+  const data = apiData ?? [];
 
-  const data: GroupSession[] = [
-    {
-      id: 1,
-      name: "Session A",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-      skills: ["Maths", "ML", "Python"],
-      location: "The Moon",
-      date: "in 3 days",
-    },
-    {
-      id: 2,
-      name: "Session B",
-      location: "Mars",
-      link: "https://github.com",
-      date: "in 3 days",
-    },
-    {
-      id: 3,
-      name: "Session C",
-      location: "James's Basement",
-      link: "https://google.com",
-      date: "in 3 days",
-    },
-  ];
+  // let data: GroupSession[] = [
+  //   {
+  //     id: 1,
+  //     name: "Session A",
+  //     description:
+  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  //     skills: ["Maths", "ML", "Python"],
+  //     location: "The Moon",
+  //     date: "in 3 days",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Session B",
+  //     description:
+  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  //     skills: ["Maths", "ML", "Python"],
+  //     location: "The Moon",
+  //     date: "in 3 days",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Session C",
+  //     description:
+  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  //     skills: ["Maths", "ML", "Python"],
+  //     location: "The Moon",
+  //     date: "in 3 days",
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Session D",
+  //     description:
+  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  //     skills: ["Maths", "ML", "Python"],
+  //     location: "The Moon",
+  //     date: "in 3 days",
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "Session E",
+  //     description:
+  //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  //     skills: ["Maths", "ML", "Python"],
+  //     location: "The Moon",
+  //     date: "in 3 days",
+  //   },
+    
+  // ];
+
+  // async function getGroupSessions() {
+  //   const res = await fetch(LIST_GROUP_SESSIONS_ENDPOINT);
+  //   data = await res.json();
+  //   console.log(data);
+  //   console.log("inside")
+
+  //   return "";
+
+  // }
+
+  // getGroupSessions();
+
+  console.log(data);
+  // console.log("outside");
 
   const [selectedSession, setSelectedSession] = useState<
     GroupSession | undefined
@@ -144,6 +184,7 @@ export default function GroupSessions() {
 
   const filteredSessions = data.filter(sessionFilter);
 
+  console.log("just before return");
   return (
     <>
       <Topbar />
@@ -165,12 +206,13 @@ export default function GroupSessions() {
           </div>
         </div>
 
-        <h2>Sessions youre signed up to</h2>
+        <h2>Joined Sessions</h2>
         <SessionInfo
           session={data[0]}
           selectSession={() => setSelectedSession(undefined)}
         />
         <hr></hr>
+        <h2>All sessions</h2>
 
         <div className="space-y-2">
           {filteredSessions.map((session) => (
