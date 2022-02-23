@@ -117,6 +117,7 @@ def matching_algorithm(user_looking_for_mentor: User,
         #       - factor * mentor_current_mentee_counts[i]:119
 
     def score():
+        #thinking to return (v2 * (v3 + newv5)) / len(user_interests) - (some factor) * v4
         return (v2 * v3) / len(user_interests) + factor * (1) 
     print("score is")
     pprint(score())
@@ -124,6 +125,15 @@ def matching_algorithm(user_looking_for_mentor: User,
     v5 = np.stack((v1, score()),axis=1)
     print("v5 is:")
     pprint(v5) 
+
+    #Toni code
+    matrix = np.zeros((len(possible_mentors), 2), dtype(object))
+    for i in range(len(possible_mentors)):
+        matrix[i][0] = scores[i][0]
+        marix[i][1] = possible_mentors[i]
+    sortedMatrix = matrix[np.argsort(matrix[:,0])]
+    returnArray = [row[1] for row in sortedMatrix].reverse()
+    #Toni code over
 
     #v5 = [(i, score(i)) for i in range(len(possible_mentors))]
     #v5.sort(key=lambda p: p[1], reverse=True) # Sort by score
