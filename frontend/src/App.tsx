@@ -13,6 +13,7 @@ import BusinessAreaProvider from "./utils/business_area";
 import Logout from "./pages/Logout";
 import ProtectedPage from "./pages/ProtectedPage";
 import GroupSessions from "./pages/GroupSessions";
+import SkillsProvider from "./utils/skills";
 
 const fetcher: BareFetcher = async (resource) => {
   const token = getAuthToken();
@@ -37,48 +38,50 @@ function App() {
   return (
     <SWRConfig value={{ fetcher }}>
       <BusinessAreaProvider>
-        <UserProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <ProtectedPage>
-                    <Home />
-                  </ProtectedPage>
-                }
-              />
-              <Route
-                path="mentoring"
-                element={
-                  <ProtectedPage>
-                    <Mentoring />
-                  </ProtectedPage>
-                }
-              />
-              <Route
-                path="groups"
-                element={
-                  <ProtectedPage>
-                    <GroupSessions />
-                  </ProtectedPage>
-                }
-              />
-              <Route path="login" element={<Login />} />
-              <Route path="logout" element={<Logout />} />
-              <Route path="signup" element={<Signup />} />
-              <Route
-                path="settings"
-                element={
-                  <ProtectedPage>
-                    <Settings />
-                  </ProtectedPage>
-                }
-              />
-              <Route path="*" element={<Error404 />} />
-            </Routes>
-          </BrowserRouter>
-        </UserProvider>
+        <SkillsProvider>
+          <UserProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedPage>
+                      <Home />
+                    </ProtectedPage>
+                  }
+                />
+                <Route
+                  path="mentoring"
+                  element={
+                    <ProtectedPage>
+                      <Mentoring />
+                    </ProtectedPage>
+                  }
+                />
+                <Route
+                  path="groups"
+                  element={
+                    <ProtectedPage>
+                      <GroupSessions />
+                    </ProtectedPage>
+                  }
+                />
+                <Route path="login" element={<Login />} />
+                <Route path="logout" element={<Logout />} />
+                <Route path="signup" element={<Signup />} />
+                <Route
+                  path="settings"
+                  element={
+                    <ProtectedPage>
+                      <Settings />
+                    </ProtectedPage>
+                  }
+                />
+                <Route path="*" element={<Error404 />} />
+              </Routes>
+            </BrowserRouter>
+          </UserProvider>
+        </SkillsProvider>
       </BusinessAreaProvider>
     </SWRConfig>
   );
