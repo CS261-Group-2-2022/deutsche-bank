@@ -155,7 +155,7 @@ class GroupSession(models.Model):
     capacity: int = models.IntegerField(null=True)
     skills: List[Skill] = models.ManyToManyField(Skill)
     date: datetime = models.DateTimeField()
-    users: List[User] = models.ManyToManyField(User)
+    users: List[User] = models.ManyToManyField(User, default=[])
 
 
 from .dummy_data import *
