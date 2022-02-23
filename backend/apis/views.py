@@ -5,6 +5,8 @@ from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -78,22 +80,6 @@ class UserViewSet(viewsets.ModelViewSet):
         cereal = ActionPlanSerializer(user.get_action_plans(), many=True)
         return Response(cereal.data)
 
-    @action(detail=True, methods=['get'])
-    def find_sessions(self, request, pk=None) -> Response:  # Retrieves set of suggested group sessions for this user
-        user: User = self.get_object()
-        return Response(GroupSessionSerializerFull(user.find_group_sessions(), many=True).data)
-
-    @action(detail=True, methods=['get'])
-    def host_sessions(self, request, pk=None) -> Response:  # Retrieves set of hosted group sessions for this user
-        user: User = self.get_object()
-        return Response(GroupSessionSerializerFull(user.get_host_sessions(), many=True).data)
-
-    @action(detail=True, methods=['get'])
-    def sessions(self, request, pk=None) -> Response:  # Retrieves set of group sessions this user is in
-        user: User = self.get_object()
-        return Response(GroupSessionSerializerFull(user.get_sessions(), many=True).data)
-
-
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
@@ -142,6 +128,50 @@ class GroupSessionViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def list(self, request, *args, **kwargs) -> Response:
+        queryset = GroupSession.objects.all()
+        serializer = GroupSessionSerializerFull(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def user(self, request, *args, **kwargs) -> Response:  # Retrieves set of group sessions this user is in
+        user: User = request.user
+        return Response(GroupSessionSerializerFull(user.get_sessions(), many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def host(self, request, *args, **kwargse) -> Response:  # Retrieves set of hosted group sessions for this user
+        user: User = request.user
+        return Response(GroupSessionSerializerFull(user.get_host_sessions(), many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def find(self, request, *args, **kwargs) -> Response:  # Retrieves set of suggested group sessions for this user
+        user: User = request.user
+        return Response(GroupSessionSerializerFull(user.find_group_sessions(), many=True).data)
+
+    @action(detail=True, methods=['post'])
+    def join(self, request, *args, **kwargs):  # Joins the session
+        session: GroupSession = self.get_object()
+        user: User = request.user
+        if user.get_sessions().filter(pk=session.pk).exists():
+            return Response({'error': 'User is already in session'}, status=status.HTTP_400_BAD_REQUEST)
+        if user.get_host_sessions().filter(pk=session.pk).exists():
+            return Response({'error': 'User is hosting session'}, status=status.HTTP_400_BAD_REQUEST)
+
+        session.users.add(user)
+        user.save()
+        return Response(GroupSessionSerializer(session).data)
+
+    @action(detail=True, methods=['post'])
+    def leave(self, request, *args, **kwargs):  # Leaves the session
+        session: GroupSession = self.get_object()
+        user: User = request.user
+        if not user.get_sessions().filter(pk=session.pk).exists():
+            return Response({'error': 'User is not in session'}, status=status.HTTP_400_BAD_REQUEST)
+
+        session.users.remove(user)
+        user.save()
+        return Response(GroupSessionSerializer(session).data)
 
 
 class MentorshipViewSet(viewsets.ModelViewSet):
