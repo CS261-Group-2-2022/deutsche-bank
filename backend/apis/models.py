@@ -145,13 +145,26 @@ class User(AbstractBaseUser):
         return random.sample(list(cls.objects.all()),
                              random.randint(1, cls.objects.all().count()))
 
+    # TODO Add to a mixin type thing.
+    @classmethod
+    def make_distinct_email_from(cls, first_name, last_name):
+        email_domain = "deutschebank"
+        email = ''
+        number_of_people_with_same_name = cls.objects.all().filter(first_name=first_name,
+                                                                   last_name=last_name).count()
+        if number_of_people_with_same_name > 0:
+            email = f'{first_name}.{last_name}.{number_of_people_with_same_name}@{email_domain}.com'
+        else:
+            email = f'{first_name}.{last_name}@{email_domain}.com'
+
+        return email
+
     @classmethod
     def make_random(cls,
                     skills_pool : List[Skill] = None,
                     business_area_pool : List[BusinessArea] = None,
                     dataset = dataset,
                     **kwargs_for_user_constructor) -> Type[User]:
-
         if skills_pool == None:
             skills_pool = list(Skill.objects.all())
 
@@ -163,22 +176,23 @@ class User(AbstractBaseUser):
 
         business_area=random.choice(business_area_pool)
 
-        email_domain = "deutschebank.com"
-
-        interests=random.sample(skills_pool, random.randrange(1,7))
-        expertise=random.sample(skills_pool, random.randrange(1,4))
-
         u = cls.objects.create(first_name=first_name,
                                last_name=last_name,
                                business_area=business_area,
-                               email=(first_name + "." + last_name + "@" + email_domain),
+                               email=make_distinct_email_from(first_name, last_name),
                                is_email_verified=True,
-                               password="nunya",
                                mentor_intent=random.choice([False, True]),
                                **kwargs_for_user_constructor)
-        u.interests.set(interests)
-        u.expertise.set(expertise)
+
+        # TODO Make tests for this.
+        u.set_password(kwargs_for_user_constructor['password']
+                       if 'password' in kwargs_for_user_constructor
+                       else 'nunya')
+
+        u.interests.set(random.sample(skills_pool, random.randrange(1,7)))
+        u.expertise.set(random.sample(skills_pool, random.randrange(1,4)))
         u.save()
+
         return u
 
 class Meeting(models.Model):

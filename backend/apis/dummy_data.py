@@ -12,6 +12,18 @@ from .models import User, Skill, BusinessArea
 """ This file contains code for creating dummy data.
 """
 
+def make_distinct_email_from(first_name, last_name):
+    email_domain = "deutschebank"
+    email = ''
+    number_of_people_with_same_name = User.objects.all().filter(first_name=first_name,
+                                                                last_name=last_name).count()
+    if number_of_people_with_same_name > 0:
+        email = '%s.%s.%s@%s.com' % (first_name, last_name, number_of_people_with_same_name, email_domain)
+    else:
+        email = '%s.%s@%s.com' % (first_name, last_name, email_domain)
+
+    return email
+
 def create_dummy_users(quiet = False):
     user_count: int = User.objects.count()
 
@@ -32,7 +44,7 @@ def create_dummy_users(quiet = False):
 
         business_area=random.choice(business_areas)
 
-        email_domain = "deutschebank.com"
+        email = make_distinct_email_from(first_name, last_name)
 
         interests=random.sample(skills, random.randrange(1,7))
         expertise=random.sample(skills, random.randrange(1,4))
@@ -40,7 +52,7 @@ def create_dummy_users(quiet = False):
         u = User.objects.create(first_name=first_name,
                             last_name=last_name,
                             business_area=business_area,
-                            email=(first_name + "." + last_name + "@" + email_domain),
+                            email=email,
                             is_email_verified=True,
                             password="nunya",
                             mentor_intent=random.choice([False, True]))
@@ -327,9 +339,9 @@ def create_dummy_data(quiet=False, seed="We're literally the best software eng t
         create_dummy_action_plans()
         create_dummy_group_sessions()
 
-    except OperationalError:
+    except OperationalError as e:
         print(f'Error')
-        pass
+        print(f'{e=}')
 
 from django.apps import apps
 

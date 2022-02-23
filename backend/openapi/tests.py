@@ -2,8 +2,11 @@ from rest_framework.test import APITestCase
 from django.urls import reverse_lazy
 
 class OpenAPITests(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.schema_url = reverse_lazy('fetch-openapi-schema')
+
     def setUp(self):
-        self.schema_url = reverse_lazy('fetch-openapi-schema')
         self.response = self.client.get(self.schema_url)
 
     def test_can_retrieve_openapi_specification(self):

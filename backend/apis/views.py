@@ -133,7 +133,9 @@ class LoginView(KnoxLoginView):
         serializer = LoginSerializer(data=request.data)  # Deserialize request data
         serializer.is_valid(raise_exception=True)  # Validate request data
         user = serializer.validated_data['user']  # Get user from serializer
+
         login(request, user)  # Login user object
+
         return super(LoginView, self).post(request, format=None)  # Create auth token
 
 
