@@ -122,13 +122,14 @@ export type GroupSession = {
 
 export type GroupSessionResponse = GroupSession[];
 
-export type CreateSessionSuccess = {};
+export type CreateSessionSuccess = number;
 export type CreateSessionError = {
   name?: string[];
   location?: string[];
   description?: string[];
   capacity?: string[];
-  date: string[];
+  date?: string[];
+  non_field_errors?: string[];
 };
 
 export type CreateSessionResponse = CreateSessionSuccess | CreateSessionError;

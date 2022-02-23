@@ -94,7 +94,7 @@ export default function Login() {
             <div className="space-y-3">
               <FormInput
                 id="email-address"
-                name="email"
+                name="Email"
                 type="email"
                 autoComplete="email"
                 placeholder="Email address"
@@ -105,7 +105,7 @@ export default function Login() {
               />
               <FormInput
                 id="password"
-                name="password"
+                name="Password"
                 type="password"
                 autoComplete="current-password"
                 placeholder="Password"

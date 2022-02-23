@@ -30,6 +30,7 @@ export const FormInput = ({
 
   return (
     <div>
+      <div className="block text-sm mb-1 font-medium text-gray-700">{name}</div>
       <label htmlFor={id} className="sr-only">
         {placeholder}
       </label>
