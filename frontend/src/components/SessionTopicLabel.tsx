@@ -18,7 +18,7 @@ const colourFromName = (name: string) => {
 };
 
 export default function SessionTopicLabel({ name }: SessionTopicLabelProps) {
-  const colour = colourFromName(name);
+  const colour = colourFromName(name.toString());
   return (
     <span className={`px-4 rounded-lg bg-${colour}-300 bg-opacity-90`}>
       {name}
