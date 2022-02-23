@@ -1,5 +1,8 @@
 import { Dialog } from "@headlessui/react";
-import { GroupSession } from "../utils/endpoints";
+import {
+  CREATE_GROUP_SESSION_ENDPOINT,
+  GroupSession,
+} from "../utils/endpoints";
 import SessionTopicLabel from "./SessionTopicLabel";
 import LocationText from "../components/LocationText";
 import DateText from "../components/DateText";
@@ -9,8 +12,8 @@ import FormDropdown from "./FormDropdown";
 import { useEffect, useState } from "react";
 import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
-import { Console } from "console";
 import { LIST_GROUP_SESSIONS_ENDPOINT, BusinessArea } from "../utils/endpoints";
+import { mutate } from "swr";
 
 type CreateSessionPopupProps = {
   isOpen: boolean;
@@ -34,8 +37,6 @@ export default function CreateSessionPopup({
   const [businessArea, setBusinessArea] = useState<BusinessArea | undefined>(
     areas[0]
   ); //TODO change this to skills and extra users instead of this
-
-  
 
   const [sessionTitleError, setSessionTitleError] = useState<
     string | undefined
@@ -65,7 +66,7 @@ export default function CreateSessionPopup({
 
   const createSessionRequest = async () => {
     // TODO: check response
-    fetch(LIST_GROUP_SESSIONS_ENDPOINT, {
+    await fetch(CREATE_GROUP_SESSION_ENDPOINT, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -76,14 +77,15 @@ export default function CreateSessionPopup({
         description,
         capacity,
         date: datetime,
-        host: user?.id,
+        // host: 1,
         skills: [2, 3, 4],
-        users: [2, 4, 5],
+        // users: [2, 4, 5],
       }),
     });
 
     clearErrors();
     initiateClose();
+    mutate(LIST_GROUP_SESSIONS_ENDPOINT);
   };
 
   const [isClosing, setIsClosing] = useState(false);
@@ -133,6 +135,7 @@ export default function CreateSessionPopup({
             text={sessionTitle}
             onChange={setSessionTitle}
             error={sessionTitleError}
+            required
           />
           <div className="grid grid-cols-2 gap-3">
             <FormInput
@@ -144,6 +147,7 @@ export default function CreateSessionPopup({
               text={location}
               onChange={setLocation}
               error={locationError}
+              required
             />
             <FormInput
               id="virtuallink"
@@ -178,6 +182,7 @@ export default function CreateSessionPopup({
               text={capacity}
               onChange={setCapacity}
               error={capacityError}
+              min={1}
             />
 
             <FormInput
@@ -189,6 +194,8 @@ export default function CreateSessionPopup({
               text={datetime}
               onChange={setDatetime}
               error={datetimeError}
+              min={Date.now()}
+              required
             />
             {/* <FormDropdown
                 title=""
