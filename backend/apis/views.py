@@ -3,7 +3,7 @@
 from django.contrib.auth import login
 from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
-from rest_framework import viewsets, generics, permissions
+from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -122,6 +122,16 @@ class CurrentUserView(APIView):
 class GroupSessionViewSet(viewsets.ModelViewSet):
     queryset = GroupSession.objects.all()
     serializer_class = GroupSessionSerializer
+    permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to manage group sessions
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data['user'] = request.user  # TODO: Test whether this works
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class MentorshipViewSet(viewsets.ModelViewSet):

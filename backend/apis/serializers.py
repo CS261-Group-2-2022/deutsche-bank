@@ -87,6 +87,11 @@ class GroupSessionSerializer(ModelSerializer):
     class Meta:
         model = GroupSession
         exclude = []
+        extra_kwargs = {
+            'description': {'required': False},
+            'host': {'read_only': True},
+            'users': {'read_only': True}
+        }
 
 
 class GroupSessionSerializerFull(GroupSessionSerializer):
