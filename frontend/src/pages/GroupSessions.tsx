@@ -96,7 +96,9 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
 }
 
 export default function GroupSessions() {
-  const { data: apiData } = useSWR<GroupSessionResponse>(LIST_GROUP_SESSIONS_ENDPOINT);
+  const { data: apiData } = useSWR<GroupSessionResponse>(
+    LIST_GROUP_SESSIONS_ENDPOINT
+  );
   const data = apiData ?? [];
 
   // let data: GroupSession[] = [
@@ -145,23 +147,8 @@ export default function GroupSessions() {
   //     location: "The Moon",
   //     date: "in 3 days",
   //   },
-    
+
   // ];
-
-  // async function getGroupSessions() {
-  //   const res = await fetch(LIST_GROUP_SESSIONS_ENDPOINT);
-  //   data = await res.json();
-  //   console.log(data);
-  //   console.log("inside")
-
-  //   return "";
-
-  // }
-
-  // getGroupSessions();
-
-  console.log(data);
-  // console.log("outside");
 
   const [selectedSession, setSelectedSession] = useState<
     GroupSession | undefined
@@ -177,14 +164,17 @@ export default function GroupSessions() {
     return (
       session.name.toLowerCase().includes(lowerSearchText) ||
       session.skills?.some((skill) =>
-        skill.toLowerCase().includes(lowerSearchText)
+        skill.toString().toLowerCase().includes(lowerSearchText)
       )
     );
   };
 
-  const filteredSessions = data.filter(sessionFilter);
+  const filteredSessions = data
+    // .filter((session) => Date.parse(session.date) >= Date.now()) // Only show sessions in the future
+    .filter(sessionFilter) // Filter by the user searchbar input
+    // .sort((a, b) => Date.parse(a.date) - Date.parse(b.date)); // Sort by the closest start date
+    .sort((a, b) => b.id - a.id); // TODO: DEBUG REMOVE
 
-  console.log("just before return");
   return (
     <>
       <Topbar />
@@ -206,11 +196,11 @@ export default function GroupSessions() {
           </div>
         </div>
 
-        <h2>Joined Sessions</h2>
+        {/* <h2>Joined Sessions</h2>
         <SessionInfo
           session={data[0]}
           selectSession={() => setSelectedSession(undefined)}
-        />
+        /> */}
         <hr></hr>
         <h2>All sessions</h2>
 
