@@ -79,9 +79,19 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(cereal.data)
 
     @action(detail=True, methods=['get'])
-    def find_sessions(self, request, pk=None) -> Response:
+    def find_sessions(self, request, pk=None) -> Response:  # Retrieves set of suggested group sessions for this user
         user: User = self.get_object()
         return Response(GroupSessionSerializerFull(user.find_group_sessions(), many=True).data)
+
+    @action(detail=True, methods=['get'])
+    def host_sessions(self, request, pk=None) -> Response:  # Retrieves set of hosted group sessions for this user
+        user: User = self.get_object()
+        return Response(GroupSessionSerializerFull(user.get_host_sessions(), many=True).data)
+
+    @action(detail=True, methods=['get'])
+    def sessions(self, request, pk=None) -> Response:  # Retrieves set of group sessions this user is in
+        user: User = self.get_object()
+        return Response(GroupSessionSerializerFull(user.get_sessions(), many=True).data)
 
 
 class RegisterView(generics.GenericAPIView):

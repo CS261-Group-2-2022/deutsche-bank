@@ -119,9 +119,21 @@ class User(AbstractBaseUser):
         """ Retrieves set of suggested group sessions for this user
         :return: set of suggested group sessions for this user
         """
-        # skills__in=self.interests.all()
+        # skills__in=self.interests.all() TODO: Skill Matching
         return GroupSession.objects.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).exclude(
             users__pk__contains=self.pk)
+
+    def get_host_sessions(self) -> QuerySet[List[GroupSession]]:
+        """ Retrieves set of hosted group sessions for this user
+        :return: set of hosted group sessions for this user
+        """
+        return self.session_host.all()
+
+    def get_sessions(self):
+        """  Retrieves set of group sessions this user is in
+        :return: set of group sessions this user is in
+        """
+        return GroupSession.objects.all().filter(users__pk__contains=self.pk)
 
 
 class Meeting(models.Model):
