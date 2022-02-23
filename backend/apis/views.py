@@ -142,3 +142,8 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
 class BusinessAreaViewSet(viewsets.ModelViewSet):
     queryset = BusinessArea.objects.all()
     serializer_class = BusinessAreaSerializer
+
+
+class SkillViewSet(viewsets.ModelViewSet):
+    queryset = Skill.objects.all()
+    serializer_class = SkillSerializer
