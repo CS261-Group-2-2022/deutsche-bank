@@ -13,7 +13,40 @@ from .dummy_data_dataset import dataset
 """ This file contains the database models and some associated utilities.
 """
 
-class Skill(models.Model):
+class Randomisable:
+    @classmethod
+    def choose_random(cls) -> Type[cls]:
+        return random.choice(cls.objects.all())
+
+    @classmethod
+    def choose_list_at_random(cls,
+                              minimum_number = 1,
+                              maximum_number = None,
+                              map_with = None) -> List[Type[cls]]:
+        pool = []
+        if map_with == None:
+            pool = list(cls.objects.all())
+        else:
+            pool = list(map_with(cls.objects.all()))
+
+        count = len(pool)
+
+        if maximum_number is not None:
+            maximum_number = min(count, maximum_number)
+        else:
+            maximum_number = count
+
+        how_many_to_choose = 1
+        if minimum_number < maximum_number:
+            how_many_to_choose = random.randint(minimum_number, maximum_number)
+
+        return random.sample(pool, how_many_to_choose)
+
+    @classmethod
+    def make_random(cls) -> Type[cls]:
+        raise NotImplementedError()
+
+class Skill(models.Model, Randomisable):
     """ Database model that holds all the 'kinds' of expertise users may have.
 
     This can then be searched through during account creation to select your areas of expertise.
@@ -22,7 +55,7 @@ class Skill(models.Model):
     name: str = models.CharField(max_length=100, unique=True)
 
 
-class BusinessArea(models.Model):
+class BusinessArea(models.Model, Randomisable):
     """ Database model that stores the business areas that are in the company.
 
     This can then be searched through during account creation to select your business area, or more
@@ -51,7 +84,7 @@ class Request(models.Model):
     mentor: User = models.ForeignKey('User', related_name='request_mentor', on_delete=models.CASCADE)
 
 
-class User(models.Model):
+class User(models.Model, Randomisable):
     """ Database model that describes a single User.
     """
     first_name: str = models.CharField(max_length=100)
@@ -110,15 +143,6 @@ class User(models.Model):
             return ret
 
     @classmethod
-    def choose_random(cls) -> Type[User]:
-        return random.choice(cls.objects.all())
-
-    @classmethod
-    def choose_list_at_random(cls) -> List[Type[User]]:
-        return random.sample(list(cls.objects.all()),
-                             random.randint(1, cls.objects.all().count()))
-
-    @classmethod
     def make_random(cls,
                     skills_pool : List[Skill] = None,
                     business_area_pool : List[BusinessArea] = None,
@@ -128,18 +152,31 @@ class User(models.Model):
         if skills_pool == None:
             skills_pool = list(Skill.objects.all())
 
-        if business_area_pool == None:
-            business_area_pool = list(BusinessArea.objects.all())
+        business_area = ''
+        if 'business_area' in kwargs_for_user_constructor:
+            business_area = kwargs_for_user_constructor.pop('business_area')
+        else:
+            if business_area_pool == None:
+                business_area_pool = list(BusinessArea.objects.all())
+
+            business_area=random.choice(business_area_pool)
 
         first_name=random.choice(dataset["first_names"])
         last_name=random.choice(dataset["last_names"])
 
-        business_area=random.choice(business_area_pool)
-
         email_domain = "deutschebank.com"
 
-        interests=random.sample(skills_pool, random.randrange(1,7))
-        expertise=random.sample(skills_pool, random.randrange(1,4))
+        interests = []
+        if 'interests' in kwargs_for_user_constructor:
+            interests = kwargs_for_user_constructor.pop('interests')
+        else:
+            interests = random.sample(skills_pool, random.randrange(1,7))
+
+        expertise = []
+        if 'expertise' in kwargs_for_user_constructor:
+            expertise = kwargs_for_user_constructor.pop('expertise')
+        else:
+            expertise = random.sample(skills_pool, random.randrange(1,7))
 
         u = cls.objects.create(first_name=first_name,
                                last_name=last_name,
@@ -149,8 +186,10 @@ class User(models.Model):
                                password="nunya",
                                mentor_intent=random.choice([False, True]),
                                **kwargs_for_user_constructor)
+
         u.interests.set(interests)
         u.expertise.set(expertise)
+
         u.save()
         return u
 
