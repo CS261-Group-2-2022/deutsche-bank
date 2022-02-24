@@ -12,6 +12,7 @@ COPY . .
 
 RUN rm -rf /apis/migrations/
 RUN rm -rf /*/.__pycache__/
+RUN python3 manage.py collectstatic --noinput
 # 3) Initialise the django app - making sure all migrations are applied
 
 # 4) Run the django server

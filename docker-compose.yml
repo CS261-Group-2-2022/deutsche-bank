@@ -51,6 +51,9 @@ services: # 'services' are the containers that we're going to run together.
       - DEBUG=True
       - SECRET_KEY=FAKE_SECRET_KEY_USED_IN_DEVELOP
 
+    volumes:
+      - apifiles:/apifiles
+
   frontend: # just here to automatically run `npm run build`.
     build: ./frontend
     volumes:
@@ -69,12 +72,14 @@ services: # 'services' are the containers that we're going to run together.
 
     volumes:
       - static:/static/:ro # Mount the static volume into the folder `/static` as read-only.
+      - apifiles:/apifiles/:ro # Mount the apifiles volume into the folder `/apifiles` as read-only.
 
 volumes: # 'volumes' are storage spaces (directories) shared between individual containers.
   # The 'static' volume will hold the static front-end files (html, css, js).
   # Basically, the output of 'npm run build' gets placed into this volume, and then this is served
   # by nginx.
   static:
+  apifiles:
 
   # The 'database' volume will hold the database data.
   # Basically, the postgres database will store its data inside of this volume.
