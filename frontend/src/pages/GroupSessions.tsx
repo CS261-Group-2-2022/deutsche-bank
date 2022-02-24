@@ -75,7 +75,10 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
               <SessionTopicLabel key={skill.id} name={skill.name} />
             ))}
           </div>
-          <LocationText location={session.location} />
+          <LocationText
+            location={session.location}
+            link={session.virtual_link}
+          />
           <DateTextProps date={session.date} />
         </div>
 

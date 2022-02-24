@@ -124,9 +124,7 @@ export type GroupSession = {
   host: User;
   skills?: Skill[];
   users: User[];
-
-  // TODO: backend???
-  link?: string;
+  virtual_link?: string;
 };
 
 export type GroupSessionResponse = GroupSession[];

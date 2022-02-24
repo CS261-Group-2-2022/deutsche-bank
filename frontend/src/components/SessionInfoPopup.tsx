@@ -153,7 +153,10 @@ export default function SessionInfoPopup({
       </div>
 
       <div className="flex flex-col">
-        <LocationText location={session?.location ?? ""} link={session?.link} />
+        <LocationText
+          location={session?.location ?? ""}
+          link={session?.virtual_link}
+        />
         <DateText date={session?.date ?? ""} />
 
         <CapacityText

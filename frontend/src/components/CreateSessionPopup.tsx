@@ -86,7 +86,8 @@ export default function CreateSessionPopup({
         description,
         capacity,
         date: datetime,
-        skills: [2, 3, 4], // TODO: use real skills
+        skills: [assignedSkills?.id],
+        virtual_link: virtualLink,
       }),
     });
 
