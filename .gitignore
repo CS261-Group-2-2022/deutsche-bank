@@ -6,3 +6,6 @@
 # Ignore migrations
 backend/*/migrations/**
 backend/*/migrations/**.*
+
+# Ignore SQLLite file
+backend/db.sqlite3
