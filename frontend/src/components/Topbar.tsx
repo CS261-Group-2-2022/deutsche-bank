@@ -1,5 +1,6 @@
 import { BellIcon, CogIcon, LogoutIcon } from "@heroicons/react/solid";
 import { Link, NavLink } from "react-router-dom";
+import UserProvider, { useUser } from "../utils/authentication";
 
 type MenuButtonProps = {
   text: string;
@@ -24,10 +25,9 @@ function MenuButton({ text, to }: MenuButtonProps) {
 
 type DashboardUserHeroProps = {
   name: string;
-  businessArea: string;
 };
 
-export function DashboardUserHero({ name, businessArea }: DashboardUserHeroProps) {
+export function DashboardUserHero({ name }: DashboardUserHeroProps) {
   return (
     <div className="bg-white">
       <div className="flex flex-row lg:items-center lg:justify-between w-full mx-auto py-4 px-4 sm:px-6 z-20">
@@ -45,9 +45,6 @@ export function DashboardUserHero({ name, businessArea }: DashboardUserHeroProps
             <span className="block text-xl sm:text-m font-bold">
               {name}
             </span>
-            <span className="block text-l sm:text-m text-gray-500">
-              {businessArea}
-            </span>
           </h2>
         </div>
       </div>
@@ -56,6 +53,12 @@ export function DashboardUserHero({ name, businessArea }: DashboardUserHeroProps
 }
 
 export default function Topbar() {
+  const { user } = useUser();
+  const firstname : string = user?.first_name ?? "";
+  const lastname : string = user?.last_name ?? "";
+
+  const fullname = firstname + " " + lastname;
+
   return (
     <div className="relative bg-white">
       
@@ -63,8 +66,7 @@ export default function Topbar() {
         
         <div className="flex justify-between items-center md:justify-start md:space-x-10">
         <DashboardUserHero
-        name="Bobby"
-        businessArea="Starbucks"
+        name={fullname}
           /> 
           {/* LHS Panel */}
           <div className="flex justify-start lg:w-0 lg:flex-1" />
