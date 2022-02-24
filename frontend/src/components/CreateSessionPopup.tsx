@@ -6,6 +6,7 @@ import {
   CREATE_GROUP_SESSION_ENDPOINT,
   getAuthToken,
   Skill,
+  LIST_USER_HOSTING_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 import Popup from "./Popup";
 import { FormInput } from "./FormInput";
@@ -99,6 +100,7 @@ export default function CreateSessionPopup({
 
       // Update the list of available group sessions
       mutate(LIST_GROUP_SESSIONS_ENDPOINT);
+      mutate(LIST_USER_HOSTING_SESSIONS_ENDPOINT);
     } else {
       setSessionTitleError(body.name?.join(" "));
       setLocationError(body.location?.join(" "));
