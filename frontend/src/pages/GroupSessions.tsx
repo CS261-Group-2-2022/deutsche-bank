@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
+import useSWR from "swr";
+import { useSearchParams } from "react-router-dom";
 import { PlusIcon } from "@heroicons/react/solid";
-import Topbar from "../components/Topbar";
 import {
   GroupSession,
   GroupSessionResponse,
@@ -7,17 +9,12 @@ import {
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
-import useSWR from "swr";
-import { useUser } from "../utils/authentication";
+import Topbar from "../components/Topbar";
 import SessionInfoPopup from "../components/SessionInfoPopup";
-import { useEffect, useState } from "react";
 import SessionTopicLabel from "../components/SessionTopicLabel";
-
 import LocationText from "../components/LocationText";
 import DateTextProps from "../components/DateText";
 import CreateSessionPopup from "../components/CreateSessionPopup";
-import { useSkills } from "../utils/skills";
-import { useSearchParams } from "react-router-dom";
 
 type SearchBarProps = {
   searchText: string;
@@ -174,7 +171,8 @@ export default function GroupSessions() {
   };
 
   const filteredSessions = allSessions
-    // .filter((session) => Date.parse(session.date) >= Date.now()) // Only show sessions in the future
+    // TODO: Only show sessions in the future
+    // .filter((session) => Date.parse(session.date) >= Date.now())
     // Filter out sessions you are hosting or have already joined
     .filter(
       (session) =>
@@ -183,9 +181,9 @@ export default function GroupSessions() {
         ) &&
         !hostingSessions?.find((otherSession) => session.id == otherSession.id)
     )
-    .filter(sessionFilter) // Filter by the user searchbar input
-    // .sort((a, b) => Date.parse(a.date) - Date.parse(b.date)); // Sort by the closest start date
-    .sort((a, b) => b.id - a.id); // TODO: DEBUG REMOVE
+    .filter(sessionFilter); // Filter by the user searchbar input
+  // TODO: Sort by the closest start date
+  // .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
 
   return (
     <>

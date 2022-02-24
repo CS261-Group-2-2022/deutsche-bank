@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { mutate } from "swr";
 import { Dialog } from "@headlessui/react";
 import {
   CreateSessionResponse,
@@ -8,13 +10,9 @@ import {
   Skill,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
+import { useSkills } from "../utils/skills";
 import Popup from "./Popup";
 import { FormInput } from "./FormInput";
-import FormDropdown from "./FormDropdown";
-import { useEffect, useState } from "react";
-import { useUser } from "../utils/authentication";
-import { useSkills } from "../utils/skills";
-import { mutate } from "swr";
 import { FormTextArea } from "./FormTextarea";
 import FormMultiSelect from "./FormMultiSelect";
 
@@ -35,7 +33,6 @@ export default function CreateSessionPopup({
   isOpen,
   closeModal,
 }: CreateSessionPopupProps) {
-  const { user } = useUser();
   const { skills } = useSkills();
 
   const [sessionTitle, setSessionTitle] = useState("");
@@ -90,7 +87,7 @@ export default function CreateSessionPopup({
         description,
         capacity,
         date: datetime,
-        skills: assignedSkills.map((skill) => skill.id),
+        skills: assignedSkills.map((skill) => skill.id), // TODO: only use permitted skills? (ones they are expert in)
         virtual_link: virtualLink,
       }),
     });
