@@ -159,12 +159,12 @@ export default function SessionInfoPopup({
     >
       <Dialog.Title as="h3" className="leading-6 text-gray-900 space-x-2">
         <span className="text-3xl font-black uppercase">{session?.name}</span>{" "}
-        <div className="space-x-1 text-lg">
-          {session?.skills?.map((skill) => (
-            <SessionTopicLabel key={skill.id} name={skill.name} />
-          ))}
-        </div>
       </Dialog.Title>
+      <div className="space-x-1 space-y-1 text-lg">
+        {session?.skills?.map((skill) => (
+          <SessionTopicLabel key={skill.id} name={skill.name} />
+        ))}
+      </div>
       <div className="my-2 flex items-center">
         <img
           alt="Session Image"
