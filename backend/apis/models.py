@@ -101,7 +101,7 @@ class User(AbstractBaseUser):
         """ Retrieves set of suggested group sessions for this user
         :return: set of suggested group sessions for this user
         """
-        # skills__in=self.interests.all() TODO: Skill Matching
+        # skills__in=self.interests.all() TODO: Skill Matching/Ordering, Filter Out Sessions at Maximum Capacity
         return GroupSession.objects.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).exclude(
             users__pk__contains=self.pk)
 
