@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .models import *
 from .serializers import *
 
 
@@ -19,69 +20,21 @@ class UserViewSet(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
 
     @action(detail=True, methods=['get'])
-    def full(self, request, pk=None):
+    def full(self, request, pk=None) -> Response:
         return Response(FullUserSerializer(self.get_object()).data)
 
     @action(detail=True, methods=['get'])
-    def mentees(self, request, pk=None) -> List[User]:
+    def mentees(self, request, pk=None) -> Response:
         user: User = self.get_object()
 
         cereal = UserSerializer(user.get_mentees(), many=True)
         return Response(cereal.data)
 
     @action(detail=True, methods=['get'])
-    def expertise(self, request, pk=None) -> List[Skill]:
+    def expertise(self, request, pk=None) -> Response:
         user: User = self.get_object()
 
         cereal = SkillSerializer(user.expertise.all(), many=True)
-        return Response(cereal.data)
-
-    @action(detail=True, methods=['get'])
-    def meetings(self, request, pk=None) -> List[Meeting]:
-        user: User = self.get_object()
-
-        cereal = MeetingSerializer(user.get_meetings(), many=True)
-        return Response(cereal.data)
-
-    @action(detail=True, methods=['get'])
-    def mentor_meetings(self, request, pk=None) -> List[Meeting]:
-        user: User = self.get_object()
-
-        cereal = MeetingSerializer(user.get_mentor_meetings(), many=True)
-        return Response(cereal.data)
-
-    @action(detail=True, methods=['get'])
-    def mentee_meetings(self, request, pk=None) -> List[Meeting]:
-        user: User = self.get_object()
-
-        cereal = MeetingSerializer(user.get_mentee_meetings(), many=True)
-        return Response(cereal.data)
-
-    @action(detail=True, methods=['get'])
-    def mentee_plan(self, request, pk=None) -> List[ActionPlan]:
-        user: User = self.get_object()
-
-        cereal = ActionPlanSerializer(user.get_mentee_action_plans(), many=True)
-        return Response(cereal.data)
-
-    @action(detail=True, methods=['get'])
-    def mentor_plan(self, request, pk=None) -> List[ActionPlan]:
-        user: User = self.get_object()
-
-        cereal = ActionPlanSerializer(user.get_mentor_action_plans(), many=True)
-        return Response(cereal.data)
-
-    @action(detail=True, methods=['get'])
-    def plan(self, request, pk=None) -> List[ActionPlan]:
-        user: User = self.get_object()
-
-        cereal = ActionPlanSerializer(user.get_action_plans(), many=True)
-        return Response(cereal.data)
-
-    @action(detail=True, methods=['get'])
-    def mentees(self, request, pk=None) -> List[ActionPlan]:
-        user: User = self.get_object()
-        cereal = UserSerializer(user.get_mentees(), many=True)
         return Response(cereal.data)
 
 
