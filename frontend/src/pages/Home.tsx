@@ -5,10 +5,13 @@ import {
   UserGroupIcon,
 } from "@heroicons/react/solid";
 import { Link } from "react-router-dom";
+import useSWR from "swr";
 //import RoundedImage from "../components/RoundedImage";
 import Topbar from "../components/Topbar";
+import UpcomingSessions from "../components/UpcomingSessions";
 import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
+import { GroupSessionResponse, LIST_GROUP_SESSIONS_ENDPOINT, LIST_USER_JOINED_SESSIONS_ENDPOINT } from "../utils/endpoints";
 
 type DashboardUserHeroProps = {
   name: string;
@@ -184,16 +187,26 @@ function GroupSessionsInfo() {
 }
 
 function UpcomingSessionsColumn() {
+  const sessions = ["Session A","Session B","Session C","Session D","Session E","Session F"]
+  const { data: apiSessionData } = useSWR<GroupSessionResponse>(
+    LIST_USER_JOINED_SESSIONS_ENDPOINT
+  );
+  const allSessions = apiSessionData ?? [];
+
   return (
     <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 text-center h-full">
       <h4 className="text-l sm:text-xl font-semibold flex items-center justify-center">
         <CalendarIcon className="mr-2 h-5 w-5" />
+        <div className="mb-2">
         Upcoming Sessions
+        </div>
       </h4>
-      <div className="flex justify items-center justify-center h-full">
-        <p className="text-m align-middle">
-          You have no upcoming sessions scheduled
-        </p>
+      <div className="justify justify-center grid grid-cols-1 gap-1">
+        {allSessions.map((session) => (
+          <>
+          <UpcomingSessions session={session}/>
+          </>
+        ))}
       </div>
     </div>
   );
