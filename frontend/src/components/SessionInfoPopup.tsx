@@ -121,8 +121,10 @@ export default function SessionInfoPopup({
     }
   };
 
+  const isHosting = session?.host.id == user?.id;
   const hasJoined = session?.users.find((u) => u.id == user?.id);
-  const buttonColours = hasJoined ? LEAVE_BUTTON_COLOURS : JOIN_BUTTON_COLOURS;
+  const buttonColours =
+    hasJoined && !isHosting ? LEAVE_BUTTON_COLOURS : JOIN_BUTTON_COLOURS;
 
   return (
     <Popup
@@ -171,13 +173,19 @@ export default function SessionInfoPopup({
       )}
 
       <div className="grid grid-cols-10 gap-2">
-        <button
-          type="button"
-          className={`inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md focus:outline-none ${buttonColours[0]}`}
-          onClick={() => (hasJoined ? leaveSession() : joinSession())}
-        >
-          {hasJoined ? "Leave Session" : "Join Session"}
-        </button>
+        {!isHosting ? (
+          <button
+            type="button"
+            className={`inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md focus:outline-none ${buttonColours[0]}`}
+            onClick={() => (hasJoined ? leaveSession() : joinSession())}
+          >
+            {hasJoined ? "Leave Session" : "Join Session"}
+          </button>
+        ) : (
+          <p className="col-span-8 px-4 py-2 font-medium text-center text-gray-900">
+            You are hosting this session
+          </p>
+        )}
         <button
           type="button"
           className={`inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${buttonColours[1]}`}

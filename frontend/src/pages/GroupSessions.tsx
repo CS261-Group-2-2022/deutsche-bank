@@ -194,8 +194,8 @@ export default function GroupSessions() {
 
           {filteredSessions.length === 0 && (
             <h1 className="font-bold text-xl text-gray-700 mt-10 text-center">
-              There are no sessions available{" "}
-              {isFiltering && "which match your search filter"}. Maybe create a
+              There are no sessions available
+              {isFiltering && " which match your search filter"}. Maybe create a
               new one?
             </h1>
           )}
