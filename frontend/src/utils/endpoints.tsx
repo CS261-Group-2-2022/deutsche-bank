@@ -8,6 +8,8 @@ export const LIST_GROUP_SESSIONS_ENDPOINT =
   "http://localhost:8000/api/v1/session/";
 export const LIST_USER_JOINED_SESSIONS_ENDPOINT =
   "http://localhost:8000/api/v1/session/user";
+export const LIST_USER_HOSTING_SESSIONS_ENDPOINT =
+  "http://localhost:8000/api/v1/session/host";
 export const CREATE_GROUP_SESSION_ENDPOINT =
   "http://localhost:8000/api/v1/session/";
 export const JOIN_SESSION_ENDPOINT =

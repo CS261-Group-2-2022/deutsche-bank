@@ -4,6 +4,7 @@ import {
   GroupSession,
   GroupSessionResponse,
   LIST_GROUP_SESSIONS_ENDPOINT,
+  LIST_USER_HOSTING_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 import useSWR from "swr";
@@ -97,9 +98,12 @@ export default function GroupSessions() {
   const { data: apiData } = useSWR<GroupSessionResponse>(
     LIST_GROUP_SESSIONS_ENDPOINT
   );
-  const data = apiData ?? [];
+  const allSessions = apiData ?? [];
   const { data: joinedSessions } = useSWR<GroupSessionResponse>(
     LIST_USER_JOINED_SESSIONS_ENDPOINT
+  );
+  const { data: hostingSessions } = useSWR<GroupSessionResponse>(
+    LIST_USER_HOSTING_SESSIONS_ENDPOINT
   );
 
   // Current component state
@@ -116,10 +120,10 @@ export default function GroupSessions() {
     // When data updates, we should update the object stored in selected session so it uses new information
     if (selectedSession) {
       setSelectedSession(
-        data.find((session) => session.id == selectedSession.id)
+        allSessions.find((session) => session.id == selectedSession.id)
       );
     }
-  }, [data]);
+  }, [allSessions]);
 
   const sessionFilter = (session: GroupSession) => {
     if (!isFiltering) return true;
@@ -131,11 +135,15 @@ export default function GroupSessions() {
     );
   };
 
-  const filteredSessions = data
+  const filteredSessions = allSessions
     // .filter((session) => Date.parse(session.date) >= Date.now()) // Only show sessions in the future
+    // Filter out sessions you are hosting or have already joined
     .filter(
       (session) =>
-        !joinedSessions?.find((otherSession) => session.id == otherSession.id)
+        !joinedSessions?.find(
+          (otherSession) => session.id == otherSession.id
+        ) &&
+        !hostingSessions?.find((otherSession) => session.id == otherSession.id)
     )
     .filter(sessionFilter) // Filter by the user searchbar input
     // .sort((a, b) => Date.parse(a.date) - Date.parse(b.date)); // Sort by the closest start date
@@ -161,6 +169,25 @@ export default function GroupSessions() {
             <SearchBar searchText={searchText} onChange={changeSearchText} />
           </div>
         </div>
+
+        {hostingSessions && hostingSessions.length > 0 && (
+          <>
+            <h2 className="text-gray-900 font-bold text-2xl">
+              Sessions You{"'"}re Hosting
+            </h2>
+            <div className="space-y-2">
+              {hostingSessions.map((session) => (
+                <SessionInfo
+                  key={session.id}
+                  session={session}
+                  selectSession={() => setSelectedSession(session)}
+                />
+              ))}
+            </div>
+
+            <hr></hr>
+          </>
+        )}
 
         {joinedSessions && joinedSessions.length > 0 && (
           <>
