@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
+import { mutate } from "swr";
 import { Dialog, Disclosure } from "@headlessui/react";
+import { ChevronUpIcon } from "@heroicons/react/solid";
 import {
   getAuthToken,
   GroupSession,
@@ -10,15 +13,12 @@ import {
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
   User,
 } from "../utils/endpoints";
+import { useUser } from "../utils/authentication";
 import SessionTopicLabel from "./SessionTopicLabel";
 import LocationText from "./LocationText";
 import DateText from "./DateText";
 import Popup from "./Popup";
-import { useEffect, useState } from "react";
 import CapacityText from "./CapacityText";
-import { useUser } from "../utils/authentication";
-import { mutate } from "swr";
-import { ChevronUpIcon } from "@heroicons/react/solid";
 
 const RegisteredUser = ({ user }: { user: User }) => {
   return (
