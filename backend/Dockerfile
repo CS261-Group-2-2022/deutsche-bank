@@ -10,13 +10,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 2) Copy the backend code into the container
 COPY . .
 
+RUN rm -rf /apis/migrations/
+RUN rm -rf /*/.__pycache__/
 # 3) Initialise the django app - making sure all migrations are applied
-CMD ["python3", "manage.py", "makemigrations"]
-CMD ["python3", "manage.py", "migrate"]
 
 # 4) Run the django server
-CMD ["gunicorn", "deutschebank.wsgi", "--bind", "0.0.0.0:8000"]
-
+ENTRYPOINT ["sh", "init.sh"]
 # TODOs
 # - TODO Run tests and fail if they fail?
 #
