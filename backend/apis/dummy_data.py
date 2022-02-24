@@ -87,7 +87,7 @@ def create_dummy_users():
         print(f" | {u.pk=}:")
         print(f" | {u.id=}:")
         print(" | " + u.first_name)
-        print(" | " + f"{u.mentor=}")
+        print(" | " + f"{u.mentorship.mentor if u.mentorship is not None else 'None'}")
     print(" `-----------------------------------------------------------")
 
 
