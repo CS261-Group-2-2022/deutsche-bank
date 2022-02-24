@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from typing import *
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, Serializer
+
 from .models import *
 
 
@@ -87,6 +87,19 @@ class GroupSessionSerializer(ModelSerializer):
     class Meta:
         model = GroupSession
         exclude = []
+        extra_kwargs = {
+            'description': {'required': False},
+            'virtual_link': {'required': False},
+            'image_link': {'required': False},
+            'host': {'read_only': True},
+            'users': {'read_only': True}
+        }
+
+
+class GroupSessionSerializerFull(GroupSessionSerializer):
+    host = UserSerializer()
+    users = UserSerializer(many=True)
+    skills = SkillSerializer(many=True)
 
 
 class MentorshipSerializer(ModelSerializer):
@@ -95,7 +108,7 @@ class MentorshipSerializer(ModelSerializer):
         exclude = []
 
 
-class FullUserSerializer(UserSerializer):
+class UserSerializerFull(UserSerializer):
     business_area = BusinessAreaSerializer()
     expertise = SkillSerializer(many=True)
     mentorship = MentorshipSerializer()

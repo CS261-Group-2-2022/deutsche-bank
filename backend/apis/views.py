@@ -3,8 +3,10 @@
 from django.contrib.auth import login
 from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
-from rest_framework import viewsets, generics, permissions
+from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -21,7 +23,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def full(self, request, pk=None) -> Response:
-        return Response(FullUserSerializer(self.get_object()).data)
+        return Response(UserSerializerFull(self.get_object()).data)
 
     @action(detail=True, methods=['get'])
     def mentees(self, request, pk=None) -> Response:
@@ -36,7 +38,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
         cereal = SkillSerializer(user.expertise.all(), many=True)
         return Response(cereal.data)
-
 
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -76,6 +77,62 @@ class CurrentUserView(APIView):
 class GroupSessionViewSet(viewsets.ModelViewSet):
     queryset = GroupSession.objects.all()
     serializer_class = GroupSessionSerializer
+    permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to manage group sessions
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data['host'] = request.user  # TODO: Test whether this works
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def list(self, request, *args, **kwargs) -> Response:
+        queryset = GroupSession.objects.all()
+        serializer = GroupSessionSerializerFull(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def user(self, request, *args, **kwargs) -> Response:  # Retrieves set of group sessions this user is in
+        user: User = request.user
+        return Response(GroupSessionSerializerFull(user.get_sessions(), many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def host(self, request, *args, **kwargse) -> Response:  # Retrieves set of hosted group sessions for this user
+        user: User = request.user
+        return Response(GroupSessionSerializerFull(user.get_host_sessions(), many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def find(self, request, *args, **kwargs) -> Response:  # Retrieves set of suggested group sessions for this user
+        user: User = request.user
+        return Response(GroupSessionSerializerFull(user.find_group_sessions(), many=True).data)
+
+    @action(detail=True, methods=['post'])
+    def join(self, request, *args, **kwargs):  # Joins the session
+        session: GroupSession = self.get_object()
+        user: User = request.user
+        if user.get_sessions().filter(pk=session.pk).exists():
+            return Response({'error': 'You are already in this session'}, status=status.HTTP_400_BAD_REQUEST)
+        if user.get_host_sessions().filter(pk=session.pk).exists():
+            return Response({'error': 'You are hosting this session'}, status=status.HTTP_400_BAD_REQUEST)
+        if session.users.count() >= session.capacity:
+            return Response({'error': 'This session is full'}, status=status.HTTP_400_BAD_REQUEST)
+
+        session.users.add(user)
+        user.save()
+        return Response(GroupSessionSerializer(session).data)
+
+    @action(detail=True, methods=['post'])
+    def leave(self, request, *args, **kwargs):  # Leaves the session
+        session: GroupSession = self.get_object()
+        user: User = request.user
+        if not user.get_sessions().filter(pk=session.pk).exists():
+            return Response({'error': 'User is not in session'}, status=status.HTTP_400_BAD_REQUEST)
+
+        session.users.remove(user)
+        user.save()
+        return Response(GroupSessionSerializer(session).data)
 
 
 class MentorshipViewSet(viewsets.ModelViewSet):
@@ -96,3 +153,8 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
 class BusinessAreaViewSet(viewsets.ModelViewSet):
     queryset = BusinessArea.objects.all()
     serializer_class = BusinessAreaSerializer
+
+
+class SkillViewSet(viewsets.ModelViewSet):
+    queryset = Skill.objects.all()
+    serializer_class = SkillSerializer

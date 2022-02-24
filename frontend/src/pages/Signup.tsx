@@ -51,7 +51,7 @@ export default function Signup() {
 
   /** Navigates back to the page we originated from, or the home page if we don't know where from */
   const navigateBack = () =>
-    navigate((location.state as LocationState)?.from?.pathname ?? "/");
+    navigate((location.state as LocationState)?.from ?? "/");
 
   // Effect which runs if we have a user logged in.
   // If we are logged in, we need to redirect to where we came from, as we don't need to signup again
@@ -106,7 +106,6 @@ export default function Signup() {
     if (isRegisterSuccess(res, body)) {
       // Succesfully logged in
       setAuthToken(body.token, false);
-      window.open("/","_self");
     } else {
       setFirstNameError(body.first_name?.join(" "));
       setLastNameError(body.last_name?.join(" "));
@@ -139,54 +138,59 @@ export default function Signup() {
               <div className="grid grid-cols-2 gap-3">
                 <FormInput
                   id="firstname"
-                  name="firstname"
+                  name="First Name"
                   type="text"
                   autoComplete="fname"
                   placeholder="First Name"
                   text={firstName}
                   onChange={setFirstName}
                   error={firstNameError}
+                  required
                 />
                 <FormInput
                   id="lastname"
-                  name="lastname"
+                  name="Last Name"
                   type="text"
                   autoComplete="lname"
                   placeholder="Last Name"
                   text={lastName}
                   onChange={setLastName}
                   error={lastNameError}
+                  required
                 />
               </div>
               <FormInput
                 id="email-address"
-                name="email"
+                name="Email"
                 type="email"
                 autoComplete="email"
                 placeholder="Email address"
                 text={email}
                 onChange={setEmail}
                 error={emailError}
+                required
               />
               <FormInput
                 id="password"
-                name="password"
+                name="Password"
                 type="password"
                 autoComplete="current-password"
                 placeholder="Password"
                 text={password}
                 onChange={setPassword}
                 error={passwordError}
+                required
               />
               <FormInput
                 id="retyped-password"
-                name="retyped-password"
+                name="Retype Password"
                 type="password"
                 autoComplete="current-password"
                 placeholder="Retype Password"
                 text={retypedPasssword}
                 onChange={setRetypedPassword}
                 error={retypedPasswordError}
+                required
               />
               <PasswordStrengthIndicator
                 password={password}
