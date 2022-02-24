@@ -1,4 +1,3 @@
-version: '3'
 
 services: # 'services' are the containers that we're going to run together.
   postgresdb: # postgres container
@@ -31,12 +30,19 @@ services: # 'services' are the containers that we're going to run together.
       # Map the volume called 'database' to the folder '/var/lib/postgres/data' inside the container.
       - database:/var/lib/postgres/data
 
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 2s
+      timeout: 2s
+      retries: 5
+
   backend: # django app
     # TODOs for this container:
     #  - TODO Make the secrets used by this container (such as the username and password to connect
     #    to the database) actually secret and properly handled.
     depends_on:
-      - postgresdb
+      postgresdb:
+        condition: service_healthy
     build: ./backend
     ports:
       - 8000:8000 # django (gunicorn) talks on port 8000, as set in `backend/Dockerfile`.
