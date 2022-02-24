@@ -21,7 +21,7 @@ type UpcomingSessionProps = {
           />
   
           <div className="flex-auto flex-col">
-            <h1 className="font-bold text-xl flex">{session.name}</h1>
+            <h1 className="font-bold flex">{session.name}</h1>
             <div className="flex space-x-1">
               {/* {session.skills?.map((skill) => (
                 <SessionTopicLabel key={skill.id} name={skill.name} />

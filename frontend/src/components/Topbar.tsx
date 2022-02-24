@@ -22,16 +22,57 @@ function MenuButton({ text, to }: MenuButtonProps) {
   );
 }
 
+type DashboardUserHeroProps = {
+  name: string;
+  businessArea: string;
+};
+
+export function DashboardUserHero({ name, businessArea }: DashboardUserHeroProps) {
+  return (
+    <div className="bg-white">
+      <div className="flex flex-row lg:items-center lg:justify-between w-full mx-auto py-4 px-4 sm:px-6 z-20">
+        <div className="flex flex-row items-center gap-5">
+          <div className="flex-shrink-0">
+            <a href="#" className="block relative">
+              <img
+                alt="profil"
+                src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
+                className="mx-auto object-cover rounded-full h-10 w-10"
+              />
+            </a>
+          </div>
+          <h2>
+            <span className="block text-xl sm:text-m font-bold">
+              {name}
+            </span>
+            <span className="block text-l sm:text-m text-gray-500">
+              {businessArea}
+            </span>
+          </h2>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Topbar() {
   return (
     <div className="relative bg-white">
+      
       <div className="mx-auto px-4 sm:px-6">
-        <div className="flex justify-between items-center py-3 md:justify-start md:space-x-10">
+        
+        <div className="flex justify-between items-center md:justify-start md:space-x-10">
+        <DashboardUserHero
+        name="Bobby"
+        businessArea="Starbucks"
+          /> 
           {/* LHS Panel */}
           <div className="flex justify-start lg:w-0 lg:flex-1" />
+          
 
           {/* Central Buttons */}
           <nav className="hidden md:flex space-x-10">
+            
             <MenuButton text="Home" to="/" />
             <MenuButton text="Mentoring" to="/mentoring" />
             <MenuButton text="Group Events" to="/groups" />

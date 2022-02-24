@@ -13,47 +13,6 @@ import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
 import { GroupSessionResponse, LIST_USER_HOSTING_SESSIONS_ENDPOINT, LIST_USER_JOINED_SESSIONS_ENDPOINT } from "../utils/endpoints";
 
-type DashboardUserHeroProps = {
-  name: string;
-  businessArea: string;
-};
-
-function DashboardUserHero({ name, businessArea }: DashboardUserHeroProps) {
-  return (
-    <div className="bg-white">
-      <div className="flex flex-row lg:items-center lg:justify-between w-full mx-auto py-4 px-4 sm:px-6 lg:px-8 z-20">
-        <div className="flex flex-row items-center gap-5">
-          <div className="flex-shrink-0">
-            {/* <RoundedImage
-              src={
-                "https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-              }
-              alt="profile picture"
-              size={24}
-            /> */}
-
-            <a href="#" className="block relative">
-              <img
-                alt="profil"
-                src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-                className="mx-auto object-cover rounded-full h-24 w-24"
-              />
-            </a>
-          </div>
-          <h2>
-            <span className="block text-3xl sm:text-4xl font-bold">
-              Hi, {name}
-            </span>
-            <span className="block text-l sm:text-2xl text-gray-500">
-              {businessArea}
-            </span>
-          </h2>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 type ActionProps = {
   actionText: string;
   buttonText?: string;
@@ -222,13 +181,13 @@ export default function Home() {
   return (
     <>
       <Topbar />
-      <DashboardUserHero
+      {/* <DashboardUserHero
         name={user ? `${user.first_name} ${user.last_name}` : `UNKNOWN`}
         businessArea={
           areas.find((area) => area.id == user?.business_area)?.name ??
           "Unknown"
         }
-      />
+      /> */}
       <div className="bg-white w-full">
         <div className="grid grid-cols-3 mx-5 gap-5">
           <div className="col-span-2 space-y-5">
