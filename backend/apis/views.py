@@ -113,9 +113,11 @@ class GroupSessionViewSet(viewsets.ModelViewSet):
         session: GroupSession = self.get_object()
         user: User = request.user
         if user.get_sessions().filter(pk=session.pk).exists():
-            return Response({'error': 'User is already in session'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'You are already in this session'}, status=status.HTTP_400_BAD_REQUEST)
         if user.get_host_sessions().filter(pk=session.pk).exists():
-            return Response({'error': 'User is hosting session'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'You are hosting this session'}, status=status.HTTP_400_BAD_REQUEST)
+        if session.users.count() >= session.capacity:
+            return Response({'error': 'This session is full'}, status=status.HTTP_400_BAD_REQUEST)
 
         session.users.add(user)
         user.save()
