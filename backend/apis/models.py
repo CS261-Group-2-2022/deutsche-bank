@@ -101,7 +101,7 @@ class User(AbstractBaseUser):
         """ Retrieves set of suggested group sessions for this user
         :return: set of suggested group sessions for this user
         """
-        # skills__in=self.interests.all() TODO: Skill Matching
+        # skills__in=self.interests.all() TODO: Skill Matching/Ordering, Filter Out Sessions at Maximum Capacity
         return GroupSession.objects.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).exclude(
             users__pk__contains=self.pk)
 
@@ -144,7 +144,8 @@ class GroupSession(models.Model):
     name: str = models.CharField(max_length=100)
     location: str = models.CharField(null=True, max_length=100)
     virtual_link: str = models.CharField(null=True, max_length=100)
-    description: str = models.CharField(null=True, max_length=500)
+    image_link: str = models.CharField(null=True, max_length=100)
+    description: str = models.CharField(null=True, max_length=2000)
     host: User = models.ForeignKey(User, related_name='session_host',
                                    on_delete=models.CASCADE)  # if host is deleted, delete session
     capacity: int = models.IntegerField(null=True)

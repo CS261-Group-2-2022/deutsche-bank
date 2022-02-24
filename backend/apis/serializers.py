@@ -90,6 +90,7 @@ class GroupSessionSerializer(ModelSerializer):
         extra_kwargs = {
             'description': {'required': False},
             'virtual_link': {'required': False},
+            'image_link': {'required': False},
             'host': {'read_only': True},
             'users': {'read_only': True}
         }
