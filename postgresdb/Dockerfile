@@ -13,9 +13,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # TODO Don't yet know how to make this actually happen.
 # Currently, for first launch of this container, we need to manually sign in to the docker container
 # and run `psql --file postgres-database-initialisation-script.sql` before the container can work.
-COPY postgres-database-initialisation-script.sql ./postgres-database-initialisation-script.sql
+COPY postgres-database-initialisation-script.sql /docker-entrypoint-initdb.d/init.sql
 
 # 4) Change users and expose the port that postgres talks on.
+RUN mkdir -p /var/lib/postgres/data/pgdata  # Create postgres data directory
+RUN chown -R postgres /var/lib/postgres  # Set permissions
 USER postgres
 EXPOSE 5432
-
