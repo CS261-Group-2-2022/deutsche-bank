@@ -1,4 +1,4 @@
-import { Dialog } from "@headlessui/react";
+import { Dialog, Disclosure } from "@headlessui/react";
 import {
   getAuthToken,
   GroupSession,
@@ -8,6 +8,7 @@ import {
   LEAVE_SESSION_ENDPOINT,
   LIST_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
+  User,
 } from "../utils/endpoints";
 import SessionTopicLabel from "./SessionTopicLabel";
 import LocationText from "./LocationText";
@@ -17,6 +18,29 @@ import { useEffect, useState } from "react";
 import CapacityText from "./CapacityText";
 import { useUser } from "../utils/authentication";
 import { mutate } from "swr";
+import { ChevronUpIcon } from "@heroicons/react/solid";
+
+const RegisteredUser = ({ user }: { user: User }) => {
+  return (
+    <div className="flex items-center">
+      <div className="flex-shrink-0 h-10 w-10">
+        <img
+          className="h-10 w-10 rounded-full"
+          src={
+            "https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
+          }
+          alt="profile picture"
+        />
+      </div>
+      <div className="ml-4">
+        <div className="text-sm font-medium text-gray-900">
+          {user.first_name} {user.last_name}
+        </div>
+        <div className="text-sm text-gray-500">{user.email}</div>
+      </div>
+    </div>
+  );
+};
 
 const JOIN_BUTTON_COLOURS = [
   "bg-blue-700 hover:bg-blue-800",
@@ -168,6 +192,30 @@ export default function SessionInfoPopup({
       <div className="my-2">
         <p className="text-sm text-gray-500">{session?.description}</p>
       </div>
+
+      {session && session.users.length > 0 && (
+        <div className="w-full my-2">
+          <Disclosure>
+            {({ open }) => (
+              <>
+                <Disclosure.Button className="flex justify-between w-full px-4 py-2 text-sm font-medium text-left text-gray-900 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus-visible:ring focus-visible:ring-gray-500 focus-visible:ring-opacity-75">
+                  <span>Users Signed Up</span>
+                  <ChevronUpIcon
+                    className={`${
+                      open ? "transform rotate-180" : ""
+                    } w-5 h-5 text-gray-500`}
+                  />
+                </Disclosure.Button>
+                <Disclosure.Panel className="px-4 pt-4 pb-2 text-sm text-gray-500 space-y-2">
+                  {session?.users.map((user) => (
+                    <RegisteredUser key={user.id} user={user} />
+                  ))}
+                </Disclosure.Panel>
+              </>
+            )}
+          </Disclosure>
+        </div>
+      )}
 
       {error && (
         <div className="block text-sm m-1 font-medium text-red-700">
