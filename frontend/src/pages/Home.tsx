@@ -11,7 +11,7 @@ import Topbar from "../components/Topbar";
 import UpcomingSessions from "../components/UpcomingSessions";
 import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
-import { GroupSessionResponse, LIST_GROUP_SESSIONS_ENDPOINT, LIST_USER_HOSTING_SESSIONS_ENDPOINT, LIST_USER_JOINED_SESSIONS_ENDPOINT } from "../utils/endpoints";
+import { GroupSessionResponse, LIST_USER_HOSTING_SESSIONS_ENDPOINT, LIST_USER_JOINED_SESSIONS_ENDPOINT } from "../utils/endpoints";
 
 type DashboardUserHeroProps = {
   name: string;
@@ -72,13 +72,6 @@ function Action({ actionText, buttonText = "View", onClick }: ActionProps) {
               className="mx-auto object-cover rounded-full h-8 w-8"
             />
           </a>
-          {/* <RoundedImage
-            src={
-              "https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-            }
-            alt="profile picture"
-            size={8}
-          /> */}
         </div>
         <div className="flex flex-col w-full">
           <p className="text-gray-800 font-medium">{actionText}</p>
@@ -200,8 +193,8 @@ function UpcomingSessionsColumn() {
   console.log(allHostSessions.toString());
 
 
-  const allSessions = [...allJoinedSessions, ...allHostSessions];
-  allSessions.sort((a,b) => Date.parse(a.date) - Date.parse(b.date));
+  let allSessions = [...allJoinedSessions, ...allHostSessions];
+  allSessions = allSessions.sort((a,b) => Date.parse(a.date) - Date.parse(b.date)).filter((c) => Date.parse(c.date) >= Date.now());
 
   return (
     <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 text-center h-full">
