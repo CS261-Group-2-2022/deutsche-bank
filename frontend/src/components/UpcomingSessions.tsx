@@ -1,3 +1,4 @@
+import { SemanticClassificationFormat } from "typescript";
 import { GroupSession } from "../utils/endpoints";
 import DateTextProps from "./DateText";
 import LocationText from "./LocationText";
@@ -7,9 +8,11 @@ type UpcomingSessionProps = {
   };
   
   export default function UpcomingSession({ session}: UpcomingSessionProps) {
+      
+
     return (
     //   <div className="w-full rounded-lg p-2 ">
-    <div className="bg-gray-100 rounded-2xl border-gray-200 border-2 p-2 text-center h-full">
+    <button className="bg-gray-100 rounded-2xl border-gray-200 border-2 p-2 text-center h-full">
         <div className="flex items-center space-x-4">
           <img
             alt="Session Image"
@@ -22,7 +25,7 @@ type UpcomingSessionProps = {
             <div className="flex space-x-1">
               {/* {session.skills?.map((skill) => (
                 <SessionTopicLabel key={skill.id} name={skill.name} />
-              ))} */} temp
+              ))} */} {session.host.first_name + " " + session.host.last_name}
             </div>
             <LocationText
               location={session.location}
@@ -31,6 +34,6 @@ type UpcomingSessionProps = {
             <DateTextProps date={session.date} />
           </div>
         </div>
-      </div>
+      </button>
     );
   }
