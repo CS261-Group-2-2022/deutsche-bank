@@ -189,12 +189,13 @@ export default function CreateSessionPopup({
             />
           </div>
           <FormMultiSelect
-            title="Skills"
+            title="Session Topics"
             options={skills}
             selected={assignedSkills}
             setSelected={setAssignedSkills}
             error={skillsError}
-            placeholder="Select an area"
+            placeholder="Select topics for the session"
+            hashColouredLabels
           />
           <FormTextArea
             id="description"

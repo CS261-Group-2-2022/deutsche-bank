@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, SelectorIcon, XIcon } from "@heroicons/react/solid";
+import { colourFromName } from "../utils/colours";
 
 export interface DropdownOption {
   id: number;
@@ -36,6 +37,7 @@ export type FormMultiSelectProps<T extends DropdownOption> = {
   setSelected: React.Dispatch<React.SetStateAction<T[]>>;
   placeholder?: string;
   error?: string;
+  hashColouredLabels?: boolean;
 };
 
 export default function FormMultiSelect<T extends DropdownOption>({
@@ -45,6 +47,7 @@ export default function FormMultiSelect<T extends DropdownOption>({
   setSelected,
   placeholder,
   error,
+  hashColouredLabels = false,
 }: FormMultiSelectProps<T>) {
   const borderColour = error ? "red" : "gray";
   const focusBorderColour = error ? "red" : "blue";
@@ -81,7 +84,11 @@ export default function FormMultiSelect<T extends DropdownOption>({
                 selected.map((item) => (
                   <div
                     key={item.id}
-                    className="inline-flex items-center px-1 mr-1 mt-1 rounded text-white bg-blue-600"
+                    className={`inline-flex items-center px-1 mr-1 mt-1 rounded text-gray-700 ${
+                      hashColouredLabels
+                        ? colourFromName(item.name)
+                        : "bg-blue-600"
+                    }`}
                   >
                     {item.name}
                     <div
