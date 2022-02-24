@@ -11,7 +11,7 @@ import Topbar from "../components/Topbar";
 import UpcomingSessions from "../components/UpcomingSessions";
 import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
-import { GroupSessionResponse, LIST_GROUP_SESSIONS_ENDPOINT, LIST_USER_JOINED_SESSIONS_ENDPOINT } from "../utils/endpoints";
+import { GroupSessionResponse, LIST_GROUP_SESSIONS_ENDPOINT, LIST_USER_HOSTING_SESSIONS_ENDPOINT, LIST_USER_JOINED_SESSIONS_ENDPOINT } from "../utils/endpoints";
 
 type DashboardUserHeroProps = {
   name: string;
@@ -187,11 +187,21 @@ function GroupSessionsInfo() {
 }
 
 function UpcomingSessionsColumn() {
-  const sessions = ["Session A","Session B","Session C","Session D","Session E","Session F"]
   const { data: apiSessionData } = useSWR<GroupSessionResponse>(
     LIST_USER_JOINED_SESSIONS_ENDPOINT
   );
-  const allSessions = apiSessionData ?? [];
+  const allJoinedSessions = apiSessionData ?? [];
+
+  const { data: apiHostSessionData } = useSWR<GroupSessionResponse>(
+    LIST_USER_HOSTING_SESSIONS_ENDPOINT
+  );
+  const allHostSessions = apiHostSessionData ?? [];
+
+  console.log(allHostSessions.toString());
+
+
+  const allSessions = [...allJoinedSessions, ...allHostSessions];
+  allSessions.sort((a,b) => Date.parse(a.date) - Date.parse(b.date));
 
   return (
     <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 text-center h-full">

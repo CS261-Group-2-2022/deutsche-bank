@@ -1,12 +1,78 @@
 import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
 import { useState } from "react";
+import { SIGNUP_ENDPOINT } from "../utils/endpoints";
 
 export default function Signup() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [retypedPasssword, setRetypedPassword] = useState("");
+  const [businessArea, setBusinessArea] = useState("");
+
+  const [firstNameError, setFirstNameError] = useState<string | undefined>();
+  const [lastNameError, setLastNameError] = useState<string | undefined>();
+  const [emailError, setEmailError] = useState<string | undefined>();
+  const [passwordError, setPasswordError] = useState<string | undefined>();
+  const [retypedPasswordError, setRetypedPasswordError] = useState<
+    string | undefined
+  >();
+  const [businessAreaError, setBusinessAreaError] = useState<
+    string | undefined
+  >();
+
+  const clearErrors = () => {
+    setFirstNameError(undefined);
+    setLastNameError(undefined);
+    setEmailError(undefined);
+    setPasswordError(undefined);
+    setRetypedPasswordError(undefined);
+    setBusinessAreaError(undefined);
+  };
+
+  const sendRegisterRequest = async () => {
+    // Check password and retyped password are equivalent
+    if (password != retypedPasssword) {
+      setRetypedPasswordError("Passwords do not match");
+      return false;
+    } else {
+      setRetypedPasswordError(undefined);
+    }
+
+    // Check business area is set
+    if (!businessArea) {
+      setBusinessAreaError("You must select a business area");
+      return false;
+    }
+
+    const res = await fetch(SIGNUP_ENDPOINT, {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        password,
+        business_area: businessArea,
+      }),
+    });
+
+    clearErrors();
+  //   const body: RegisterBody = await res.json();
+
+  //   if (isRegisterSuccess(res, body)) {
+  //     // Succesfully logged in
+  //     setAuthToken(body.token, false);
+  //   } else {
+  //     setFirstNameError(body.first_name?.join(" "));
+  //     setLastNameError(body.last_name?.join(" "));
+  //     setEmailError(body.email?.join(" "));
+  //     setPasswordError(body.password?.join(" "));
+  //     setBusinessAreaError(body.business_area?.join(" "));
+  //     setOverallError(body.non_field_errors?.join(" "));
+  //   }
+  };
 
   return (
     <>
