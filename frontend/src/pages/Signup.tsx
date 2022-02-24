@@ -51,7 +51,7 @@ export default function Signup() {
 
   /** Navigates back to the page we originated from, or the home page if we don't know where from */
   const navigateBack = () =>
-    navigate((location.state as LocationState)?.from?.pathname ?? "/");
+    navigate((location.state as LocationState)?.from ?? "/");
 
   // Effect which runs if we have a user logged in.
   // If we are logged in, we need to redirect to where we came from, as we don't need to signup again
@@ -106,7 +106,6 @@ export default function Signup() {
     if (isRegisterSuccess(res, body)) {
       // Succesfully logged in
       setAuthToken(body.token, false);
-      window.open("/", "_self");
     } else {
       setFirstNameError(body.first_name?.join(" "));
       setLastNameError(body.last_name?.join(" "));

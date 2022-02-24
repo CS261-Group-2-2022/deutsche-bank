@@ -33,7 +33,7 @@ export default function Login() {
 
   /** Navigates back to the page we originated from, or the home page if we don't know where from */
   const navigateBack = () =>
-    navigate((location.state as LocationState)?.from?.pathname ?? "/");
+    navigate((location.state as LocationState)?.from ?? "/");
 
   // Effect which runs if we have a user logged in.
   // If we are logged in, we need to redirect to where we came from, as we don't need to login again
@@ -56,7 +56,6 @@ export default function Login() {
 
     if (isLoginSuccess(res, body)) {
       // Succesfully logged in
-      window.open("/", "_self");
       setAuthToken(body.token, rememberMe);
     } else {
       setEmailError(body.email?.join(" "));
