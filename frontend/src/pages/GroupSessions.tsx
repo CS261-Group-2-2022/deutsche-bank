@@ -17,6 +17,7 @@ import LocationText from "../components/LocationText";
 import DateTextProps from "../components/DateText";
 import CreateSessionPopup from "../components/CreateSessionPopup";
 import { useSkills } from "../utils/skills";
+import { useSearchParams } from "react-router-dom";
 
 type SearchBarProps = {
   searchText: string;
@@ -98,10 +99,9 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
 
 export default function GroupSessions() {
   // Pull in session data from backend
-  const { data: apiData } = useSWR<GroupSessionResponse>(
+  const { data: allSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_GROUP_SESSIONS_ENDPOINT
   );
-  const allSessions = apiData ?? [];
   const { data: joinedSessions } = useSWR<GroupSessionResponse>(
     LIST_USER_JOINED_SESSIONS_ENDPOINT
   );
@@ -109,24 +109,59 @@ export default function GroupSessions() {
     LIST_USER_HOSTING_SESSIONS_ENDPOINT
   );
 
+  // Current search parameters
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // Current component state
   const [selectedSession, setSelectedSession] = useState<
     GroupSession | undefined
   >();
   const [creatingSession, setCreatingSession] = useState(false);
-
   const [searchText, changeSearchText] = useState("");
   const lowerSearchText = searchText.toLowerCase().trim();
   const isFiltering = lowerSearchText !== "";
 
+  // When data updates, we should update the object stored in selected session so it uses new information
   useEffect(() => {
-    // When data updates, we should update the object stored in selected session so it uses new information
     if (selectedSession) {
       setSelectedSession(
         allSessions.find((session) => session.id == selectedSession.id)
       );
     }
   }, [allSessions]);
+
+  // When the selected session changes, we should update the search parameters
+  useEffect(() => {
+    if (selectedSession) {
+      setSearchParams({ id: selectedSession.id.toString() });
+    } else {
+      setSearchParams({});
+    }
+  }, [selectedSession, setSearchParams]);
+
+  // Read the search parameters to set the selected session
+  useEffect(() => {
+    const selectedIdText = searchParams.get("id");
+    if (selectedIdText) {
+      const selectedId = Number(selectedIdText);
+      // Ignore if the session is already correct
+      if (selectedSession && selectedSession.id === selectedId) return;
+      const session = allSessions.find((session) => session.id == selectedId);
+
+      // Check if the session with the ID actually exists. If it doesn't, then
+      // just clear the ID
+      if (session) {
+        setSelectedSession(session);
+      } else {
+        setSearchParams({});
+      }
+    } else {
+      // Disable the selected session if it has changed
+      if (selectedSession) {
+        setSelectedSession(undefined);
+      }
+    }
+  }, [searchParams, setSelectedSession, setSearchParams]);
 
   const sessionFilter = (session: GroupSession) => {
     if (!isFiltering) return true;
