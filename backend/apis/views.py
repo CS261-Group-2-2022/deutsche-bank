@@ -3,7 +3,7 @@
 from django.contrib.auth import login
 from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
-from rest_framework import viewsets, generics, permissions
+from rest_framework import viewsets, generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,16 +19,25 @@ class UserViewSet(viewsets.ModelViewSet):
     # authentication_classes = api_settings.DEFAULT_AUTHENTICATION_CLASSES
     # permission_classes = (IsAuthenticated,)
 
+    @action(detail=False, methods=['get'])
+    def mentor(self, request, *args, **kwargs):
+        user: User = request.user
+        mentorship: Mentorship = user.mentorship
+        if mentorship is None:
+            return Response({'error': 'This user does not have a mentor'}, status=status.HTTP_204_NO_CONTENT)
+
+        return Response(FullUserSerializer(user.mentorship.mentor))
+
+    @action(detail=False, methods=['get'])
+    def mentees(self, request, *args, **kwargs) -> Response:
+        user: User = request.user
+
+        cereal = FullUserSerializer(user.get_mentees(), many=True)
+        return Response(cereal.data)
+
     @action(detail=True, methods=['get'])
     def full(self, request, pk=None) -> Response:
         return Response(FullUserSerializer(self.get_object()).data)
-
-    @action(detail=True, methods=['get'])
-    def mentees(self, request, pk=None) -> Response:
-        user: User = self.get_object()
-
-        cereal = UserSerializer(user.get_mentees(), many=True)
-        return Response(cereal.data)
 
     @action(detail=True, methods=['get'])
     def expertise(self, request, pk=None) -> Response:
@@ -47,7 +56,7 @@ class RegisterView(generics.GenericAPIView):
         user = serializer.save()  # Get user instance
         return Response(
             {
-                "user": UserSerializer(user, context=self.get_serializer_context()).data,  # Serialize user
+                "user": FullUserSerializer(user, context=self.get_serializer_context()).data,  # Serialize user
                 "token": AuthToken.objects.create(user)[1]  # Create token
             }
         )
@@ -69,7 +78,7 @@ class CurrentUserView(APIView):
     permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to get user
 
     def get(self, request, *args, **kwargs):
-        serializer = UserSerializer(request.user)  # Serialize current user
+        serializer = FullUserSerializer(request.user)  # Serialize current user
         return Response(serializer.data)
 
 

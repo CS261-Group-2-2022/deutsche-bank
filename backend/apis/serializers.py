@@ -98,4 +98,5 @@ class MentorshipSerializer(ModelSerializer):
 class FullUserSerializer(UserSerializer):
     business_area = BusinessAreaSerializer()
     expertise = SkillSerializer(many=True)
+    interests = SkillSerializer(many=True)
     mentorship = MentorshipSerializer()
