@@ -1,14 +1,15 @@
 import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
 import { useState } from "react";
-import { SIGNUP_ENDPOINT } from "../utils/endpoints";
+import { RegisterBody, RegisterSuccess, setAuthToken, SETTINGS_ENDPOINT, SIGNUP_ENDPOINT } from "../utils/endpoints";
+import { useUser } from "../utils/authentication";
 
 export default function Signup() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [retypedPasssword, setRetypedPassword] = useState("");
-  const [businessArea, setBusinessArea] = useState("");
+  // const [businessArea, setBusinessArea] = useState("");
 
   const [firstNameError, setFirstNameError] = useState<string | undefined>();
   const [lastNameError, setLastNameError] = useState<string | undefined>();
@@ -17,9 +18,11 @@ export default function Signup() {
   const [retypedPasswordError, setRetypedPasswordError] = useState<
     string | undefined
   >();
-  const [businessAreaError, setBusinessAreaError] = useState<
-    string | undefined
-  >();
+  // const [businessAreaError, setBusinessAreaError] = useState<
+  //   string | undefined
+  // >();
+
+  const { user } = useUser();
 
   const clearErrors = () => {
     setFirstNameError(undefined);
@@ -27,25 +30,29 @@ export default function Signup() {
     setEmailError(undefined);
     setPasswordError(undefined);
     setRetypedPasswordError(undefined);
-    setBusinessAreaError(undefined);
+    // setBusinessAreaError(undefined);
   };
 
-  const sendRegisterRequest = async () => {
+  const sendSettingsUpdateRequest = async () => {
+    console.log("useuser");
+    console.log(user);
+
     // Check password and retyped password are equivalent
     if (password != retypedPasssword) {
       setRetypedPasswordError("Passwords do not match");
+      console.log("Passwords don't match");
       return false;
     } else {
       setRetypedPasswordError(undefined);
     }
 
     // Check business area is set
-    if (!businessArea) {
-      setBusinessAreaError("You must select a business area");
-      return false;
-    }
+    // if (!businessArea) {
+    //   setBusinessAreaError("You must select a business area");
+    //   return false;
+    // }
 
-    const res = await fetch(SIGNUP_ENDPOINT, {
+    const res = await fetch(SETTINGS_ENDPOINT.replace("{ID}",user?.id.toString() ?? "1"), {
       method: "PATCH",
       headers: {
         "content-type": "application/json",
@@ -53,25 +60,32 @@ export default function Signup() {
       body: JSON.stringify({
         first_name: firstName,
         last_name: lastName,
-        password,
-        business_area: businessArea,
-      }),
+        // password : password, 
+        // business_area: businessArea,
+      }),// TODO currently you are not able to change the password with this endpoint, will fix this shortly
     });
 
     clearErrors();
-  //   const body: RegisterBody = await res.json();
+    // const body: RegisterBody = await res.json();
 
-  //   if (isRegisterSuccess(res, body)) {
-  //     // Succesfully logged in
-  //     setAuthToken(body.token, false);
-  //   } else {
-  //     setFirstNameError(body.first_name?.join(" "));
-  //     setLastNameError(body.last_name?.join(" "));
-  //     setEmailError(body.email?.join(" "));
-  //     setPasswordError(body.password?.join(" "));
-  //     setBusinessAreaError(body.business_area?.join(" "));
-  //     setOverallError(body.non_field_errors?.join(" "));
-  //   }
+    // const isRegisterSuccess = (
+    //   res: Response,
+    //   body: RegisterBody
+    // ): body is RegisterSuccess => {
+    //   return res.ok;
+    // };
+
+    // if (isRegisterSuccess(res, body)) {
+    //   // Succesfully logged in
+    //   console.log("Succesfully logged in");
+    //   setAuthToken(body.token, false);
+    // } else {
+    //   setFirstNameError(body.first_name?.join(" "));
+    //   setLastNameError(body.last_name?.join(" "));
+    //   setEmailError(body.email?.join(" "));
+    //   setPasswordError(body.password?.join(" "));
+    //   // setBusinessAreaError(body.business_area?.join(" "));
+    // }
   };
 
   return (
@@ -85,7 +99,11 @@ export default function Signup() {
             </h2>
           </div>
 
-          <form className="mt-8 space-y-3" action="#" method="POST">
+          <form className="mt-8 space-y-3" action="#" method="POST" onSubmit={(e) => {
+            console.log("Submiting...")
+              e.preventDefault();
+              sendSettingsUpdateRequest();
+            }}>
             <input type="hidden" name="remember" defaultValue="true" />
             <div className="rounded-md shadow-sm space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -110,18 +128,16 @@ export default function Signup() {
               </div>
               <FormInput
                 id="password"
-                name="password"
+                name="new password"
                 type="password"
-                autoComplete="current-password"
                 placeholder="Password"
                 text={password}
                 onChange={setPassword}
               />
               <FormInput
                 id="retyped-password"
-                name="retyped-password"
+                name="retype new password"
                 type="password"
-                autoComplete="current-password"
                 placeholder="Retype Password"
                 text={retypedPasssword}
                 onChange={setRetypedPassword}
