@@ -13,6 +13,7 @@ router.register(r'mentorship', MentorshipViewSet)
 router.register(r'plan', ActionPlanViewSet)
 router.register(r'session', GroupSessionViewSet)
 router.register(r'area', BusinessAreaViewSet)
+router.register(r'skills', SkillViewSet)
 
 urlpatterns: List[str] = [
     path('', include(router.urls)),

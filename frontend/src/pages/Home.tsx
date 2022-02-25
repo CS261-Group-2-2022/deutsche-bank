@@ -5,51 +5,13 @@ import {
   UserGroupIcon,
 } from "@heroicons/react/solid";
 import { Link } from "react-router-dom";
+import useSWR from "swr";
 //import RoundedImage from "../components/RoundedImage";
 import Topbar from "../components/Topbar";
+import UpcomingSessions from "../components/UpcomingSessions";
 import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
-
-type DashboardUserHeroProps = {
-  name: string;
-  businessArea: string;
-};
-
-function DashboardUserHero({ name, businessArea }: DashboardUserHeroProps) {
-  return (
-    <div className="bg-white">
-      <div className="flex flex-row lg:items-center lg:justify-between w-full mx-auto py-4 px-4 sm:px-6 lg:px-8 z-20">
-        <div className="flex flex-row items-center gap-5">
-          <div className="flex-shrink-0">
-            {/* <RoundedImage
-              src={
-                "https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-              }
-              alt="profile picture"
-              size={24}
-            /> */}
-
-            <a href="#" className="block relative">
-              <img
-                alt="profil"
-                src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-                className="mx-auto object-cover rounded-full h-24 w-24"
-              />
-            </a>
-          </div>
-          <h2>
-            <span className="block text-3xl sm:text-4xl font-bold">
-              Hi, {name}
-            </span>
-            <span className="block text-l sm:text-2xl text-gray-500">
-              {businessArea}
-            </span>
-          </h2>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { GroupSessionResponse, LIST_GROUP_SESSIONS_ENDPOINT, LIST_USER_HOSTING_SESSIONS_ENDPOINT, LIST_USER_JOINED_SESSIONS_ENDPOINT } from "../utils/endpoints";
 
 type ActionProps = {
   actionText: string;
@@ -69,13 +31,6 @@ function Action({ actionText, buttonText = "View", onClick }: ActionProps) {
               className="mx-auto object-cover rounded-full h-8 w-8"
             />
           </a>
-          {/* <RoundedImage
-            src={
-              "https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-            }
-            alt="profile picture"
-            size={8}
-          /> */}
         </div>
         <div className="flex flex-col w-full">
           <p className="text-gray-800 font-medium">{actionText}</p>
@@ -154,6 +109,28 @@ function MentoringInfo() {
 }
 
 function GroupSessionsInfo() {
+  const { data: allSessions = [] } = useSWR<GroupSessionResponse>(
+    LIST_GROUP_SESSIONS_ENDPOINT
+  );
+  const { data: joinedSessions } = useSWR<GroupSessionResponse>(
+    LIST_USER_JOINED_SESSIONS_ENDPOINT
+  );
+  const { data: hostingSessions } = useSWR<GroupSessionResponse>(
+    LIST_USER_HOSTING_SESSIONS_ENDPOINT
+  );
+
+  const numAvailableSessions = allSessions
+    // TODO: Only show sessions in the future
+    // .filter((session) => Date.parse(session.date) >= Date.now())
+    // Filter out sessions you are hosting or have already joined
+    .filter(
+      (session) =>
+        !joinedSessions?.find(
+          (otherSession) => session.id == otherSession.id
+        ) &&
+        !hostingSessions?.find((otherSession) => session.id == otherSession.id)
+    ).length
+
   return (
     <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 space-y-2">
       <h4 className="text-l sm:text-xl font-semibold flex items-center">
@@ -163,8 +140,8 @@ function GroupSessionsInfo() {
       <div className="flex-row gap-4 flex justify-center items-center">
         <div className="flex flex-col w-full">
           <p className="text-m">
-            There are <span className="font-bold">3</span> group sessions
-            available which match your interests
+            There {numAvailableSessions == 1 ? "is" : "are"} <span className="font-bold">{numAvailableSessions}</span> group session{numAvailableSessions == 1 ? " " : "s "}
+            available which match{numAvailableSessions == 1 ? "es" : ""} your interests
           </p>
         </div>
         <div className="flex flex-col">
@@ -184,16 +161,36 @@ function GroupSessionsInfo() {
 }
 
 function UpcomingSessionsColumn() {
+  const { data: apiSessionData } = useSWR<GroupSessionResponse>(
+    LIST_USER_JOINED_SESSIONS_ENDPOINT
+  );
+  const allJoinedSessions = apiSessionData ?? [];
+
+  const { data: apiHostSessionData } = useSWR<GroupSessionResponse>(
+    LIST_USER_HOSTING_SESSIONS_ENDPOINT
+  );
+  const allHostSessions = apiHostSessionData ?? [];
+
+  console.log(allHostSessions.toString());
+
+
+  let allSessions = [...allJoinedSessions, ...allHostSessions];
+  allSessions = allSessions.sort((a,b) => Date.parse(a.date) - Date.parse(b.date)).filter((c) => Date.parse(c.date) >= Date.now());
+
   return (
     <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 text-center h-full">
       <h4 className="text-l sm:text-xl font-semibold flex items-center justify-center">
         <CalendarIcon className="mr-2 h-5 w-5" />
+        <div className="mb-2">
         Upcoming Sessions
+        </div>
       </h4>
-      <div className="flex justify items-center justify-center h-full">
-        <p className="text-m align-middle">
-          You have no upcoming sessions scheduled
-        </p>
+      <div className="justify justify-center grid grid-cols-1 gap-1">
+        {allSessions.map((session) => (
+          <>
+          <UpcomingSessions session={session}/>
+          </>
+        ))}
       </div>
     </div>
   );
@@ -203,16 +200,17 @@ export default function Home() {
   const { user } = useUser();
   const { areas } = useBusinessAreas();
 
+
   return (
     <>
       <Topbar />
-      <DashboardUserHero
+      {/* <DashboardUserHero
         name={user ? `${user.first_name} ${user.last_name}` : `UNKNOWN`}
         businessArea={
           areas.find((area) => area.id == user?.business_area)?.name ??
           "Unknown"
         }
-      />
+      /> */}
       <div className="bg-white w-full">
         <div className="grid grid-cols-3 mx-5 gap-5">
           <div className="col-span-2 space-y-5">

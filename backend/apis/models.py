@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations  # This allows us to use type hints of a class inside that class.
 
+from datetime import datetime
+
+from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
+from django.db.models import QuerySet
 
 from .managers import UserManager
 
@@ -93,6 +97,26 @@ class User(AbstractBaseUser):
         """
         return User.objects.all().filter(mentorship__mentor__pk__exact=self.pk).exclude(pk__exact=self.pk)
 
+    def find_group_sessions(self) -> QuerySet[List[GroupSession]]:
+        """ Retrieves set of suggested group sessions for this user
+        :return: set of suggested group sessions for this user
+        """
+        # skills__in=self.interests.all() TODO: Skill Matching/Ordering, Filter Out Sessions at Maximum Capacity
+        return GroupSession.objects.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).exclude(
+            users__pk__contains=self.pk)
+
+    def get_host_sessions(self) -> QuerySet[List[GroupSession]]:
+        """ Retrieves set of hosted group sessions for this user
+        :return: set of hosted group sessions for this user
+        """
+        return self.session_host.all()
+
+    def get_sessions(self):
+        """  Retrieves set of group sessions this user is in
+        :return: set of group sessions this user is in
+        """
+        return GroupSession.objects.all().filter(users__pk__contains=self.pk)
+
 
 class Meeting(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
@@ -119,13 +143,15 @@ class Notification(models.Model):
 class GroupSession(models.Model):
     name: str = models.CharField(max_length=100)
     location: str = models.CharField(null=True, max_length=100)
-    description: str = models.CharField(null=True, max_length=500)
+    virtual_link: str = models.CharField(null=True, max_length=100)
+    image_link: str = models.CharField(null=True, max_length=100)
+    description: str = models.CharField(null=True, max_length=2000)
     host: User = models.ForeignKey(User, related_name='session_host',
                                    on_delete=models.CASCADE)  # if host is deleted, delete session
     capacity: int = models.IntegerField(null=True)
     skills: List[Skill] = models.ManyToManyField(Skill)
     date: datetime = models.DateTimeField()
-    users: List[User] = models.ManyToManyField(User)
+    users: List[User] = models.ManyToManyField(User, default=[])
 
 
 from .dummy_data import *
@@ -146,6 +172,5 @@ def print_all_users() -> None:
         pass
     print(" `-----------------------------------------------------------")
 
-
-#create_dummy_data()
-#print_all_users()
+# create_dummy_data()
+# print_all_users()

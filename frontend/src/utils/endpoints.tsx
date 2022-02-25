@@ -1,7 +1,23 @@
+import { mutate } from "swr";
+
 export const LOGIN_ENDPOINT = "http://localhost:8000/api/v1/auth/login/";
 export const SIGNUP_ENDPOINT = "http://localhost:8000/api/v1/auth/register/";
 export const PROFILE_ENDPOINT = "http://localhost:8000/api/v1/auth/profile/";
 export const BUSINESS_AREAS_ENDPOINT = "http://localhost:8000/api/v1/area/";
+export const LIST_GROUP_SESSIONS_ENDPOINT =
+  "http://localhost:8000/api/v1/session/";
+export const LIST_USER_JOINED_SESSIONS_ENDPOINT =
+  "http://localhost:8000/api/v1/session/user";
+export const LIST_USER_HOSTING_SESSIONS_ENDPOINT =
+  "http://localhost:8000/api/v1/session/host";
+export const CREATE_GROUP_SESSION_ENDPOINT =
+  "http://localhost:8000/api/v1/session/";
+export const JOIN_SESSION_ENDPOINT =
+  "http://localhost:8000/api/v1/session/{ID}/join/";
+export const LEAVE_SESSION_ENDPOINT =
+  "http://localhost:8000/api/v1/session/{ID}/leave/";
+export const SKILLS_ENDPOINT = "http://localhost:8000/api/v1/skills/";
+export const SETTINGS_ENDPOINT = "http://localhost:8000/api/v1/user/{ID}/";
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -24,11 +40,17 @@ export const setAuthToken = (token: string, remember: boolean) => {
   } else {
     window.sessionStorage.setItem("token", token);
   }
+
+  // Update caches of user profiles
+  mutate(PROFILE_ENDPOINT);
 };
 
 export const clearAuthToken = () => {
   window.sessionStorage.removeItem("token");
   window.localStorage.removeItem("token");
+
+  // Force cache revalidation
+  mutate(PROFILE_ENDPOINT);
 };
 
 export type User = {
@@ -91,3 +113,47 @@ export type BusinessArea = {
 };
 
 export type BusinessAreaResponse = BusinessArea[];
+
+// Group Sessions
+export type GroupSession = {
+  id: number;
+  name: string;
+  location: string;
+  description?: string;
+  capacity: number;
+  date: string;
+  host: User;
+  skills?: Skill[];
+  users: User[];
+  virtual_link?: string;
+};
+
+export type GroupSessionResponse = GroupSession[];
+
+export type CreateSessionSuccess = number;
+export type CreateSessionError = {
+  name?: string[];
+  location?: string[];
+  description?: string[];
+  capacity?: string[];
+  date?: string[];
+  non_field_errors?: string[];
+  virtual_link?: string[];
+  skills?: string[];
+};
+
+export type CreateSessionResponse = CreateSessionSuccess | CreateSessionError;
+
+export type JoinSessionSuccess = number;
+export type JoinSessionError = {
+  error: string;
+};
+
+export type JoinSessionResponse = JoinSessionSuccess | JoinSessionError;
+
+// Skills
+export type Skill = {
+  id: number;
+  name: string;
+};
+export type SkillsResponse = Skill[];
