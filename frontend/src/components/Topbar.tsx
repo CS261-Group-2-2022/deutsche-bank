@@ -11,7 +11,7 @@ import {
 import { Fragment } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useUser } from "../utils/authentication";
-import { useBusinessAreas } from "../utils/business_area";
+import { getAreaFromId, useBusinessAreas } from "../utils/business_area";
 
 type MenuButtonProps = {
   text: string;
@@ -158,7 +158,7 @@ export default function Topbar() {
             <DashboardUserHero
               name={`${user?.first_name} ${user?.last_name}`}
               businessArea={
-                areas.find((area) => area.id == user?.business_area)?.name ?? ""
+                getAreaFromId(user?.business_area ?? -1, areas)?.name ?? ""
               }
             />
           </div>
