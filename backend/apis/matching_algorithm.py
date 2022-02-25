@@ -11,12 +11,10 @@ from .topic_modelling import *
 class NoPossibleMentorsError(Exception):
     pass
 
-def sort_by_score(mentors, scores):
+def sort_by_score(mentors: List[User], scores: np.matrix) -> List[User]:
     matrix = np.zeros((len(mentors), 2), np.dtype(object))
 
     for i in range(len(mentors)):
-        # TODO Test this. Scores is a vector not an array.
-        #matrix[i][0] = scores[i] # This is how I had it
         matrix[i][0] = scores[i][0]
         matrix[i][1] = mentors[i]
 

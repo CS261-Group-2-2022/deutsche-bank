@@ -3,11 +3,13 @@ from typing import *
 
 import itertools
 import random
+import numpy as np
 
 from django.test import TestCase
 from .dummy_data import create_dummy_data
 from .models import *
 from .matching_algorithm import sort_by_score, NoPossibleMentorsError, matching_algorithm
+
 
 class MatchingAlgorithmTestCase(TestCase):
 
@@ -19,7 +21,13 @@ class MatchingAlgorithmTestCase(TestCase):
         mentors = User.choose_list_at_random()
         scores = [random.uniform(0, 1) for _ in mentors]
 
-        got = sort_by_score(mentors, scores)
+        scores_vector = np.zeros((len(mentors), 1), np.dtype(object))
+        i = 0
+        for score in scores:
+            scores_vector[i][0] = score
+            i += 1
+
+        got = sort_by_score(mentors, scores_vector)
         expected = [m for (m, s) in sorted(zip(mentors, scores),
                                            key=lambda p: p[1],
                                            reverse=True)]
