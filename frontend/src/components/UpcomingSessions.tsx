@@ -32,7 +32,6 @@ type UpcomingSessionProps = {
             </div>
             <LocationText
               location={session.location}
-              link={session.virtual_link}
             />
             <DateTextProps date={session.date} />
           </div>
