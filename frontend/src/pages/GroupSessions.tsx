@@ -118,7 +118,7 @@ function HideableSessionsInfo({
 
 export default function GroupSessions() {
   // Pull in session data from backend
-  const { data: allSessions = [] } = useSWR<GroupSessionResponse>(
+  const { data: allSessions = [], isValidating } = useSWR<GroupSessionResponse>(
     LIST_GROUP_SESSIONS_ENDPOINT
   );
   const { data: joinedSessions } = useSWR<GroupSessionResponse>(
@@ -149,17 +149,13 @@ export default function GroupSessions() {
     }
   }, [allSessions]);
 
-  // When the selected session changes, we should update the search parameters
-  useEffect(() => {
-    if (selectedSession) {
-      setSearchParams({ id: selectedSession.id.toString() });
-    } else {
-      setSearchParams({});
-    }
-  }, [selectedSession, setSearchParams]);
-
   // Read the search parameters to set the selected session
   useEffect(() => {
+    // If the data is only just loading, then ignore for now
+    if (isValidating) {
+      return;
+    }
+
     const selectedIdText = searchParams.get("id");
     if (selectedIdText) {
       const selectedId = Number(selectedIdText);
@@ -174,13 +170,18 @@ export default function GroupSessions() {
       } else {
         setSearchParams({});
       }
-    } else {
-      // Disable the selected session if it has changed
-      if (selectedSession) {
-        setSelectedSession(undefined);
-      }
     }
-  }, [searchParams, setSelectedSession, setSearchParams]);
+  }, [searchParams, isValidating, setSelectedSession, setSearchParams]);
+
+  const selectSession = (session: GroupSession | undefined) => {
+    setSelectedSession(session);
+    // Update the search parameters with the new session
+    if (session) {
+      setSearchParams({ id: session.id.toString() });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   const sessionFilter = (session: GroupSession) => {
     if (!isFiltering) return true;
@@ -213,7 +214,7 @@ export default function GroupSessions() {
       <SessionInfoPopup
         session={selectedSession}
         isOpen={selectedSession !== undefined}
-        closeModal={() => setSelectedSession(undefined)}
+        closeModal={() => selectSession(undefined)}
       />
       <CreateSessionPopup
         isOpen={creatingSession}
@@ -232,7 +233,7 @@ export default function GroupSessions() {
           <HideableSessionsInfo
             title="Sessions You're Hosting"
             sessions={hostingSessions}
-            setSelectedSession={setSelectedSession}
+            setSelectedSession={selectSession}
           />
         )}
 
@@ -240,7 +241,7 @@ export default function GroupSessions() {
           <HideableSessionsInfo
             title="Sessions You've Joined"
             sessions={joinedSessions}
-            setSelectedSession={setSelectedSession}
+            setSelectedSession={selectSession}
           />
         )}
 
@@ -251,7 +252,7 @@ export default function GroupSessions() {
             <SessionInfo
               key={session.id}
               session={session}
-              selectSession={() => setSelectedSession(session)}
+              selectSession={() => selectSession(session)}
             />
           ))}
 
