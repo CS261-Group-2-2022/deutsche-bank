@@ -1,12 +1,69 @@
 import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
 import { useState } from "react";
+import { RegisterBody, RegisterSuccess, setAuthToken, SETTINGS_ENDPOINT, SIGNUP_ENDPOINT } from "../utils/endpoints";
+import { useUser } from "../utils/authentication";
 
 export default function Signup() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [retypedPasssword, setRetypedPassword] = useState("");
+  // const [businessArea, setBusinessArea] = useState("");
+
+  const [firstNameError, setFirstNameError] = useState<string | undefined>();
+  const [lastNameError, setLastNameError] = useState<string | undefined>();
+  const [emailError, setEmailError] = useState<string | undefined>();
+  const [passwordError, setPasswordError] = useState<string | undefined>();
+  const [retypedPasswordError, setRetypedPasswordError] = useState<
+    string | undefined
+  >();
+  // const [businessAreaError, setBusinessAreaError] = useState<
+  //   string | undefined
+  // >();
+
+  const { user } = useUser();
+
+  const clearErrors = () => {
+    setFirstNameError(undefined);
+    setLastNameError(undefined);
+    setEmailError(undefined);
+    setPasswordError(undefined);
+    setRetypedPasswordError(undefined);
+    // setBusinessAreaError(undefined);
+  };
+
+  const sendSettingsUpdateRequest = async () => {
+    // Check password and retyped password are equivalent
+    if (password != retypedPasssword) {
+      setRetypedPasswordError("Passwords do not match");
+      console.log("Passwords don't match");
+      return false;
+    } else {
+      setRetypedPasswordError(undefined);
+    }
+
+    // Check business area is set
+    // if (!businessArea) {
+    //   setBusinessAreaError("You must select a business area");
+    //   return false;
+    // }
+
+    const res = await fetch(SETTINGS_ENDPOINT.replace("{ID}",user?.id.toString() ?? "1"), {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        // password : password, 
+        // business_area: businessArea,
+      }),// TODO currently you are not able to change the password with this endpoint, will fix this shortly
+    });
+
+    clearErrors();
+  };
 
   return (
     <>
@@ -19,7 +76,11 @@ export default function Signup() {
             </h2>
           </div>
 
-          <form className="mt-8 space-y-3" action="#" method="POST">
+          <form className="mt-8 space-y-3" action="#" method="POST" onSubmit={(e) => {
+            console.log("Submiting...")
+              e.preventDefault();
+              sendSettingsUpdateRequest();
+            }}>
             <input type="hidden" name="remember" defaultValue="true" />
             <div className="rounded-md shadow-sm space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -44,18 +105,16 @@ export default function Signup() {
               </div>
               <FormInput
                 id="password"
-                name="password"
+                name="new password"
                 type="password"
-                autoComplete="current-password"
                 placeholder="Password"
                 text={password}
                 onChange={setPassword}
               />
               <FormInput
                 id="retyped-password"
-                name="retyped-password"
+                name="retype new password"
                 type="password"
-                autoComplete="current-password"
                 placeholder="Retype Password"
                 text={retypedPasssword}
                 onChange={setRetypedPassword}

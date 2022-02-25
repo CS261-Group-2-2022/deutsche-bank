@@ -11,7 +11,7 @@ export default function DateTextProps({ date }: DateTextProps) {
 
   return (
     <p
-      className="flex text-gray-600 items-center underline underline-offset-1 decoration-dotted"
+      className="flex text-gray-600 items-center"
       title={DateTime.fromISO(date).toFormat("DDDD, ttt")}
     >
       <CalendarIcon className="mr-1 h-5 w-5" />
