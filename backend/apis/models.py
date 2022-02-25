@@ -109,13 +109,14 @@ class User(AbstractBaseUser):
         """ Retrieves set of hosted group sessions for this user
         :return: set of hosted group sessions for this user
         """
-        return self.session_host.all()
+        return self.session_host.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
     def get_sessions(self):
         """  Retrieves set of group sessions this user is in
         :return: set of group sessions this user is in
         """
-        return GroupSession.objects.all().filter(users__pk__contains=self.pk)
+        return GroupSession.objects.all().filter(users__pk__contains=self.pk,
+                                                 date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
 
 class Meeting(models.Model):
