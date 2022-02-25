@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from apis.models import *
+from .models import *
 
 admin.site.register(Skill)
 admin.site.register(BusinessArea)
@@ -12,3 +12,4 @@ admin.site.register(Meeting)
 admin.site.register(ActionPlan)
 admin.site.register(Notification)
 admin.site.register(GroupSession)
+admin.site.register(Feedback)
