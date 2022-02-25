@@ -14,6 +14,7 @@ router.register(r'plan', ActionPlanViewSet)
 router.register(r'session', GroupSessionViewSet)
 router.register(r'area', BusinessAreaViewSet)
 router.register(r'skills', SkillViewSet)
+router.register(r'feedback', Feedback)
 
 urlpatterns: List[str] = [
     path('', include(router.urls)),

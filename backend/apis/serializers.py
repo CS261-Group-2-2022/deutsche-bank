@@ -112,3 +112,9 @@ class UserSerializerFull(UserSerializer):
     business_area = BusinessAreaSerializer()
     expertise = SkillSerializer(many=True)
     mentorship = MentorshipSerializer()
+
+
+class FeedbackSerializer(ModelSerializer):
+    class Meta:
+        model = Feedback
+        exclude = []
