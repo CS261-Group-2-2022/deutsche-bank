@@ -155,6 +155,7 @@ class GroupSession(models.Model):
 
 
 class Feedback(models.Model):
+    date: datetime = models.DateTimeField()
     feedback: str = models.CharField(max_length=1000)
 
 
