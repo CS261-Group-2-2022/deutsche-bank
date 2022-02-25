@@ -18,6 +18,7 @@ export const LEAVE_SESSION_ENDPOINT =
   "http://localhost:8000/api/v1/session/{ID}/leave/";
 export const SKILLS_ENDPOINT = "http://localhost:8000/api/v1/skills/";
 export const SETTINGS_ENDPOINT = "http://localhost:8000/api/v1/user/{ID}/";
+export const FEEDBACK_ENDPOINT = "http://localhost:8000/api/v1/feedback/"
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {

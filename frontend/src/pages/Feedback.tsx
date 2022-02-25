@@ -2,7 +2,7 @@ import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
 import { FormTextArea } from "../components/FormTextarea";
 import { useState } from "react";
-import { RegisterBody, RegisterSuccess, setAuthToken, SETTINGS_ENDPOINT, SIGNUP_ENDPOINT } from "../utils/endpoints";
+import { FEEDBACK_ENDPOINT, RegisterBody, RegisterSuccess, setAuthToken, SETTINGS_ENDPOINT, SIGNUP_ENDPOINT } from "../utils/endpoints";
 import { useUser } from "../utils/authentication";
 
 export default function Feedback() {
@@ -34,16 +34,21 @@ export default function Feedback() {
   const sendFeedbackRequest = async () => {
     // Check password and retyped password are equivalent
 
-    const res = await fetch("FEEDBACK_ENDPOINT", { // TODO feedback endpoint
+    const res = await fetch(FEEDBACK_ENDPOINT, { // TODO feedback endpoint
       method: "POST",
       headers: {
         "content-type": "application/json",
       },
       body: JSON.stringify({
         feedback: feedback,
+        date: new Date().toISOString()
     })});
 
     clearErrors();
+    if (res.ok) {
+        alert("Feedback Submitted");
+    };
+    
   };
 
   return (
