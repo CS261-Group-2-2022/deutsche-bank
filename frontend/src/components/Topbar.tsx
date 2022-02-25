@@ -82,10 +82,11 @@ export default function Topbar() {
 
           {/* RHS Panel */}
           <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
-          <Link to="/feedback">
+          <Link to="/feedback" className="flex">
+            Feedback
               <ChatAlt2Icon
                 className={
-                  "text-gray-600 ml-2 h-5 w-5 group-hover:text-gray-500"
+                  "text-gray-600 ml-2 h-5 w-5 group-hover:text-gray-500 mr-10"
                 }
                 aria-hidden="true"
               />
