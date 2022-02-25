@@ -140,7 +140,7 @@ function GroupSessionsInfo() {
       <div className="flex-row gap-4 flex justify-center items-center">
         <div className="flex flex-col w-full">
           <p className="text-m">
-            There are <span className="font-bold">{numAvailableSessions}</span> group sessions {/* TODO group sessions count */ }
+            There {numAvailableSessions == 1 ? "is" : "are"} <span className="font-bold">{numAvailableSessions}</span> group session{numAvailableSessions == 1 ? " " : "s "}
             available which match your interests
           </p>
         </div>
