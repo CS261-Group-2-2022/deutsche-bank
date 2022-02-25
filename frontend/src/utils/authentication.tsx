@@ -1,27 +1,23 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import useSWR from "swr";
-
-type User = {
-  name: string;
-  email: string;
-  business_area: string;
-};
+import {
+  clearAuthToken,
+  getAuthToken,
+  ProfileSuccess,
+  PROFILE_ENDPOINT,
+  User,
+} from "./endpoints";
 
 type UserContext = {
   user?: User;
   error?: unknown;
   isLoading: boolean;
-};
-
-const TEMP_USER_PROFILE = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  business_area: "Trading",
+  isLoggedIn: boolean;
 };
 
 export const UserContext = createContext<UserContext>({
-  user: TEMP_USER_PROFILE,
   isLoading: false,
+  isLoggedIn: false,
 });
 export const useUser = () => useContext(UserContext);
 
@@ -30,14 +26,15 @@ type UserProviderProps = {
 };
 
 export default function UserProvider({ children }: UserProviderProps) {
-  const { data: user, error } = useSWR(`/api/profile/me`);
+  const { data: user, error } = useSWR<ProfileSuccess>(PROFILE_ENDPOINT);
 
   return (
     <UserContext.Provider
       value={{
-        user,
+        user: !error ? user : undefined,
         error,
         isLoading: !error && !user,
+        isLoggedIn: !error && user !== undefined,
       }}
     >
       {children}

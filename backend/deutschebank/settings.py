@@ -9,13 +9,14 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
-from pathlib import Path
 import os
+from datetime import timedelta
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+import pytz
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -53,12 +54,15 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'django_extensions',
+    'knox',  # https://james1345.github.io/django-rest-knox/
+    'corsheaders',  # https://pypi.org/project/django-cors-headers/
 
     'apis',
     'openapi',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -108,7 +112,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
@@ -134,6 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
+TIME_ZONE_INFO = pytz.timezone(TIME_ZONE)
 
 USE_I18N = True
 
@@ -149,7 +153,13 @@ STATICFILES_DIRS = [
 ]
 
 # TODO NOCOMMIT Not required anymore.
-CORS_ORIGIN_WHITELIST = [
+CORS_ORIGIN_WHITELIST = [  # TODO: Remove
+    # Whitelist default local React ports
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
+
+CORS_ALLOWED_ORIGINS = [
     # Whitelist default local React ports
     'http://localhost:3000',
     'http://127.0.0.1:3000',
@@ -159,3 +169,20 @@ CORS_ORIGIN_WHITELIST = [
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# User model
+# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-user-model
+AUTH_USER_MODEL = 'apis.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+}
+
+REST_KNOX = {
+    'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
+    'AUTH_TOKEN_CHARACTER_LENGTH': 64,
+    'TOKEN_TTL': timedelta(hours=4),
+    'USER_SERIALIZER': 'apis.serializers.UserSerializer',
+    'TOKEN_LIMIT_PER_USER': None,
+    'AUTO_REFRESH': True,  # This defines if the token expiry time is extended by TOKEN_TTL each time the token is used
+}

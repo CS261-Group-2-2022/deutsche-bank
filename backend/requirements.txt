@@ -3,3 +3,5 @@ django
 django-rest-framework
 django-extensions
 psycopg2-binary
+django-rest-knox
+django-cors-headers
