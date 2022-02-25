@@ -141,7 +141,7 @@ function GroupSessionsInfo() {
         <div className="flex flex-col w-full">
           <p className="text-m">
             There {numAvailableSessions == 1 ? "is" : "are"} <span className="font-bold">{numAvailableSessions}</span> group session{numAvailableSessions == 1 ? " " : "s "}
-            available which match your interests
+            available which match{numAvailableSessions == 1 ? "es" : ""} your interests
           </p>
         </div>
         <div className="flex flex-col">
