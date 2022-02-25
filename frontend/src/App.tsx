@@ -22,6 +22,7 @@ import SkillsProvider from "./utils/skills";
 import Feedback from "./pages/Feedback";
 import LoggedOutPage from "./pages/LoggedOutPage";
 import MentoringProfile from "./pages/MentoringProfile";
+import YourMentees from "./pages/YourMentees";
 
 const fetcher: BareFetcher = async (resource) => {
   const token = getAuthToken();
@@ -57,7 +58,7 @@ function App() {
                     {/* Have an index route so that the main /mentoring just redirects to your profile */}
                     <Route index element={<Navigate to="/mentoring/me" />} />
                     <Route path=":user" element={<MentoringProfile />} />
-                    <Route path="mentees" element={<h1>HELLO, WORLD!</h1>} />
+                    <Route path="mentees" element={<YourMentees />} />
                   </Route>
                   <Route path="groups" element={<GroupSessions />} />
                   <Route path="settings" element={<Settings />} />
