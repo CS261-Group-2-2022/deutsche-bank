@@ -1,10 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Outlet,
+  Navigate,
+} from "react-router-dom";
 
 import Home from "./pages/Home";
 import Error404 from "./pages/Error404";
 import { BareFetcher, SWRConfig } from "swr";
 import UserProvider from "./utils/authentication";
-import Mentoring from "./pages/Mentoring";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Settings from "./pages/Settings";
@@ -16,6 +21,7 @@ import GroupSessions from "./pages/GroupSessions";
 import SkillsProvider from "./utils/skills";
 import Feedback from "./pages/Feedback";
 import LoggedOutPage from "./pages/LoggedOutPage";
+import MentoringProfile from "./pages/MentoringProfile";
 
 const fetcher: BareFetcher = async (resource) => {
   const token = getAuthToken();
@@ -44,56 +50,27 @@ function App() {
           <UserProvider>
             <BrowserRouter>
               <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedPage>
-                      <Home />
-                    </ProtectedPage>
-                  }
-                />
-                <Route
-                  path="mentoring"
-                  element={
-                    <ProtectedPage>
-                      <Mentoring />
-                    </ProtectedPage>
-                  }
-                />
-                <Route
-                  path="groups"
-                  element={
-                    <ProtectedPage>
-                      <GroupSessions />
-                    </ProtectedPage>
-                  }
-                />
-                <Route
-                  path="login"
-                  element={
-                    <LoggedOutPage>
-                      <Login />
-                    </LoggedOutPage>
-                  }
-                />
+                {/* All subpages here are rendered as protected pages */}
+                <Route element={<ProtectedPage />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="mentoring" element={<Outlet />}>
+                    {/* Have an index route so that the main /mentoring just redirects to your profile */}
+                    <Route index element={<Navigate to="/mentoring/me" />} />
+                    <Route path=":user" element={<MentoringProfile />} />
+                    <Route path="mentees" element={<h1>HELLO, WORLD!</h1>} />
+                  </Route>
+                  <Route path="groups" element={<GroupSessions />} />
+                  <Route path="settings" element={<Settings />} />
+                </Route>
+
+                {/* All subpages here are rendered as logged out pages - i.e. if you are logged in you will be redirected out of here */}
+                <Route element={<LoggedOutPage />}>
+                  <Route path="login" element={<Login />} />
+                  <Route path="signup" element={<Signup />} />
+                </Route>
+
                 <Route path="logout" element={<Logout />} />
-                <Route
-                  path="signup"
-                  element={
-                    <LoggedOutPage>
-                      <Signup />
-                    </LoggedOutPage>
-                  }
-                />
                 <Route path="feedback" element={<Feedback />} />
-                <Route
-                  path="settings"
-                  element={
-                    <ProtectedPage>
-                      <Settings />
-                    </ProtectedPage>
-                  }
-                />
                 <Route path="*" element={<Error404 />} />
               </Routes>
             </BrowserRouter>
