@@ -13,10 +13,11 @@ COPY . .
 RUN rm -rf /apis/migrations/
 RUN rm -rf /*/.__pycache__/
 RUN python3 manage.py collectstatic --noinput
+RUN sed 's/\r$//' init.sh > script.sh
 # 3) Initialise the django app - making sure all migrations are applied
 
 # 4) Run the django server
-ENTRYPOINT ["sh", "init.sh"]
+ENTRYPOINT ["sh", "script.sh"]
 # TODOs
 # - TODO Run tests and fail if they fail?
 #
