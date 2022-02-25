@@ -28,13 +28,13 @@ class UserViewSet(viewsets.ModelViewSet):
         if mentorship is None:
             return Response({'error': 'This user does not have a mentor'}, status=status.HTTP_204_NO_CONTENT)
 
-        return Response(FullUserSerializer(user.mentorship.mentor))
+        return Response(UserSerializerFull(user.mentorship.mentor))
 
     @action(detail=False, methods=['get'])
     def mentees(self, request, *args, **kwargs) -> Response:
         user: User = request.user
 
-        cereal = FullUserSerializer(user.get_mentees(), many=True)
+        cereal = UserSerializerFull(user.get_mentees(), many=True)
         return Response(cereal.data)
 
     @action(detail=True, methods=['get'])
@@ -48,6 +48,7 @@ class UserViewSet(viewsets.ModelViewSet):
         cereal = SkillSerializer(user.expertise.all(), many=True)
         return Response(cereal.data)
 
+
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
@@ -57,7 +58,7 @@ class RegisterView(generics.GenericAPIView):
         user = serializer.save()  # Get user instance
         return Response(
             {
-                "user": FullUserSerializer(user, context=self.get_serializer_context()).data,  # Serialize user
+                "user": UserSerializerFull(user, context=self.get_serializer_context()).data,  # Serialize user
                 "token": AuthToken.objects.create(user)[1]  # Create token
             }
         )
