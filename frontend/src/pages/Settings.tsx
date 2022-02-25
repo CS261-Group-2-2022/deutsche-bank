@@ -72,6 +72,9 @@ export default function Settings() {
     });
 
     clearErrors();
+    if (res.ok) {
+      alert("Settings Updated");
+    }
   };
 
   return (
@@ -97,7 +100,6 @@ export default function Settings() {
                   id="firstname"
                   name="First name"
                   type="text"
-                  autoComplete="fname"
                   placeholder="First Name"
                   text={firstName}
                   onChange={setFirstName}
@@ -106,7 +108,6 @@ export default function Settings() {
                   id="lastname"
                   name="Last name"
                   type="text"
-                  autoComplete="lname"
                   placeholder="Last Name"
                   text={lastName}
                   onChange={setLastName}
@@ -118,7 +119,7 @@ export default function Settings() {
                 selected={assignedSkills}
                 setSelected={setAssignedSkills}
                 error={skillsError}
-                placeholder="Select topics for the session"
+                placeholder="Select your areas of expertise"
                 hashColouredLabels
               />
               <FormInput
