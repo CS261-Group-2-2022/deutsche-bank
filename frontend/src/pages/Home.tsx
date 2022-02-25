@@ -11,7 +11,7 @@ import Topbar from "../components/Topbar";
 import UpcomingSessions from "../components/UpcomingSessions";
 import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
-import { GroupSessionResponse, LIST_USER_HOSTING_SESSIONS_ENDPOINT, LIST_USER_JOINED_SESSIONS_ENDPOINT } from "../utils/endpoints";
+import { GroupSessionResponse, LIST_GROUP_SESSIONS_ENDPOINT, LIST_USER_HOSTING_SESSIONS_ENDPOINT, LIST_USER_JOINED_SESSIONS_ENDPOINT } from "../utils/endpoints";
 
 type ActionProps = {
   actionText: string;
@@ -109,6 +109,28 @@ function MentoringInfo() {
 }
 
 function GroupSessionsInfo() {
+  const { data: allSessions = [] } = useSWR<GroupSessionResponse>(
+    LIST_GROUP_SESSIONS_ENDPOINT
+  );
+  const { data: joinedSessions } = useSWR<GroupSessionResponse>(
+    LIST_USER_JOINED_SESSIONS_ENDPOINT
+  );
+  const { data: hostingSessions } = useSWR<GroupSessionResponse>(
+    LIST_USER_HOSTING_SESSIONS_ENDPOINT
+  );
+
+  const numAvailableSessions = allSessions
+    // TODO: Only show sessions in the future
+    // .filter((session) => Date.parse(session.date) >= Date.now())
+    // Filter out sessions you are hosting or have already joined
+    .filter(
+      (session) =>
+        !joinedSessions?.find(
+          (otherSession) => session.id == otherSession.id
+        ) &&
+        !hostingSessions?.find((otherSession) => session.id == otherSession.id)
+    ).length
+
   return (
     <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 space-y-2">
       <h4 className="text-l sm:text-xl font-semibold flex items-center">
@@ -118,7 +140,7 @@ function GroupSessionsInfo() {
       <div className="flex-row gap-4 flex justify-center items-center">
         <div className="flex flex-col w-full">
           <p className="text-m">
-            There are <span className="font-bold">3</span> group sessions
+            There are <span className="font-bold">{numAvailableSessions}</span> group sessions {/* TODO group sessions count */ }
             available which match your interests
           </p>
         </div>
@@ -177,6 +199,7 @@ function UpcomingSessionsColumn() {
 export default function Home() {
   const { user } = useUser();
   const { areas } = useBusinessAreas();
+
 
   return (
     <>
