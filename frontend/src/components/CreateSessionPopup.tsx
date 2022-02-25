@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { mutate } from "swr";
 import { Dialog } from "@headlessui/react";
 import {
   CreateSessionResponse,
@@ -8,14 +10,11 @@ import {
   Skill,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
+import { useSkills } from "../utils/skills";
 import Popup from "./Popup";
 import { FormInput } from "./FormInput";
-import FormDropdown from "./FormDropdown";
-import { useEffect, useState } from "react";
-import { useUser } from "../utils/authentication";
-import { useSkills } from "../utils/skills";
-import { mutate } from "swr";
 import { FormTextArea } from "./FormTextarea";
+import FormMultiSelect from "./FormMultiSelect";
 
 /** Verifies whether a create response is succesful or not (and type guards the body) */
 const isCreateSuccess = (
@@ -34,7 +33,6 @@ export default function CreateSessionPopup({
   isOpen,
   closeModal,
 }: CreateSessionPopupProps) {
-  const { user } = useUser();
   const { skills } = useSkills();
 
   const [sessionTitle, setSessionTitle] = useState("");
@@ -43,9 +41,7 @@ export default function CreateSessionPopup({
   const [description, setDescription] = useState("");
   const [capacity, setCapacity] = useState("");
   const [datetime, setDatetime] = useState("");
-  const [assignedSkills, setAssignedSkills] = useState<Skill | undefined>(
-    skills[0]
-  ); //TODO change this to skills and extra users instead of this
+  const [assignedSkills, setAssignedSkills] = useState<Skill[]>([]);
 
   const [sessionTitleError, setSessionTitleError] = useState<
     string | undefined
@@ -74,6 +70,11 @@ export default function CreateSessionPopup({
   };
 
   const createSessionRequest = async () => {
+    if (!assignedSkills || assignedSkills.length == 0) {
+      setSkillsError("You must select atleast one topic");
+      return;
+    }
+
     const res = await fetch(CREATE_GROUP_SESSION_ENDPOINT, {
       method: "POST",
       headers: {
@@ -86,7 +87,7 @@ export default function CreateSessionPopup({
         description,
         capacity,
         date: datetime,
-        skills: [assignedSkills?.id],
+        skills: assignedSkills.map((skill) => skill.id), // TODO: only use permitted skills? (ones they are expert in)
         virtual_link: virtualLink,
       }),
     });
@@ -105,11 +106,12 @@ export default function CreateSessionPopup({
     } else {
       setSessionTitleError(body.name?.join(" "));
       setLocationError(body.location?.join(" "));
-      // setVirtualLinkError(body);
+      setVirtualLinkError(body.virtual_link?.join(" "));
       setDescriptionError(body.description?.join(" "));
       setCapacityError(body.capacity?.join(" "));
       setDatetimeError(body.date?.join(" "));
       setOverallError(body.non_field_errors?.join(" "));
+      setSkillsError(body.skills?.join(" "));
     }
   };
 
@@ -183,13 +185,14 @@ export default function CreateSessionPopup({
               error={virtualLinkError}
             />
           </div>
-          <FormDropdown
-            title="Skills"
+          <FormMultiSelect
+            title="Session Topics"
             options={skills}
             selected={assignedSkills}
             setSelected={setAssignedSkills}
             error={skillsError}
-            placeholder="Select an area"
+            placeholder="Select topics for the session"
+            hashColouredLabels
           />
           <FormTextArea
             id="description"
@@ -222,6 +225,7 @@ export default function CreateSessionPopup({
               text={capacity}
               onChange={setCapacity}
               error={capacityError}
+              required
               min={1}
             />
           </div>

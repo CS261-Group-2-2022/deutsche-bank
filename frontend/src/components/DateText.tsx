@@ -12,7 +12,7 @@ export default function DateTextProps({ date }: DateTextProps) {
   return (
     <p
       className="flex text-gray-600 items-center"
-      title={DateTime.fromISO(date).toFormat("EEEE, MMMM Do yyyy, h:mm:ss a")}
+      title={DateTime.fromISO(date).toFormat("DDDD, ttt")}
     >
       <CalendarIcon className="mr-1 h-5 w-5" />
       {relativeTime?.toString()}

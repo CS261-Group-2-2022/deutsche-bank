@@ -138,6 +138,8 @@ export type CreateSessionError = {
   capacity?: string[];
   date?: string[];
   non_field_errors?: string[];
+  virtual_link?: string[];
+  skills?: string[];
 };
 
 export type CreateSessionResponse = CreateSessionSuccess | CreateSessionError;
