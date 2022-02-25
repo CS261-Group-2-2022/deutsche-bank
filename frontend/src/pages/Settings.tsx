@@ -34,9 +34,6 @@ export default function Signup() {
   };
 
   const sendSettingsUpdateRequest = async () => {
-    console.log("useuser");
-    console.log(user);
-
     // Check password and retyped password are equivalent
     if (password != retypedPasssword) {
       setRetypedPasswordError("Passwords do not match");
@@ -66,26 +63,6 @@ export default function Signup() {
     });
 
     clearErrors();
-    // const body: RegisterBody = await res.json();
-
-    // const isRegisterSuccess = (
-    //   res: Response,
-    //   body: RegisterBody
-    // ): body is RegisterSuccess => {
-    //   return res.ok;
-    // };
-
-    // if (isRegisterSuccess(res, body)) {
-    //   // Succesfully logged in
-    //   console.log("Succesfully logged in");
-    //   setAuthToken(body.token, false);
-    // } else {
-    //   setFirstNameError(body.first_name?.join(" "));
-    //   setLastNameError(body.last_name?.join(" "));
-    //   setEmailError(body.email?.join(" "));
-    //   setPasswordError(body.password?.join(" "));
-    //   // setBusinessAreaError(body.business_area?.join(" "));
-    // }
   };
 
   return (
