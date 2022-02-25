@@ -97,9 +97,8 @@ class GroupSessionSerializer(ModelSerializer):
 
 
 class GroupSessionSerializerFull(GroupSessionSerializer):
-    host = UserSerializer()
-    users = UserSerializer(many=True)
-    skills = SkillSerializer(many=True)
+    class Meta(GroupSessionSerializer.Meta):
+        depth = 1
 
 
 class MentorshipSerializer(ModelSerializer):
@@ -109,7 +108,10 @@ class MentorshipSerializer(ModelSerializer):
 
 
 class UserSerializerFull(UserSerializer):
-    business_area = BusinessAreaSerializer()
-    expertise = SkillSerializer(many=True)
-    interests = SkillSerializer(many=True)
-    mentorship = MentorshipSerializer()
+    action_plans = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        depth = 1
+
+    def get_action_plans(self, obj: User):
+        return ActionPlanSerializer(obj.get_action_plans(), many=True).data
