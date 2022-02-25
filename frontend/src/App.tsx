@@ -14,6 +14,7 @@ import Logout from "./pages/Logout";
 import ProtectedPage from "./pages/ProtectedPage";
 import GroupSessions from "./pages/GroupSessions";
 import SkillsProvider from "./utils/skills";
+import Feedback from "./pages/Feedback";
 
 const fetcher: BareFetcher = async (resource) => {
   const token = getAuthToken();
@@ -69,6 +70,7 @@ function App() {
                 <Route path="login" element={<Login />} />
                 <Route path="logout" element={<Logout />} />
                 <Route path="signup" element={<Signup />} />
+                <Route path="feedback" element={<Feedback />} />
                 <Route
                   path="settings"
                   element={

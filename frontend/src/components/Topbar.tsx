@@ -1,4 +1,4 @@
-import { BellIcon, CogIcon, LogoutIcon } from "@heroicons/react/solid";
+import { BellIcon, CogIcon, LogoutIcon, ChatAlt2Icon } from "@heroicons/react/solid";
 import { Link, NavLink } from "react-router-dom";
 import UserProvider, { useUser } from "../utils/authentication";
 
@@ -82,6 +82,14 @@ export default function Topbar() {
 
           {/* RHS Panel */}
           <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
+          <Link to="/feedback">
+              <ChatAlt2Icon
+                className={
+                  "text-gray-600 ml-2 h-5 w-5 group-hover:text-gray-500"
+                }
+                aria-hidden="true"
+              />
+            </Link>
             <BellIcon
               className={"text-gray-600 ml-2 h-5 w-5 group-hover:text-gray-500"}
               aria-hidden="true"

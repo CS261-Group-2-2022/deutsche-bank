@@ -4,7 +4,7 @@ import { useState } from "react";
 import { RegisterBody, RegisterSuccess, setAuthToken, SETTINGS_ENDPOINT, SIGNUP_ENDPOINT } from "../utils/endpoints";
 import { useUser } from "../utils/authentication";
 
-export default function Signup() {
+export default function Settings() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");

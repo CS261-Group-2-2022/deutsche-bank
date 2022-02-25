@@ -40,6 +40,7 @@ export const FormTextArea = ({
         placeholder={placeholder}
         value={text}
         onChange={(e) => onChange(e.target.value)}
+        rows={3}
       />
       {error && (
         <div className="block text-sm m-1 font-medium text-red-700">
