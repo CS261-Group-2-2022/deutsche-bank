@@ -133,6 +133,7 @@ def create_dummy_data():
         create_dummy_business_areas()
         create_dummy_skills()
         create_dummy_users()
-    except OperationalError:
-        print(f'Error')
-        pass
+    except Exception as e:
+        print(f'Error in create_dummy_data:')
+        print(f'{e=}')
+        raise e

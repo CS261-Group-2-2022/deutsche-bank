@@ -173,5 +173,5 @@ def print_all_users() -> None:
     print(" `-----------------------------------------------------------")
 
 
-create_dummy_data()
+# create_dummy_data()
 # print_all_users()
