@@ -155,6 +155,11 @@ class GroupSession(models.Model):
     users: List[User] = models.ManyToManyField(User, default=[])
 
 
+class Feedback(models.Model):
+    date: datetime = models.DateTimeField()
+    feedback: str = models.CharField(max_length=1000)
+
+
 from .dummy_data import *
 
 

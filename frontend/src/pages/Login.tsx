@@ -1,15 +1,13 @@
 import { LockClosedIcon } from "@heroicons/react/solid";
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { FormInput } from "../components/FormInput";
-import { useUser } from "../utils/authentication";
 import {
   LoginBody,
   LoginSuccess,
   LOGIN_ENDPOINT,
   setAuthToken,
 } from "../utils/endpoints";
-import { LocationState } from "../utils/location_state";
 
 /** Verifies whether a login response is succesful or not (and type guards the body) */
 const isLoginSuccess = (
@@ -20,9 +18,7 @@ const isLoginSuccess = (
 };
 
 export default function Login() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { isLoggedIn } = useUser();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,18 +26,6 @@ export default function Login() {
 
   const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
-
-  /** Navigates back to the page we originated from, or the home page if we don't know where from */
-  const navigateBack = () =>
-    navigate((location.state as LocationState)?.from ?? "/");
-
-  // Effect which runs if we have a user logged in.
-  // If we are logged in, we need to redirect to where we came from, as we don't need to login again
-  useEffect(() => {
-    if (isLoggedIn) {
-      navigateBack();
-    }
-  }, [isLoggedIn]);
 
   // Function to send off a login request, and handle the response from it
   const sendLoginRequest = async () => {

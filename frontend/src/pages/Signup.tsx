@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import FormDropdown from "../components/FormDropdown";
 import { FormInput } from "../components/FormInput";
 import PasswordStrengthIndicator from "../components/PasswordStrengthIndicator";
-import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
 import {
   BusinessArea,
@@ -12,7 +11,6 @@ import {
   setAuthToken,
   SIGNUP_ENDPOINT,
 } from "../utils/endpoints";
-import { LocationState } from "../utils/location_state";
 
 /** Verifies whether a login response is succesful or not (and type guards the body) */
 const isRegisterSuccess = (
@@ -24,8 +22,6 @@ const isRegisterSuccess = (
 
 export default function Signup() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isLoggedIn } = useUser();
   const { areas } = useBusinessAreas();
 
   const [firstName, setFirstName] = useState("");
@@ -48,18 +44,6 @@ export default function Signup() {
     string | undefined
   >();
   const [overallError, setOverallError] = useState<string | undefined>();
-
-  /** Navigates back to the page we originated from, or the home page if we don't know where from */
-  const navigateBack = () =>
-    navigate((location.state as LocationState)?.from ?? "/");
-
-  // Effect which runs if we have a user logged in.
-  // If we are logged in, we need to redirect to where we came from, as we don't need to signup again
-  useEffect(() => {
-    if (isLoggedIn) {
-      navigateBack();
-    }
-  }, [isLoggedIn]);
 
   const clearErrors = () => {
     setFirstNameError(undefined);

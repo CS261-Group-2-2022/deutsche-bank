@@ -1,14 +1,20 @@
 import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
 import { useState } from "react";
-import { RegisterBody, RegisterSuccess, setAuthToken, SETTINGS_ENDPOINT, SIGNUP_ENDPOINT } from "../utils/endpoints";
+import { RegisterBody, RegisterSuccess, setAuthToken, SETTINGS_ENDPOINT, SIGNUP_ENDPOINT, Skill, SKILLS_ENDPOINT } from "../utils/endpoints";
 import { useUser } from "../utils/authentication";
+import FormMultiSelect from "../components/FormMultiSelect";
+import { useSkills } from "../utils/skills";
 
 export default function Settings() {
+  const { skills } = useSkills();
+  const { user } = useUser();
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [retypedPasssword, setRetypedPassword] = useState("");
+  const [assignedSkills, setAssignedSkills] = useState<Skill[]>([]);
   // const [businessArea, setBusinessArea] = useState("");
 
   const [firstNameError, setFirstNameError] = useState<string | undefined>();
@@ -21,8 +27,7 @@ export default function Settings() {
   // const [businessAreaError, setBusinessAreaError] = useState<
   //   string | undefined
   // >();
-
-  const { user } = useUser();
+  const [skillsError, setSkillsError] = useState<string | undefined>();
 
   const clearErrors = () => {
     setFirstNameError(undefined);
@@ -31,6 +36,7 @@ export default function Settings() {
     setPasswordError(undefined);
     setRetypedPasswordError(undefined);
     // setBusinessAreaError(undefined);
+    setSkillsError(undefined);
   };
 
   const sendSettingsUpdateRequest = async () => {
@@ -49,6 +55,8 @@ export default function Settings() {
     //   return false;
     // }
 
+    const skillIds = assignedSkills.map((skillId) => skillId.id)
+
     const res = await fetch(SETTINGS_ENDPOINT.replace("{ID}",user?.id.toString() ?? "1"), {
       method: "PATCH",
       headers: {
@@ -57,12 +65,16 @@ export default function Settings() {
       body: JSON.stringify({
         first_name: firstName,
         last_name: lastName,
+        expertise: skillIds,
         // password : password, 
         // business_area: businessArea,
       }),// TODO currently you are not able to change the password with this endpoint, will fix this shortly
     });
 
     clearErrors();
+    if (res.ok) {
+      alert("Settings Updated");
+    }
   };
 
   return (
@@ -86,26 +98,33 @@ export default function Settings() {
               <div className="grid grid-cols-2 gap-3">
                 <FormInput
                   id="firstname"
-                  name="firstname"
+                  name="First name"
                   type="text"
-                  autoComplete="fname"
                   placeholder="First Name"
                   text={firstName}
                   onChange={setFirstName}
                 />
                 <FormInput
                   id="lastname"
-                  name="lastname"
+                  name="Last name"
                   type="text"
-                  autoComplete="lname"
                   placeholder="Last Name"
                   text={lastName}
                   onChange={setLastName}
                 />
               </div>
+              <FormMultiSelect
+                title="Skills"
+                options={skills}
+                selected={assignedSkills}
+                setSelected={setAssignedSkills}
+                error={skillsError}
+                placeholder="Select your areas of expertise"
+                hashColouredLabels
+              />
               <FormInput
                 id="password"
-                name="new password"
+                name="New Password"
                 type="password"
                 placeholder="Password"
                 text={password}
@@ -113,7 +132,7 @@ export default function Settings() {
               />
               <FormInput
                 id="retyped-password"
-                name="retype new password"
+                name="Retype New Password"
                 type="password"
                 placeholder="Retype Password"
                 text={retypedPasssword}

@@ -6,8 +6,13 @@ type ProtectedPageProps = {
 };
 
 export default function ProtectedPage({ children }: ProtectedPageProps) {
-  const { isLoggedIn } = useUser();
+  const { isLoggedIn, isLoading } = useUser();
   const location = useLocation();
+
+  // If we are still loading the information, then we temporarily render nothing
+  if (isLoading) {
+    return <></>;
+  }
 
   return isLoggedIn ? (
     <>{children}</>
