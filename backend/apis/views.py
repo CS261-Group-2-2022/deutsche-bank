@@ -68,9 +68,23 @@ class LoginView(KnoxLoginView):
 
 class CurrentUserView(APIView):
     permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to get user
+    serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
         serializer = UserSerializer(request.user)  # Serialize current user
+        return Response(serializer.data)
+
+    def patch(self, request, *args, **kwargs):
+        instance = request.user
+        serializer = UserSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
         return Response(serializer.data)
 
 
