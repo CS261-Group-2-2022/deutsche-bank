@@ -36,7 +36,7 @@ function MentoringButton() {
             <ChevronDownIcon
               className={`${
                 isActive || open ? "text-gray-900" : "text-gray-400"
-              } ml-2 h-5 w-5 group-hover:text-gray-900 transition-colors duration-200`}
+              } ml-1 h-5 w-5 group-hover:text-gray-900 transition-colors duration-200`}
               aria-hidden="true"
             />
           </Popover.Button>
