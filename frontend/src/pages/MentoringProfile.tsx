@@ -1,18 +1,30 @@
-import { LockClosedIcon } from "@heroicons/react/solid";
+import { LockClosedIcon, XIcon } from "@heroicons/react/solid";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import useSWR from "swr";
 import MentoringMatchingPage from "../components/MentoringMatching";
 import MentoringUserProfile from "../components/MentoringUserProfile";
 import Topbar from "../components/Topbar";
 import { useUser } from "../utils/authentication";
 import Error404 from "./Error404";
+import { FULL_USER_ENDPOINT, UserFull } from "../utils/endpoints";
 
 function OwnProfile() {
   const { user } = useUser();
   if (!user) return <></>;
 
-  // eslint-disable-next-line no-constant-condition
-  if (true) {
-    return <MentoringUserProfile user={user} perspective="mentee" />;
+  // GET MENTOR HERE
+  const { data: mentor } = useSWR<UserFull>(
+    FULL_USER_ENDPOINT.replace("{ID}", user.id.toString() ?? "-1")
+  );
+
+  if (/*user.mentorship && */ mentor) {
+    return (
+      <MentoringUserProfile
+        mentee={user}
+        mentor={mentor}
+        perspective="mentor"
+      />
+    );
   } else {
     return <MentoringMatchingPage />;
   }

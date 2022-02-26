@@ -1,34 +1,42 @@
 import { Tab } from "@headlessui/react";
 import { ArrowLeftIcon } from "@heroicons/react/solid";
 import { Link } from "react-router-dom";
-import { User } from "../utils/endpoints";
+import { UserFull, User } from "../utils/endpoints";
+import MentoringMeetings from "./MentoringMeetings";
+import MentorProfile from "./MentorInfo";
 
 type UserProfileProps = {
-  user: User;
+  mentee: User;
+  mentor: UserFull;
   perspective: "mentor" | "mentee";
 };
 
 export default function MentoringUserProfile({
-  user,
+  mentee,
+  mentor,
   perspective,
 }: UserProfileProps) {
   return (
     <div className="mx-5">
-      {perspective === "mentor" && (
-        <Link
-          to="/mentoring/mentees"
-          className="text-blue-600 hover:text-blue-900 flex items-center mb-2"
-        >
-          <ArrowLeftIcon className="w-5 h-5 mr-2" />
-          Back to your Mentees
-        </Link>
-      )}
+      <div className="grid grid-cols-10">
+        {perspective === "mentor" && (
+          <Link
+            to="/mentoring/mentees"
+            className="text-blue-600 hover:text-blue-900 flex items-center mb-2 col-span-2"
+          >
+            <ArrowLeftIcon className="w-5 h-5 mr-2" />
+            Back to your Mentees
+          </Link>
+        )}
 
-      <h1 className="text-4xl font-bold">
-        {perspective === "mentee"
-          ? "Your Profile"
-          : `${user.first_name} ${user.last_name}'s Profile`}
-      </h1>
+        <h1 className="text-xl font-bold text-center col-span-6">
+          {perspective === "mentee"
+            ? "Your Profile"
+            : `${mentee.first_name} ${mentee.last_name}'s Profile`}
+        </h1>
+
+        <div className="col-span-2"></div>
+      </div>
 
       <Tab.Group>
         <Tab.List className="flex flex-wrap -mb-px justify-center gap-10 border-b border-gray-200">
@@ -70,15 +78,18 @@ export default function MentoringUserProfile({
           </Tab>
         </Tab.List>
         <Tab.Panels>
-          <Tab.Panel key="info">
-            INFO
+          <Tab.Panel key="info" className="mt-8">
+            <div className="grid grid-cols-4 mx-5 gap-5">
+              <div className="col-span-3 space-y-5">
+                <MentorProfile mentor={mentor} />
+              </div>
+            </div>
+            {/* Your Mentor */}
             {/* TODO: current mentor */}
             {/* TODO: give feedback, terminate relationship */}
           </Tab.Panel>
           <Tab.Panel key="meetings">
-            MEETINGS
-            {/* TODO: past present future meetings */}
-            {/* TODO: request new meeting */}
+            <MentoringMeetings />
           </Tab.Panel>
           <Tab.Panel key="plans">PLANS OF ACTION</Tab.Panel>
         </Tab.Panels>

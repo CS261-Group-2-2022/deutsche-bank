@@ -48,7 +48,7 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
 
         <div className="flex-auto flex-col">
           <h1 className="font-bold text-xl">{session.name}</h1>
-          <div className="flex space-x-1">
+          <div className="flex flex-wrap space-x-1 space-y-1">
             {session.skills?.map((skill) => (
               <SessionTopicLabel key={skill.id} name={skill.name} />
             ))}
