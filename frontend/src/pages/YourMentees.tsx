@@ -125,7 +125,7 @@ export default function YourMentees() {
   if (!user) return <></>;
 
   const currentMentees: User[] = [user, user, user];
-  const pendingRequests: User[] = [];
+  const pendingRequests: User[] = [user, user];
 
   return (
     <>
