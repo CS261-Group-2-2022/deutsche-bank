@@ -1,3 +1,4 @@
+import { Tab } from "@headlessui/react";
 import { LockClosedIcon, XIcon } from "@heroicons/react/solid";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { UserPanel } from "../components/MentoringUserPanel";
@@ -13,7 +14,42 @@ type UserProfileProps = {
 };
 
 function UserProfile({ user, perspective }: UserProfileProps) {
-  return <h1>USER PROFILE</h1>;
+  return (
+    <div>
+      <Tab.Group>
+        <Tab.List className="flex flex-wrap -mb-px justify-center gap-10 border-b border-gray-200">
+          <Tab
+            key="meetings"
+            className={({ selected }) =>
+              `${
+                selected
+                  ? "text-blue-600 border-blue-600 active"
+                  : "text-gray-500 hover:text-gray-600 hover:border-gray-300 border-transparent"
+              } inline-block py-4 px-4 text-lg font-medium text-center rounded-t-lg border-b-2`
+            }
+          >
+            Meetings
+          </Tab>
+          <Tab
+            key="plans"
+            className={({ selected }) =>
+              `${
+                selected
+                  ? "text-blue-600 border-blue-600 active"
+                  : "text-gray-500 hover:text-gray-600 hover:border-gray-300 border-transparent"
+              } inline-block py-4 px-4 text-lg font-medium text-center rounded-t-lg border-b-2`
+            }
+          >
+            Plans of Action
+          </Tab>
+        </Tab.List>
+        <Tab.Panels>
+          <Tab.Panel key="meetings">MEETINGS</Tab.Panel>
+          <Tab.Panel key="plans">PLANS OF ACTION</Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
+    </div>
+  );
 }
 
 function MatchingPage() {
@@ -130,7 +166,8 @@ function OwnProfile() {
   const { user } = useUser();
   if (!user) return <></>;
 
-  if (user.mentorship) {
+  // eslint-disable-next-line no-constant-condition
+  if (true) {
     return <UserProfile user={user} perspective="mentee" />;
   } else {
     return <MatchingPage />;
@@ -192,6 +229,7 @@ function OtherProfile({ userId }: OtherProfileProps) {
 }
 
 export default function MentoringProfile() {
+  const { user: loggedInUser } = useUser();
   const { user: viewingUser } = useParams();
 
   // If there is no parameter for the viewing user (which can't actually ever happen), redirect to your profile
@@ -199,7 +237,8 @@ export default function MentoringProfile() {
     return <Navigate to="/mentoring/me" />;
   }
 
-  const isViewingOwnProfile = viewingUser === "me";
+  const isViewingOwnProfile =
+    viewingUser === "me" || viewingUser === loggedInUser?.id.toString();
   const userId = isViewingOwnProfile ? -1 : parseInt(viewingUser, 10);
 
   // If an invalid ID was provided, show the 404 page
