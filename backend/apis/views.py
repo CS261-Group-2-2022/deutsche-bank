@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 
 from .models import *
 from .serializers import *
+from .dummy_data import create_dummy_data
 
 from .matching_algorithm import matching_algorithm
 

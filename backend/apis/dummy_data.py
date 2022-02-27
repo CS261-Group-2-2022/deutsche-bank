@@ -291,7 +291,7 @@ def create_dummy_skills():
 
 def create_dummy_data(quiet=False, seed="We're literally the best software eng team."):
     try:
-        print("Creating dummy data.")
+        print(f"Creating dummy data ({seed=}).")
         random.seed(seed)
 
         create_dummy_business_areas()
