@@ -72,7 +72,9 @@ def create_dummy_mentorships():
 
         [(mentor, mentee)] = random.sample(list(pairings), 1)
 
-        new(mentor, mentee)
+        # Have a 2/3 chance that each possible pairing is rejected.
+        if random.choice([True, False, False]):
+            new(mentor, mentee)
 
         pairings = list(filter(lambda p: p[1] != mentee, pairings))
 
