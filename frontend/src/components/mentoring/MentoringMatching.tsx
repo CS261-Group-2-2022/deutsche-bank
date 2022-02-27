@@ -1,8 +1,8 @@
 import { XIcon } from "@heroicons/react/solid";
-import { useUser } from "../utils/authentication";
-import { User } from "../utils/endpoints";
+import { useUser } from "../../utils/authentication";
+import { User } from "../../utils/endpoints";
 import { UserPanel } from "./MentoringUserPanel";
-import SessionTopicLabel from "./SessionTopicLabel";
+import SessionTopicLabel from "../SessionTopicLabel";
 
 export default function MentoringMatchingPage() {
   // TODO: get these from an API

@@ -6,8 +6,8 @@ import {
   SaveIcon,
 } from "@heroicons/react/solid";
 import { useState } from "react";
-import { FormTextArea } from "./FormTextarea";
-import RequestMeetingPopup from "./RequestAMeetingPopup";
+import { FormTextArea } from "../FormTextarea";
+import RequestMeetingPopup from "../RequestAMeetingPopup";
 
 function Meeting() {
   const [isEditingNotes, setIsEditingNotes] = useState(false);

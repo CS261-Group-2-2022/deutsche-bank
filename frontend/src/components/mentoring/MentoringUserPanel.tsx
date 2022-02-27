@@ -1,5 +1,5 @@
-import { getAreaFromId, useBusinessAreas } from "../utils/business_area";
-import { User } from "../utils/endpoints";
+import { getAreaFromId, useBusinessAreas } from "../../utils/business_area";
+import { User } from "../../utils/endpoints";
 
 type UserPanelProps = {
   user: User;

@@ -1,6 +1,6 @@
 import { ArrowRightIcon, CheckIcon, XIcon } from "@heroicons/react/solid";
 import { Link } from "react-router-dom";
-import { UserPanel } from "../components/MentoringUserPanel";
+import { UserPanel } from "../components/mentoring/MentoringUserPanel";
 import SessionTopicLabel from "../components/SessionTopicLabel";
 import Topbar from "../components/Topbar";
 import { useUser } from "../utils/authentication";

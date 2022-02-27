@@ -1,13 +1,13 @@
 import useSWR from "swr";
-import { useUser } from "../utils/authentication";
-import { getAreaFromId, useBusinessAreas } from "../utils/business_area";
-import SessionTopicLabel from "./SessionTopicLabel";
+import { useUser } from "../../utils/authentication";
+import { getAreaFromId, useBusinessAreas } from "../../utils/business_area";
+import SessionTopicLabel from "../SessionTopicLabel";
 import {
   FULL_USER_ENDPOINT,
   User,
   UserFull,
   Mentorship,
-} from "../utils/endpoints";
+} from "../../utils/endpoints";
 
 type MentorProfileProps = {
   mentor: UserFull;
