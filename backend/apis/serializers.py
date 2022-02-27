@@ -69,6 +69,9 @@ class ActionPlanSerializer(ModelSerializer):
     class Meta:
         model = ActionPlan
         exclude = []
+        extra_kwargs = {
+            'user': {'required': False}
+        }
 
 
 class SkillSerializer(ModelSerializer):
