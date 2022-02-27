@@ -58,10 +58,12 @@ def create_dummy_mentorships():
 
     number_of_mentorships_to_create = 50
 
+    users_who_wish_to_mentor = list(User.objects.all().filter(mentor_intent=True))
+    users_without_mentors = list(User.objects.all().filter(mentorship=None))
+
     pairings = [(mentor, mentee)
-                for mentor in users.iterator()
-                if mentor.mentor_intent
-                for mentee in users.iterator()
+                for mentor in users_who_wish_to_mentor
+                for mentee in users_without_mentors
                 if compatible(mentor,mentee)]
 
     for i in range(number_of_mentorships_to_create):
