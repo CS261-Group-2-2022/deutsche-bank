@@ -60,10 +60,6 @@ function App() {
                     <Route index element={<Navigate to="/mentoring/me" />} />
                     <Route path=":user" element={<MentoringProfile />} />
                     <Route path="mentees" element={<YourMentees />} />
-                    <Route
-                      path="matching"
-                      element={<MentoringMatchingPage />}
-                    />
                   </Route>
                   <Route path="groups" element={<GroupSessions />} />
                   <Route path="settings" element={<Settings />} />
