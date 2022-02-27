@@ -3,13 +3,19 @@ import zxcvbn from "zxcvbn";
 export type PasswordStrengthIndicatorProps = {
   password: string;
   otherInputs?: string[];
+  updateResult?: (score: number) => unknown;
 };
 
 export default function PasswordStrengthIndicator({
   password,
   otherInputs,
+  updateResult,
 }: PasswordStrengthIndicatorProps) {
   const strengthResult = zxcvbn(password, otherInputs);
+
+  if (updateResult) {
+    updateResult(strengthResult.score);
+  }
 
   let colours = [];
   switch (strengthResult.score) {

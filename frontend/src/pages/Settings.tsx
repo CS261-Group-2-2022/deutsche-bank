@@ -1,6 +1,6 @@
 import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   BusinessArea,
   FULL_USER_ENDPOINT,
@@ -35,6 +35,7 @@ export default function Settings() {
       ?.map((id) => skills.find((skill) => skill.id === id))
       .filter((x) => x !== undefined) as Skill[]) ?? []
   );
+  const passwordStrength = useRef(0);
 
   const [firstNameError, setFirstNameError] = useState<string | undefined>();
   const [lastNameError, setLastNameError] = useState<string | undefined>();
@@ -65,12 +66,21 @@ export default function Settings() {
     // Check password and retyped password are equivalent
     if (password != retypedPasssword) {
       setRetypedPasswordError("Passwords do not match");
+      setIsLoading(false);
+      return false;
+    }
+
+    // Check the score is high enough
+    if (passwordStrength.current <= 2) {
+      setPasswordError("This password is too weak, try something stronger.");
+      setIsLoading(false);
       return false;
     }
 
     // Check business area is set
     if (!businessArea) {
       setBusinessAreaError("You must select a business area");
+      setIsLoading(false);
       return false;
     }
 
@@ -188,6 +198,7 @@ export default function Settings() {
               <PasswordStrengthIndicator
                 password={password}
                 otherInputs={[firstName, lastName]}
+                updateResult={(score) => (passwordStrength.current = score)}
               />
               <FormInput
                 id="retyped-password"
