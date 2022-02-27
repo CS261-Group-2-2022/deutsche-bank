@@ -26,19 +26,6 @@ def create_dummy_users(quiet = False):
     for _ in range(number_of_users_to_create):
         User.make_random()
 
-    if quiet:
-        return
-    else:
-        print(" ,-----------------------------------------------------------")
-        print(" | " + " Created dummy users for the first time...")
-        for u in User.objects.all().iterator():
-            print(" | " + str(u))
-            print(f" | {u.pk=}:")
-            print(f" | {u.id=}:")
-            print(" | " + u.first_name)
-            print(" | " + f"{u.mentorship=}")
-        print(" `-----------------------------------------------------------")
-
 def compatible(mentor, mentee):
     for i in mentee.interests.all().iterator():
         if i in list(mentor.expertise.all()):
@@ -298,6 +285,19 @@ def create_dummy_data(quiet=False, seed="We're literally the best software eng t
         create_dummy_meetings()
         create_dummy_action_plans()
         create_dummy_group_sessions()
+
+        if quiet:
+            return
+        else:
+            print(" ,-----------------------------------------------------------")
+            print(" | " + " Created dummy users for the first time...")
+            for u in User.objects.all().iterator():
+                print(" | " + str(u))
+                print(f" | {u.pk=}:")
+                print(f" | {u.id=}:")
+                print(" | " + u.first_name)
+                print(" | " + f"{u.mentorship=}")
+            print(" `-----------------------------------------------------------")
     except Exception as e:
         print(f'Error in create_dummy_data:')
         print(f'{e=}')
