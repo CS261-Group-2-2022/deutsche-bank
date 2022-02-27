@@ -1,9 +1,11 @@
 FROM python:3-slim
 # ^ Don't do alpine, pre-built wheels may not work and cause recompilations
 
-ENV PYTHONUNBUFFERED 1 # Ensure that output cannot be lost if the app crashes
-ENV DB_BACKEND_IN_DOCKER 1 # Set an environment variable to tell backend it's in Docker.
-    # This is then used to decide whether to connect to Postgres or the local Sqlite database.
+# Ensure that output cannot be lost if the app crashes
+ENV PYTHONUNBUFFERED 1
+# Set an environment variable to tell backend it's in Docker.
+# This is then used to decide whether to connect to Postgres or the local Sqlite database.
+ENV DB_BACKEND_IN_DOCKER 1
 
 # 1) Install run requirements using pip
 COPY requirements.txt ./requirements.txt
