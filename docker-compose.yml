@@ -48,7 +48,7 @@ services: # 'services' are the containers that we're going to run together.
       - 8000:8000 # django (gunicorn) talks on port 8000, as set in `backend/Dockerfile`.
 
     environment:
-      - DEBUG=True
+      #- PRODUCTION=True
       - SECRET_KEY=FAKE_SECRET_KEY_USED_IN_DEVELOP
 
     volumes:

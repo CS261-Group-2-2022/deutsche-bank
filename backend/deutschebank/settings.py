@@ -26,23 +26,26 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 if SECRET_KEY is None:
     print("[Security Warning]: ",
           "Running django app with default secret key. DO NOT do this in production.",
-          "Please set the environment variable 'SECRET_KEY' to False in order to fix this.")
+          "Please set the environment variable 'SECRET_KEY' to the desired key in order to fix this.")
     DEBUG = True
     SECRET_KEY = 'django-insecure-i#!gl500yq#@^odppp6whok!r&mph8tvn#7bajb8c3o2aux_fy'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG')
-if DEBUG is None:
+DEBUG = None
+if os.getenv('PRODUCTION') is None:
     print("[Security Warning]: ",
           "Running django app with DEBUG mode. DO NOT do this in production.\n",
-          "Please set the environment variable 'DEBUG' to False in order to fix this.\n",
-          "You can do this in the docker-compose.yml file")
+          "Please set the environment variable 'PRODUCTION' to True in order to fix this.\n",
+          "You can do this in the docker-compose.yml file.")
     DEBUG = True
+else:
+    DEBUG = False
 
 ALLOWED_HOSTS = ['api']
 if DEBUG:
     ALLOWED_HOSTS.append('localhost')
+    ALLOWED_HOSTS.append('127.0.0.1')
 
 # Application definition
 
