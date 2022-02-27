@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import Popup from "./Popup";
 import { FormInput } from "./FormInput";
+import { FormTextArea } from "./FormTextarea";
 
 type CreateSessionPopupProps = {
   isOpen: boolean;
@@ -13,8 +14,16 @@ export default function RequestMeetingPopup({
   closeModal,
 }: CreateSessionPopupProps) {
   const [datetime, setDatetime] = useState("");
+  const [meetingLocation, setMeetingLocation] = useState("");
+  const [description, setDescription] = useState("");
 
   const [datetimeError, setDatetimeError] = useState<string | undefined>();
+  const [meetingLocationError, setMeetingLocationError] = useState<
+    string | undefined
+  >();
+  const [descriptionError, setDescriptionError] = useState<
+    string | undefined
+  >();
   const [overallError, setOverallError] = useState<string | undefined>();
 
   const clearErrors = () => {
@@ -92,6 +101,7 @@ export default function RequestMeetingPopup({
       </Dialog.Title>
 
       <div className="min-h-full items-center justify-center space-y-3 w-full">
+        {/* TODO: show conflict warning if upcoming sessions conflict */}
         <form
           className="space-y-1"
           onSubmit={(e) => {
@@ -109,6 +119,25 @@ export default function RequestMeetingPopup({
             onChange={setDatetime}
             error={datetimeError}
             min={Date.now()}
+            required
+          />
+          <FormInput
+            id="location"
+            type="text"
+            name="Meeting Location"
+            placeholder="Enter proposed meeting location"
+            text={meetingLocation}
+            onChange={setMeetingLocation}
+            error={meetingLocationError}
+            required
+          />
+          <FormTextArea
+            id="description"
+            name="Meeting Description"
+            placeholder="Enter a description about the meeting, like why you want to meet and discussion points to cover"
+            text={description}
+            onChange={setDescription}
+            error={descriptionError}
             required
           />
           {overallError && (
