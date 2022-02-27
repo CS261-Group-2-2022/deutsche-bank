@@ -64,14 +64,14 @@ export default function Settings() {
     if (!user) return;
 
     // Check password and retyped password are equivalent
-    if (password != retypedPasssword) {
+    if (password !== retypedPasssword) {
       setRetypedPasswordError("Passwords do not match");
       setIsLoading(false);
       return false;
     }
 
     // Check the score is high enough
-    if (passwordStrength.current <= 2) {
+    if (password !== "" && passwordStrength.current <= 2) {
       setPasswordError("This password is too weak, try something stronger.");
       setIsLoading(false);
       return false;
