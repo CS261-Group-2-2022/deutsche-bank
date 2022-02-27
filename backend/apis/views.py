@@ -14,7 +14,6 @@ from .models import *
 from .serializers import *
 
 from .matching_algorithm import matching_algorithm
-from .topic_modelling import *
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -25,7 +24,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def reset(self, request, pk=None):
-        clear_database()
+        #clear_database()
         create_dummy_data()
         return Response("Reset database.")
 

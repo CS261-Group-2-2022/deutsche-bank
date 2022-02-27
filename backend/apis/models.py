@@ -18,8 +18,40 @@ from .managers import UserManager
 """ This file contains the database models and some associated utilities.
 """
 
+class Randomisable:
+    @classmethod
+    def choose_random(cls) -> Type[cls]:
+        return random.choice(cls.objects.all())
 
-class Skill(models.Model):
+    @classmethod
+    def choose_list_at_random(cls,
+                              minimum_number = 1,
+                              maximum_number = None,
+                              map_with = None) -> List[Type[cls]]:
+        pool = []
+        if map_with == None:
+            pool = list(cls.objects.all())
+        else:
+            pool = list(map_with(cls.objects.all()))
+
+        count = len(pool)
+
+        if maximum_number is not None:
+            maximum_number = min(count, maximum_number)
+        else:
+            maximum_number = count
+
+        how_many_to_choose = 1
+        if minimum_number < maximum_number:
+            how_many_to_choose = random.randint(minimum_number, maximum_number)
+
+        return random.sample(pool, how_many_to_choose)
+
+    @classmethod
+    def make_random(cls) -> Type[cls]:
+        raise NotImplementedError()
+
+class Skill(models.Model, Randomisable):
     """ Database model that holds all the 'kinds' of expertise users may have.
 
     This can then be searched through during account creation to select your areas of expertise.
@@ -28,7 +60,7 @@ class Skill(models.Model):
     name: str = models.CharField(max_length=100, unique=True)
 
 
-class BusinessArea(models.Model):
+class BusinessArea(models.Model, Randomisable):
     """ Database model that stores the business areas that are in the company.
 
     This can then be searched through during account creation to select your business area, or more
@@ -58,7 +90,7 @@ class Request(models.Model):
 
 
 # TODO: Remove PermissionsMixin if it is not required
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, Randomisable):
     """ Database model that describes a single User.
     """
     first_name: str = models.CharField(max_length=100)
@@ -168,13 +200,31 @@ class User(AbstractBaseUser):
         if skills_pool == None:
             skills_pool = list(Skill.objects.all())
 
-        if business_area_pool == None:
-            business_area_pool = list(BusinessArea.objects.all())
+        business_area = ''
+        if 'business_area' in kwargs_for_user_constructor:
+            business_area = kwargs_for_user_constructor.pop('business_area')
+        else:
+            if business_area_pool == None:
+                business_area_pool = list(BusinessArea.objects.all())
+
+            business_area=random.choice(business_area_pool)
 
         first_name=random.choice(dataset["first_names"])
         last_name=random.choice(dataset["last_names"])
 
-        business_area=random.choice(business_area_pool)
+        email_domain = "deutschebank.com"
+
+        interests = []
+        if 'interests' in kwargs_for_user_constructor:
+            interests = kwargs_for_user_constructor.pop('interests')
+        else:
+            interests = random.sample(skills_pool, random.randrange(1,7))
+
+        expertise = []
+        if 'expertise' in kwargs_for_user_constructor:
+            expertise = kwargs_for_user_constructor.pop('expertise')
+        else:
+            expertise = random.sample(skills_pool, random.randrange(1,7))
 
         u = cls.objects.create(first_name=first_name,
                                last_name=last_name,
@@ -189,8 +239,9 @@ class User(AbstractBaseUser):
                        if 'password' in kwargs_for_user_constructor
                        else 'nunya')
 
-        u.interests.set(random.sample(skills_pool, random.randrange(1,7)))
-        u.expertise.set(random.sample(skills_pool, random.randrange(1,4)))
+        u.interests.set(interests)
+        u.expertise.set(expertise)
+
         u.save()
 
         return u

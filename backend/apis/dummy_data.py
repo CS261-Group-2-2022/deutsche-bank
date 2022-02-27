@@ -347,8 +347,7 @@ from django.apps import apps
 
 def clear_database(force = False):
     print("Are you sure you want to clear db?")
-    res = input("[y/n]>").lower()
-    if res == 'y' or force:
+    if force or input("[y/n]>").lower() == 'y':
         models = apps.all_models['apis']
         for model in models:
             models[model].objects.all().delete()
