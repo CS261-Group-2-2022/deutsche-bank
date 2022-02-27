@@ -41,6 +41,8 @@ if DEBUG is None:
     DEBUG = True
 
 ALLOWED_HOSTS = ['api']
+if DEBUG:
+    ALLOWED_HOSTS.append('localhost')
 
 # Application definition
 
@@ -201,3 +203,6 @@ REST_KNOX = {
     'TOKEN_LIMIT_PER_USER': None,
     'AUTO_REFRESH': True,  # This defines if the token expiry time is extended by TOKEN_TTL each time the token is used
 }
+
+LOGIN_URL = '/api/v1/auth/login/'
+REGISTER_URL = '/api/v1/auth/register/'
