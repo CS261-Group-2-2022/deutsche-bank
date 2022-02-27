@@ -36,9 +36,8 @@ def create_dummy_mentorships():
     mentorship_count: int = Mentorship.objects.count()
 
     if mentorship_count > 0:
-        return
-
-    users = User.objects.all()
+        pass
+        #return
 
     def new(mentor, mentee):
         rating = None
@@ -47,7 +46,7 @@ def create_dummy_mentorships():
 
         feedback = None
         if random.choice([True,False]):
-            feedback = lorem_random(500)
+            feedback = lorem_random(max_length=Mentorship._meta.get_field('feedback').max_length)
 
         new_mentorship = Mentorship.objects.create(mentor=mentor,
                                                    mentee=mentee,
@@ -75,8 +74,14 @@ def create_dummy_mentorships():
 
         pairings = list(filter(lambda p: p[1] != mentee, pairings))
 
-def lorem_random(word_count = 50):
-    return "Lorem " * random.randrange(1, word_count - 2) + "ipsum"
+def lorem_random(max_length = None):
+    if max_length is not None:
+        space_for_lorems = max_length - len('Lorem ') - len('ipsum')
+        number_of_lorems = space_for_lorems // len('lorem ')
+        return "Lorem " + "lorem " * random.randrange(1, number_of_lorems) + "ipsum"
+    else:
+        return "Lorem " + "lorem " * random.randrange(1, 15) + "ipsum"
+
 
 import pytz
 time_start = datetime(2022, 2, 11, 10, 0, 0, 0, pytz.UTC)
@@ -93,14 +98,16 @@ def create_dummy_meetings():
         return
 
     mentorships = Mentorship.objects.all()
-    global time_start
 
     def new(mentorship):
+        global time_start
         time = time_start + random_delta()
+
+        notes = lorem_random(max_length=Meeting._meta.get_field('notes').max_length)
 
         new_meeting = Meeting.objects.create(mentorship=mentorship,
                                              time=time,
-                                             notes=lorem_random())
+                                             notes=notes)
 
     for m in mentorships:
         n_of_meetings = random.randrange(0, 3)
@@ -122,8 +129,11 @@ def create_dummy_action_plans():
         if random.choice([True,False]):
             completion_date = creation_date + random_delta()
 
-        new_action_plan = ActionPlan.objects.create(name = lorem_random(7),
-                                                    description = lorem_random(500),
+        name = lorem_random(max_length=ActionPlan._meta.get_field('name').max_length)
+        description = lorem_random(max_length=ActionPlan._meta.get_field('description').max_length)
+
+        new_action_plan = ActionPlan.objects.create(name = name,
+                                                    description = description,
                                                     user = mentorship.mentee,
                                                     creation_date = creation_date,
                                                     completion_date = completion_date)
@@ -152,9 +162,13 @@ def create_dummy_group_sessions():
             how_many_skills_in_event = random.randrange(min_to_pick, max_to_pick)
             skills = random.sample(list(u.expertise.all()), how_many_skills_in_event)
 
-        g = GroupSession.objects.create(name=lorem_random(50),
-                                        location=lorem_random(70),
-                                        description=lorem_random(500),
+        name = lorem_random(max_length=GroupSession._meta.get_field('name').max_length)
+        location = lorem_random(max_length=GroupSession._meta.get_field('location').max_length)
+        description = lorem_random(max_length=GroupSession._meta.get_field('description').max_length)
+
+        g = GroupSession.objects.create(name=name,
+                                        location=location,
+                                        description=description,
                                         host=u,
                                         capacity=random.randrange(0, 150),
                                         date=time_start + random_delta())
