@@ -24,6 +24,16 @@ export const UserPanel = ({
         <div className="flex-auto ml-2">
           <h3 className="text-gray-800 font-medium text-lg">
             {user.first_name} {user.last_name}
+            <span className="ml-1 text-base font-normal text-gray-700">
+              (
+              <a
+                href={`mailto:${user.email}`}
+                className="hover:text-blue-600 transition-colors duration-75"
+              >
+                {user.email}
+              </a>
+              )
+            </span>
           </h3>
           <h4 className="text-gray-500">
             {getAreaFromId(user.business_area, areas)?.name ?? ""}
