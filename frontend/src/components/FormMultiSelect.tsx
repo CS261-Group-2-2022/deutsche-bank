@@ -32,6 +32,7 @@ function DropdownItem<T extends DropdownOption>({
 
 export type FormMultiSelectProps<T extends DropdownOption> = {
   title: string;
+  subtitle?: string;
   options: T[];
   selected?: T[];
   setSelected: React.Dispatch<React.SetStateAction<T[]>>;
@@ -43,6 +44,7 @@ export type FormMultiSelectProps<T extends DropdownOption> = {
 
 export default function FormMultiSelect<T extends DropdownOption>({
   title,
+  subtitle,
   selected,
   options,
   setSelected,
@@ -79,6 +81,7 @@ export default function FormMultiSelect<T extends DropdownOption>({
             {title}
             {required && <p className="text-red-500 pl-1">*</p>}
           </Listbox.Label>
+          {subtitle && <p className="text-xs text-gray-600">{subtitle}</p>}
           <div className="mt-1 relative">
             <Listbox.Button
               className={`relative w-full bg-white border border-${borderColour}-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-${focusBorderColour}-500 focus:border-${focusBorderColour}-500 sm:text-sm transition`}
