@@ -56,7 +56,7 @@ const PendingRequests = ({ requests }: PendingRequestsProps) => {
                       </span>
                     </>
                   ) : (
-                    "Currently not interested in anything"
+                    "No current interests"
                   )}
                 </p>
               }
@@ -155,6 +155,7 @@ export default function YourMentees() {
     <>
       <Topbar />
       <div className="mx-5">
+        {/* TODO: Personal Bio */}
         {/* TODO: Areas of Interest Update */}
         <PendingRequests requests={pendingRequests} />
         <CurrentMentees currentMentees={currentMentees} />

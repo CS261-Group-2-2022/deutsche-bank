@@ -164,14 +164,14 @@ export default function Topbar() {
           </div>
 
           {/* Central Buttons */}
-          <nav className="hidden md:flex space-x-10">
+          <nav className="flex space-x-10">
             <MenuButton text="Home" to="/" />
             <MentoringButton />
             <MenuButton text="Group Events" to="/groups" />
           </nav>
 
           {/* RHS Panel */}
-          <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
+          <div className="flex items-center justify-end md:flex-1 lg:w-0">
             <Link
               to="/feedback"
               className="flex text-gray-600 hover:text-gray-800 items-center mr-5"

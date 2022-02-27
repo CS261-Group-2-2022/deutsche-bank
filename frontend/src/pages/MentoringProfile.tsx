@@ -22,7 +22,7 @@ function OwnProfile() {
       <MentoringUserProfile
         mentee={user}
         mentor={mentor}
-        perspective="mentor"
+        perspective="mentee"
       />
     );
   } else {

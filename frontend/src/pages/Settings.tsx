@@ -14,6 +14,7 @@ import { useUser } from "../utils/authentication";
 import FormMultiSelect from "../components/FormMultiSelect";
 import { useSkills } from "../utils/skills";
 import PasswordStrengthIndicator from "../components/PasswordStrengthIndicator";
+import SkillsFuzzyList from "../components/SkillsFuzzyList";
 
 export default function Settings() {
   const { skills } = useSkills();
@@ -136,7 +137,7 @@ export default function Settings() {
                   onChange={setLastName}
                 />
               </div>
-              <FormMultiSelect
+              {/* <FormMultiSelect
                 title="Areas of Expertise"
                 options={skills}
                 selected={assignedSkills}
@@ -144,7 +145,8 @@ export default function Settings() {
                 error={skillsError}
                 placeholder="Select your areas of expertise"
                 hashColouredLabels
-              />
+              /> */}
+              <SkillsFuzzyList />
               <FormInput
                 id="password"
                 name="New Password"

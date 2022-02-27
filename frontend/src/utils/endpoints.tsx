@@ -67,6 +67,9 @@ export type User = {
   mentorship: null;
   interests: number[];
   expertise: number[];
+
+  // TODO: backend
+  bio?: string;
 };
 
 export type Mentorship = {
@@ -84,8 +87,8 @@ export type Interest = {
 
 export type UserFull = {
   id: number;
-  business_area?: BusinessArea;
-  expertise?: Skill[];
+  business_area: BusinessArea;
+  expertise: Skill[];
   mentorship?: Mentorship;
   last_login: null;
   first_name: string;
@@ -182,8 +185,46 @@ export type JoinSessionError = {
 export type JoinSessionResponse = JoinSessionSuccess | JoinSessionError;
 
 // Skills
-export type Skill = {
+export interface Skill {
   id: number;
   name: string;
-};
+}
 export type SkillsResponse = Skill[];
+
+export type CreateSkillSuccess = Skill;
+export type CreateSkillError = {
+  error: string;
+};
+export type CreateSkillResponse = CreateSkillSuccess | CreateSkillError;
+
+// Meeting
+export type Meeting = {
+  id: number;
+  time: string;
+  mentorship: number;
+
+  // TODO: backend?
+  location: string;
+  description: string;
+  mentee_notes: string;
+  mentor_notes: string;
+};
+
+export type MeetingRequest = {
+  id: number;
+  time: string;
+  location: string;
+  description: string;
+  mentorship: number;
+};
+
+//Plan Of Action
+export type PlanOfAction = {
+  name: string;
+  description: string;
+  // user: User;
+  creation_date: string;
+  completion_date: string;
+};
+
+export type PlanOfActionResponse = PlanOfAction[];

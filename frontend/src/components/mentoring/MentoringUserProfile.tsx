@@ -1,9 +1,11 @@
 import { Tab } from "@headlessui/react";
 import { ArrowLeftIcon } from "@heroicons/react/solid";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { UserFull, User } from "../../utils/endpoints";
 import MentoringMeetings from "./MentoringMeetings";
-import MentorProfile from "./MentorInfo";
+import PlansOfActionColumn from "./PlansOfActionColumn";
+import { useEffect, useState } from "react";
+import GeneralInfo from "./GeneralInfo";
 
 type UserProfileProps = {
   mentee: User;
@@ -11,15 +13,47 @@ type UserProfileProps = {
   perspective: "mentor" | "mentee";
 };
 
+const tabIndexToString = (index: number) => {
+  if (index === 1) {
+    return "meetings";
+  } else if (index === 2) {
+    return "plans";
+  } else {
+    return "info";
+  }
+};
+
+const tabStringToIndex = (str: string | null) => {
+  if (!str) return 0;
+
+  const lowered = str.toLowerCase().trim();
+  if (lowered === "meetings") {
+    return 1;
+  } else if (lowered === "plans") {
+    return 2;
+  } else {
+    return 0;
+  }
+};
+
 export default function MentoringUserProfile({
   mentee,
   mentor,
   perspective,
 }: UserProfileProps) {
+  const [tab, setTab] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const selectedTab = searchParams.get("tab");
+    setTab(tabStringToIndex(selectedTab));
+  });
+
   return (
     <div className="mx-5">
+      {/* Title */}
       <div className="grid grid-cols-10">
-        {perspective === "mentor" && (
+        {perspective === "mentor" ? (
           <Link
             to="/mentoring/mentees"
             className="text-blue-600 hover:text-blue-900 flex items-center mb-2 col-span-2"
@@ -27,6 +61,8 @@ export default function MentoringUserProfile({
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
             Back to your Mentees
           </Link>
+        ) : (
+          <div className="col-span-2" />
         )}
 
         <h1 className="text-xl font-bold text-center col-span-6">
@@ -35,10 +71,13 @@ export default function MentoringUserProfile({
             : `${mentee.first_name} ${mentee.last_name}'s Profile`}
         </h1>
 
-        <div className="col-span-2"></div>
+        <div className="col-span-2" />
       </div>
 
-      <Tab.Group>
+      <Tab.Group
+        selectedIndex={tab}
+        onChange={(index) => setSearchParams({ tab: tabIndexToString(index) })}
+      >
         <Tab.List className="flex flex-wrap -mb-px justify-center gap-10 border-b border-gray-200">
           <Tab
             key="info"
@@ -50,7 +89,7 @@ export default function MentoringUserProfile({
               } inline-block py-4 px-4 text-lg font-medium text-center rounded-t-lg border-b-2`
             }
           >
-            Your Mentor
+            General
           </Tab>
           <Tab
             key="meetings"
@@ -79,19 +118,21 @@ export default function MentoringUserProfile({
         </Tab.List>
         <Tab.Panels>
           <Tab.Panel key="info" className="mt-8">
-            <div className="grid grid-cols-4 mx-5 gap-5">
-              <div className="col-span-3 space-y-5">
-                <MentorProfile mentor={mentor} />
-              </div>
-            </div>
-            {/* Your Mentor */}
-            {/* TODO: current mentor */}
-            {/* TODO: give feedback, terminate relationship */}
+            <GeneralInfo
+              mentor={mentor}
+              mentee={mentee}
+              perspective={perspective}
+            />
           </Tab.Panel>
           <Tab.Panel key="meetings">
-            <MentoringMeetings />
+            <MentoringMeetings perspective={perspective} />
           </Tab.Panel>
-          <Tab.Panel key="plans">PLANS OF ACTION</Tab.Panel>
+          <Tab.Panel key="plans">
+            <div className="grid grid-cols-3 gap-5 mt-5">
+              <PlansOfActionColumn is_completed_goals={false} />
+              <PlansOfActionColumn is_completed_goals={true} />
+            </div>
+          </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
     </div>

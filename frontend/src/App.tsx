@@ -23,6 +23,7 @@ import Feedback from "./pages/Feedback";
 import LoggedOutPage from "./pages/LoggedOutPage";
 import MentoringProfile from "./pages/MentoringProfile";
 import YourMentees from "./pages/YourMentees";
+import MentoringMatchingPage from "./components/mentoring/MentoringMatching";
 
 const fetcher: BareFetcher = async (resource) => {
   const token = getAuthToken();
@@ -59,6 +60,10 @@ function App() {
                     <Route index element={<Navigate to="/mentoring/me" />} />
                     <Route path=":user" element={<MentoringProfile />} />
                     <Route path="mentees" element={<YourMentees />} />
+                    <Route
+                      path="matching"
+                      element={<MentoringMatchingPage />}
+                    />
                   </Route>
                   <Route path="groups" element={<GroupSessions />} />
                   <Route path="settings" element={<Settings />} />

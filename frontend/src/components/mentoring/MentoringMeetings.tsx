@@ -199,6 +199,20 @@ const RequestedMeetings = ({ perspective }: RequestedMeetingsProps) => {
       description: "Want to talk about goals",
       mentorship: 1,
     },
+    {
+      id: 2,
+      time: new Date(Date.now() + 100 * 100).toISOString(),
+      location: "Narina",
+      description: "Want to talk about goals",
+      mentorship: 1,
+    },
+    {
+      id: 3,
+      time: new Date(Date.now() + 100 * 100).toISOString(),
+      location: "Narina",
+      description: "Want to talk about goals",
+      mentorship: 1,
+    },
   ];
 
   return requested_meetings.length > 0 ? (
@@ -249,7 +263,17 @@ const ScheduledMeeting = ({ meeting }: ScheduledMeetingProps) => {
 
 const ScheduledMeetings = () => {
   // TODO: connect from backend
-  const scheduled_meeting: Meeting[] = [];
+  const scheduled_meeting: Meeting[] = [
+    {
+      id: 1,
+      time: new Date(Date.now() + 100 * 100).toISOString(),
+      location: "Narina",
+      description: "Want to talk about goals",
+      mentorship: 1,
+      mentee_notes: "",
+      mentor_notes: "",
+    },
+  ];
 
   return scheduled_meeting.length > 0 ? (
     <div className="my-3">
@@ -305,6 +329,8 @@ export default function MentoringMeetings({
 
       <RequestedMeetings perspective={perspective} />
       <ScheduledMeetings />
+
+      <h3 className="text-xl font-bold mb-2">Previous Meetings</h3>
 
       <div className="flex flex-col gap-2">
         {meetings.map((meeting) => (
