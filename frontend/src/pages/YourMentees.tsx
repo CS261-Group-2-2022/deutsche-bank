@@ -1,6 +1,7 @@
 import { ArrowRightIcon, CheckIcon, XIcon } from "@heroicons/react/solid";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import AreasOfExpertise from "../components/mentoring/AreasOfExpertise";
 import { UserPanel } from "../components/mentoring/MentoringUserPanel";
 import SessionTopicLabel from "../components/SessionTopicLabel";
 import Toggle from "../components/Toggle";
@@ -44,17 +45,15 @@ const PendingRequests = ({ requests }: PendingRequestsProps) => {
               extra_information={
                 <p className="text-sm">
                   {mentee.interests.length > 0 ? (
-                    <>
-                      Interested in:
-                      <span className="space-x-1 pl-1">
-                        {mentee.interests.map((interest) => (
-                          <SessionTopicLabel
-                            key={interest}
-                            name={getSkillFromId(interest, skills)?.name ?? ""}
-                          />
-                        ))}
-                      </span>
-                    </>
+                    <div className="flex flex-wrap gap-1">
+                      <span>Interested in:</span>
+                      {mentee.interests.map((interest) => (
+                        <SessionTopicLabel
+                          key={interest}
+                          name={getSkillFromId(interest, skills)?.name ?? ""}
+                        />
+                      ))}
+                    </div>
                   ) : (
                     "No current interests"
                   )}
@@ -107,17 +106,15 @@ const CurrentMentees = ({ currentMentees }: CurrentMenteesProps) => {
               extra_information={
                 <p className="text-sm">
                   {mentee.interests.length > 0 ? (
-                    <>
-                      Interested in:
-                      <span className="space-x-1 pl-1">
-                        {mentee.interests.map((interest) => (
-                          <SessionTopicLabel
-                            key={interest}
-                            name={getSkillFromId(interest, skills)?.name ?? ""}
-                          />
-                        ))}
-                      </span>
-                    </>
+                    <div className="flex flex-wrap gap-1">
+                      <span>Interested in:</span>
+                      {mentee.interests.map((interest) => (
+                        <SessionTopicLabel
+                          key={interest}
+                          name={getSkillFromId(interest, skills)?.name ?? ""}
+                        />
+                      ))}
+                    </div>
                   ) : (
                     "Currently not interested in anything"
                   )}
@@ -155,8 +152,20 @@ export default function YourMentees() {
     <>
       <Topbar />
       <div className="mx-5">
+        {/* Title */}
+        <div className="text-center space-y-1">
+          <h1 className="font-bold text-2xl">Your Mentees</h1>
+        </div>
+
         {/* TODO: Personal Bio */}
-        {/* TODO: Areas of Interest Update */}
+
+        <div className="border rounded-lg p-2 my-2">
+          <AreasOfExpertise
+            subHeading="Your areas of expertise will help inform your matches to find the most compatible mentees."
+            user={user}
+            canEdit
+          />
+        </div>
         <PendingRequests requests={pendingRequests} />
         <CurrentMentees currentMentees={currentMentees} />
       </div>
