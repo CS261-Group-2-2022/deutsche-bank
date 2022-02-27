@@ -74,6 +74,8 @@ export default function Settings() {
       return false;
     }
 
+    // TODO: verify with current password
+
     const res = await fetch(
       SETTINGS_ENDPOINT.replace("{ID}", user.id.toString()),
       {
@@ -127,7 +129,6 @@ export default function Settings() {
             action="#"
             method="POST"
             onSubmit={(e) => {
-              console.log("Submiting...");
               e.preventDefault();
               sendSettingsUpdateRequest();
             }}

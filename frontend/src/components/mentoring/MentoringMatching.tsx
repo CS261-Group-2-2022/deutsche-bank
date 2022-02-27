@@ -4,6 +4,7 @@ import { User } from "../../utils/endpoints";
 import { UserPanel } from "./MentoringUserPanel";
 import SessionTopicLabel from "../SessionTopicLabel";
 import { getSkillFromId, useSkills } from "../../utils/skills";
+import AreasOfInterest from "./AreasOfInterest";
 
 export default function MentoringMatchingPage() {
   const { skills } = useSkills();
@@ -19,13 +20,21 @@ export default function MentoringMatchingPage() {
       {/* Title */}
       <div className="text-center space-y-1">
         <h1 className="font-bold text-2xl">You currently have no mentor</h1>
-        <h2 className="text-gray-700 text-xl">
+        <h2 className="text-gray-700 text-lg">
           We have provided a list of recommended mentors which best match your
           profile; send a request to your preferred mentor
         </h2>
       </div>
 
-      {/* TODO: option to change areas of interest - TODO: if we change areas of interest, should outgoing reqs be cancelled? */}
+      {/* TODO: Personal Bio */}
+
+      <div className="border rounded-lg p-2 mt-2">
+        <AreasOfInterest
+          subHeading="Your areas of interest will help inform your matches to find the best mentor for you."
+          user={user}
+          canEdit
+        />
+      </div>
 
       {/* Current Outgoing Requests */}
       {requests.length > 0 && (
