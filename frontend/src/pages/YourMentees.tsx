@@ -1,7 +1,9 @@
 import { ArrowRightIcon, CheckIcon, XIcon } from "@heroicons/react/solid";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { UserPanel } from "../components/mentoring/MentoringUserPanel";
 import SessionTopicLabel from "../components/SessionTopicLabel";
+import Toggle from "../components/Toggle";
 import Topbar from "../components/Topbar";
 import { useUser } from "../utils/authentication";
 import { User } from "../utils/endpoints";
@@ -14,13 +16,24 @@ type PendingRequestsProps = {
 const PendingRequests = ({ requests }: PendingRequestsProps) => {
   const { skills } = useSkills();
 
+  const [acceptingRequests, setAcceptingRequests] = useState(false);
+
+  // TODO: connect toggle to backend
+
   return (
     <div>
-      <div className="flex">
+      <div className="flex justify-between mb-1">
         <h1 className="font-bold text-xl text-gray-800">
           Pending Mentee Requests
         </h1>
-        {/* TODO: Accepting New Mentees Toggle */}
+        <div className="flex gap-2">
+          <p className="text-gray-700 font-medium">Accepting new requests</p>
+          <Toggle
+            name="Accepting new mentees"
+            enabled={acceptingRequests}
+            setEnabled={setAcceptingRequests}
+          />
+        </div>
       </div>
       <div className="flex flex-col gap-3">
         {requests.length > 0 ? (
