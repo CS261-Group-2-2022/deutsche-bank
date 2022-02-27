@@ -2,6 +2,8 @@ FROM python:3-slim
 # ^ Don't do alpine, pre-built wheels may not work and cause recompilations
 
 ENV PYTHONUNBUFFERED 1 # Ensure that output cannot be lost if the app crashes
+ENV DB_BACKEND_IN_DOCKER 1 # Set an environment variable to tell backend it's in Docker.
+    # This is then used to decide whether to connect to Postgres or the local Sqlite database.
 
 # 1) Install run requirements using pip
 COPY requirements.txt ./requirements.txt
@@ -20,8 +22,3 @@ RUN sed 's/\r$//' init.sh > script.sh
 ENTRYPOINT ["sh", "script.sh"]
 # TODOs
 # - TODO Run tests and fail if they fail?
-#
-# - TODO Environment vars for:
-#    (See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/)
-#   - DEBUG: Debug or no
-#   - SECRET_KEY: The secret key to use for django

@@ -93,24 +93,39 @@ TEMPLATES = [
 WSGI_APPLICATION = 'deutschebank.wsgi.application'
 
 
-# Database
+# Database configuration
+# We select the database to use depending on whether or not we're running in Docker or not.
+# This environment variable is set in the backend Dockerfile.
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'deutschebank', # The name of the postgresql database to access
-        # TODO NOCOMMIT NODEPLOY postgres pwd
-        'USER': 'django_app_user',
-        'PASSWORD': 'a',
-        #'USER': 'postgres',
-        #'PASSWORD': 'postgres',
-        #'USER': 'django_app_user', # The name of the database user django should sign in as
-        #'PASSWORD': 'django_app_user_password',
-        'HOST': 'postgresdb',
-        'PORT': '5432',
+DATABASES = {}
+if os.getenv('DB_BACKEND_IN_DOCKER'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'deutschebank',
+            'USER': 'django_app_user',
+            'PASSWORD': 'a', # TODO NODEPLOY postgres pwd
+            #'USER': 'postgres',
+            #'PASSWORD': 'postgres',
+            'HOST': 'postgresdb',
+            'PORT': '5432',
+        }
     }
-}
+    print(f'[Database Settings]: Using Postgres database:' +
+          f' (because environment var {os.getenv("DB_BACKEND_IN_DOCKER")=})')
+    print(f' - {DATABASES["default"]["HOST"]=}')
+    print(f' - {DATABASES["default"]["PORT"]=}')
+    print(f' - {DATABASES["default"]["USER"]=}')
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+    print(f'[Database Settings]: Using local Sqlite3 database:' +
+          f' (because environment var {os.getenv("DB_BACKEND_IN_DOCKER")=})')
+    print(f' - {DATABASES["default"]["NAME"]=}')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
