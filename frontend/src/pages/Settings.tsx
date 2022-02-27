@@ -2,77 +2,80 @@ import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
 import { useState } from "react";
 import {
-  RegisterBody,
-  RegisterSuccess,
-  setAuthToken,
+  BusinessArea,
+  FULL_USER_ENDPOINT,
+  PROFILE_ENDPOINT,
   SETTINGS_ENDPOINT,
-  SIGNUP_ENDPOINT,
   Skill,
-  SKILLS_ENDPOINT,
 } from "../utils/endpoints";
 import { useUser } from "../utils/authentication";
-import FormMultiSelect from "../components/FormMultiSelect";
 import { useSkills } from "../utils/skills";
 import PasswordStrengthIndicator from "../components/PasswordStrengthIndicator";
 import SkillsFuzzyList from "../components/SkillsFuzzyList";
+import FormDropdown from "../components/FormDropdown";
+import { getAreaFromId, useBusinessAreas } from "../utils/business_area";
+import { mutate } from "swr";
+import { LoadingButton } from "../components/LoadingButton";
 
 export default function Settings() {
+  const { areas } = useBusinessAreas();
   const { skills } = useSkills();
   const { user } = useUser();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [firstName, setFirstName] = useState(user?.first_name ?? "");
   const [lastName, setLastName] = useState(user?.last_name ?? "");
   const [password, setPassword] = useState("");
   const [retypedPasssword, setRetypedPassword] = useState("");
-  const [assignedSkills, setAssignedSkills] = useState<readonly Skill[]>(
+  const [businessArea, setBusinessArea] = useState<BusinessArea | undefined>(
+    user ? getAreaFromId(user.business_area, areas) : undefined
+  );
+  const [expertise, setExpertise] = useState<readonly Skill[]>(
     (user?.expertise
       ?.map((id) => skills.find((skill) => skill.id === id))
       .filter((x) => x !== undefined) as Skill[]) ?? []
   );
-  // const [businessArea, setBusinessArea] = useState("");
 
   const [firstNameError, setFirstNameError] = useState<string | undefined>();
   const [lastNameError, setLastNameError] = useState<string | undefined>();
-  const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const [retypedPasswordError, setRetypedPasswordError] = useState<
     string | undefined
   >();
-  // const [businessAreaError, setBusinessAreaError] = useState<
-  //   string | undefined
-  // >();
-  const [skillsError, setSkillsError] = useState<string | undefined>();
+  const [businessAreaError, setBusinessAreaError] = useState<
+    string | undefined
+  >();
+  const [expertiseError, setExpertiseError] = useState<string | undefined>();
 
   const clearErrors = () => {
     setFirstNameError(undefined);
     setLastNameError(undefined);
-    setEmailError(undefined);
     setPasswordError(undefined);
     setRetypedPasswordError(undefined);
-    // setBusinessAreaError(undefined);
-    setSkillsError(undefined);
+    setBusinessAreaError(undefined);
+    setExpertiseError(undefined);
   };
 
   const sendSettingsUpdateRequest = async () => {
+    setIsLoading(true);
+    clearErrors();
+
+    if (!user) return;
+
     // Check password and retyped password are equivalent
     if (password != retypedPasssword) {
       setRetypedPasswordError("Passwords do not match");
-      console.log("Passwords don't match");
       return false;
-    } else {
-      setRetypedPasswordError(undefined);
     }
 
     // Check business area is set
-    // if (!businessArea) {
-    //   setBusinessAreaError("You must select a business area");
-    //   return false;
-    // }
-
-    const skillIds = assignedSkills.map((skillId) => skillId.id);
+    if (!businessArea) {
+      setBusinessAreaError("You must select a business area");
+      return false;
+    }
 
     const res = await fetch(
-      SETTINGS_ENDPOINT.replace("{ID}", user?.id.toString() ?? "1"),
+      SETTINGS_ENDPOINT.replace("{ID}", user.id.toString()),
       {
         method: "PATCH",
         headers: {
@@ -81,18 +84,31 @@ export default function Settings() {
         body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
-          expertise: skillIds,
+          expertise: expertise.map((skill) => skill.id),
           // password : password,
-          // business_area: businessArea,
+          business_area: businessArea.id,
         }), // TODO currently you are not able to change the password with this endpoint, will fix this shortly
       }
     );
 
-    clearErrors();
-    // TODO: handle errors
+    const body = await res.json();
+
     if (res.ok) {
+      // Revalidate caches for profile information
+      mutate(PROFILE_ENDPOINT);
+      mutate(FULL_USER_ENDPOINT.replace("{ID}", user.id.toString()));
+
+      // TODO: better feedback?
       alert("Settings Updated");
+    } else {
+      setFirstNameError(body.first_name?.join(" "));
+      setLastNameError(body.last_name?.join(" "));
+      setPasswordError(body.password?.join(" "));
+      setBusinessAreaError(body.business_area?.join(" "));
+      setExpertiseError(body.expertise?.join(" "));
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -127,6 +143,7 @@ export default function Settings() {
                   autoComplete="fname"
                   text={firstName}
                   onChange={setFirstName}
+                  error={firstNameError}
                 />
                 <FormInput
                   id="lastname"
@@ -136,13 +153,27 @@ export default function Settings() {
                   autoComplete="lname"
                   text={lastName}
                   onChange={setLastName}
+                  error={lastNameError}
                 />
               </div>
+              <FormDropdown
+                title="Business Area"
+                options={areas}
+                selected={businessArea}
+                setSelected={setBusinessArea}
+                error={businessAreaError}
+                placeholder="Select an area"
+              />
               <SkillsFuzzyList
                 title="Areas of Expertise"
-                skills={assignedSkills}
-                setSkills={setAssignedSkills}
+                skills={expertise}
+                setSkills={setExpertise}
               />
+              {expertiseError && (
+                <div className="block text-sm m-1 font-medium text-red-700">
+                  {expertiseError}
+                </div>
+              )}
               <FormInput
                 id="password"
                 name="New Password"
@@ -151,6 +182,7 @@ export default function Settings() {
                 autoComplete="current-password"
                 text={password}
                 onChange={setPassword}
+                error={passwordError}
               />
               <PasswordStrengthIndicator
                 password={password}
@@ -164,16 +196,18 @@ export default function Settings() {
                 autoComplete="current-password"
                 text={retypedPasssword}
                 onChange={setRetypedPassword}
+                error={retypedPasswordError}
               />
             </div>
 
             <div>
-              <button
+              <LoadingButton
                 type="submit"
+                isLoading={isLoading}
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Save Changes
-              </button>
+              </LoadingButton>
             </div>
           </form>
         </div>
