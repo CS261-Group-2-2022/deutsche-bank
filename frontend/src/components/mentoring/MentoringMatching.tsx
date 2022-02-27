@@ -3,8 +3,10 @@ import { useUser } from "../../utils/authentication";
 import { User } from "../../utils/endpoints";
 import { UserPanel } from "./MentoringUserPanel";
 import SessionTopicLabel from "../SessionTopicLabel";
+import { getSkillFromId, useSkills } from "../../utils/skills";
 
 export default function MentoringMatchingPage() {
+  const { skills } = useSkills();
   // TODO: get these from an API
   const { user } = useUser();
   if (!user) return <div />;
@@ -51,7 +53,9 @@ export default function MentoringMatchingPage() {
                           {mentor.expertise.map((expertise) => (
                             <SessionTopicLabel
                               key={expertise}
-                              name={expertise}
+                              name={
+                                getSkillFromId(expertise, skills)?.name ?? ""
+                              }
                             />
                           ))}
                         </span>
@@ -91,7 +95,10 @@ export default function MentoringMatchingPage() {
                       Expert in:
                       <span className="space-x-1 pl-1">
                         {mentor.expertise.map((expertise) => (
-                          <SessionTopicLabel key={expertise} name={expertise} />
+                          <SessionTopicLabel
+                            key={expertise}
+                            name={getSkillFromId(expertise, skills)?.name ?? ""}
+                          />
                         ))}
                       </span>
                     </>

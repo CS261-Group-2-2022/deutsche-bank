@@ -5,12 +5,15 @@ import SessionTopicLabel from "../components/SessionTopicLabel";
 import Topbar from "../components/Topbar";
 import { useUser } from "../utils/authentication";
 import { User } from "../utils/endpoints";
+import { getSkillFromId, useSkills } from "../utils/skills";
 
 type PendingRequestsProps = {
   requests: User[];
 };
 
 const PendingRequests = ({ requests }: PendingRequestsProps) => {
+  const { skills } = useSkills();
+
   return (
     <div>
       <div className="flex">
@@ -32,7 +35,10 @@ const PendingRequests = ({ requests }: PendingRequestsProps) => {
                       Interested in:
                       <span className="space-x-1 pl-1">
                         {mentee.interests.map((interest) => (
-                          <SessionTopicLabel key={interest} name={interest} />
+                          <SessionTopicLabel
+                            key={interest}
+                            name={getSkillFromId(interest, skills)?.name ?? ""}
+                          />
                         ))}
                       </span>
                     </>
@@ -74,6 +80,8 @@ type CurrentMenteesProps = {
 };
 
 const CurrentMentees = ({ currentMentees }: CurrentMenteesProps) => {
+  const { skills } = useSkills();
+
   return (
     <div>
       <h1 className="font-bold text-xl text-gray-800">Your Mentees</h1>
@@ -90,7 +98,10 @@ const CurrentMentees = ({ currentMentees }: CurrentMenteesProps) => {
                       Interested in:
                       <span className="space-x-1 pl-1">
                         {mentee.interests.map((interest) => (
-                          <SessionTopicLabel key={interest} name={interest} />
+                          <SessionTopicLabel
+                            key={interest}
+                            name={getSkillFromId(interest, skills)?.name ?? ""}
+                          />
                         ))}
                       </span>
                     </>
