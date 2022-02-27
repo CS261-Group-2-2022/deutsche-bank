@@ -3,9 +3,9 @@ import { ArrowLeftIcon } from "@heroicons/react/solid";
 import { Link, useSearchParams } from "react-router-dom";
 import { UserFull, User } from "../../utils/endpoints";
 import MentoringMeetings from "./MentoringMeetings";
-import PlansOfActionColumn from "./PlansOfActionColumn";
 import { useEffect, useState } from "react";
 import GeneralInfo from "./GeneralInfo";
+import PlansOfAction from "./PlansOfAction";
 
 type UserProfileProps = {
   mentee: User;
@@ -128,10 +128,11 @@ export default function MentoringUserProfile({
             <MentoringMeetings perspective={perspective} />
           </Tab.Panel>
           <Tab.Panel key="plans">
-            <div className="grid grid-cols-3 gap-5 mt-5">
-              <PlansOfActionColumn is_completed_goals={false} />
-              <PlansOfActionColumn is_completed_goals={true} />
-            </div>
+            <PlansOfAction
+              mentor={mentor}
+              mentee={mentee}
+              perspective={perspective}
+            />
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>

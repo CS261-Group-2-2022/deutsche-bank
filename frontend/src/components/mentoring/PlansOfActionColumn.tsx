@@ -5,16 +5,18 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/solid";
 import useSWR from "swr";
-import { PlanOfActionResponse } from "../../utils/endpoints";
+import { PlanOfAction, PlanOfActionResponse } from "../../utils/endpoints";
 import PlanOfActionInfo from "./PlanOfActionInfo";
 import { useUser } from "../../utils/authentication";
 
 type PlansOfActionColumnProps = {
   is_completed_goals: boolean;
+  setOpenedPlanOfAction: (plan: PlanOfAction) => unknown;
 };
 
 export default function PlansOfActionColumn({
   is_completed_goals,
+  setOpenedPlanOfAction,
 }: PlansOfActionColumnProps) {
   // let { data: plansOfActionData } = useSWR<PlanOfActionResponse>(
   //   "PLANS_OF_ACTION_ENDPOINT"
@@ -131,7 +133,11 @@ export default function PlansOfActionColumn({
           <div className="align-items-">You have no plans of action</div>
         ) : (
           plansOfActionData.map((plan) => (
-            <PlanOfActionInfo key={plan.name} planOfAction={plan} />
+            <PlanOfActionInfo
+              key={plan.name}
+              planOfAction={plan}
+              setOpenedPlanOfAction={setOpenedPlanOfAction}
+            />
           ))
         )}
       </div>

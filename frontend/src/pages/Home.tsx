@@ -82,7 +82,7 @@ function MentoringInfo() {
         <p className="text-m align-middle">
           You currently do not have a mentor
           <Link
-            to="/mentoring"
+            to="/mentoring/me"
             className="mt-2 py-2 px-4 flex justify-center items-center  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
           >
             Find me a mentor
@@ -97,7 +97,7 @@ function MentoringInfo() {
         <p className="text-m align-middle">
           You are not currently mentoring anyone
           <Link
-            to="/mentoring"
+            to="/mentoring/mentees"
             className="mt-2 py-2 px-4 flex justify-center items-center  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
           >
             Start mentoring
