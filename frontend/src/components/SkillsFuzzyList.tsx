@@ -55,22 +55,29 @@ const toTitleCase = (input: string) =>
     .join(" ");
 
 type SkillsFuzzyListProps = {
-  skills: Skill[];
-  setSkills: (skills: Skill[]) => never;
+  title?: string;
+  skills: readonly CreateableSkill[];
+  setSkills: (skills: readonly Skill[]) => unknown;
 };
 
-export default function SkillsFuzzyList() {
-  const { skills } = useSkills();
+export default function SkillsFuzzyList({
+  title,
+  skills,
+  setSkills,
+}: SkillsFuzzyListProps) {
+  const { skills: allSkills } = useSkills();
   //   const [options, setOptions] = useState<CreateableSkill[]>(skills);
 
-  const [value, setValue] = useState<readonly CreateableSkill[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>();
 
-  const onChange = (newValue: OnChangeValue<CreateableSkill, true>) => {
-    setValue(newValue);
-  };
+  // Update the overall skills on change
+  const onChange = (newValue: OnChangeValue<CreateableSkill, true>) =>
+    setSkills(newValue);
 
+  // If we have been asked to create a new option, send it to the backend
   const onCreateOption = async (input: string) => {
+    setError(undefined);
     setIsLoading(true);
 
     const titledInput = toTitleCase(input);
@@ -94,38 +101,43 @@ export default function SkillsFuzzyList() {
       // Update the list of available skills
       mutate(SKILLS_ENDPOINT);
       //   setOptions([...options, newSkill]);
-      setValue([...value, newSkill]);
+      setSkills([...skills, newSkill]);
       setIsLoading(false);
     } else {
-      //   setSessionTitleError(body.name?.join(" "));
-      //   setLocationError(body.location?.join(" "));
-      //   setVirtualLinkError(body.virtual_link?.join(" "));
-      //   setDescriptionError(body.description?.join(" "));
-      //   setCapacityError(body.capacity?.join(" "));
-      //   setDatetimeError(body.date?.join(" "));
-      //   setOverallError(body.non_field_errors?.join(" "));
-      //   setSkillsError(body.skills?.join(" "));
-      // todo: ERRORS?
+      setError(body.name?.join(" "));
+      setIsLoading(false);
     }
   };
 
   return (
-    <Creatable
-      isClearable
-      isMulti
-      isDisabled={isLoading}
-      isLoading={isLoading}
-      onChange={onChange}
-      onCreateOption={onCreateOption}
-      options={skills}
-      value={value}
-      getOptionLabel={(option) =>
-        option.__isNew ? `Create "${option.name}"` : option.name
-      }
-      getOptionValue={(option) => option.name}
-      getNewOptionData={(input) => createOption(toTitleCase(input), true)}
-      components={{ MultiValueContainer }}
-      formatCreateLabel={(input) => `Create "${input}"`}
-    />
+    <div>
+      {title && (
+        <div className="flex flex-row text-sm mb-1 font-medium text-gray-700">
+          {title}
+        </div>
+      )}
+      <Creatable
+        isClearable
+        isMulti
+        isDisabled={isLoading}
+        isLoading={isLoading}
+        onChange={onChange}
+        onCreateOption={onCreateOption}
+        options={allSkills}
+        value={skills}
+        getOptionLabel={(option) =>
+          option.__isNew ? `Create "${option.name}"` : option.name
+        }
+        getOptionValue={(option) => option.name}
+        getNewOptionData={(input) => createOption(toTitleCase(input), true)}
+        components={{ MultiValueContainer }}
+        formatCreateLabel={(input) => `Create "${input}"`}
+      />
+      {error && (
+        <div className="block text-sm m-1 font-medium text-red-700">
+          {error}
+        </div>
+      )}
+    </div>
   );
 }

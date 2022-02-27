@@ -193,7 +193,7 @@ export type SkillsResponse = Skill[];
 
 export type CreateSkillSuccess = Skill;
 export type CreateSkillError = {
-  error: string;
+  name?: string[];
 };
 export type CreateSkillResponse = CreateSkillSuccess | CreateSkillError;
 

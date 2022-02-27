@@ -24,7 +24,7 @@ export default function Settings() {
   const [lastName, setLastName] = useState(user?.last_name ?? "");
   const [password, setPassword] = useState("");
   const [retypedPasssword, setRetypedPassword] = useState("");
-  const [assignedSkills, setAssignedSkills] = useState<Skill[]>(
+  const [assignedSkills, setAssignedSkills] = useState<readonly Skill[]>(
     (user?.expertise
       ?.map((id) => skills.find((skill) => skill.id === id))
       .filter((x) => x !== undefined) as Skill[]) ?? []
@@ -89,6 +89,7 @@ export default function Settings() {
     );
 
     clearErrors();
+    // TODO: handle errors
     if (res.ok) {
       alert("Settings Updated");
     }
@@ -137,16 +138,11 @@ export default function Settings() {
                   onChange={setLastName}
                 />
               </div>
-              {/* <FormMultiSelect
+              <SkillsFuzzyList
                 title="Areas of Expertise"
-                options={skills}
-                selected={assignedSkills}
-                setSelected={setAssignedSkills}
-                error={skillsError}
-                placeholder="Select your areas of expertise"
-                hashColouredLabels
-              /> */}
-              <SkillsFuzzyList />
+                skills={assignedSkills}
+                setSkills={setAssignedSkills}
+              />
               <FormInput
                 id="password"
                 name="New Password"

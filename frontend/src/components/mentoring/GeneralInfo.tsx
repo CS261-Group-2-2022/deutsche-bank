@@ -1,5 +1,12 @@
 import SessionTopicLabel from "../SessionTopicLabel";
-import { User, UserFull } from "../../utils/endpoints";
+import {
+  FULL_USER_ENDPOINT,
+  PROFILE_ENDPOINT,
+  SETTINGS_ENDPOINT,
+  Skill,
+  User,
+  UserFull,
+} from "../../utils/endpoints";
 import { ExclamationIcon, PencilIcon, XIcon } from "@heroicons/react/solid";
 import React, { Fragment, useRef, useState } from "react";
 import { FormTextArea } from "../FormTextarea";
@@ -8,6 +15,8 @@ import { FormInput } from "../FormInput";
 import { getSkillFromId, useSkills } from "../../utils/skills";
 import SkillsFuzzyList from "../SkillsFuzzyList";
 import MentorReviewPopup from "./MentorReviewPopup";
+import { mutate } from "swr";
+import AreasOfInterest from "./AreasOfInterest";
 
 type PersonalBioProps = {
   mentee: User;
@@ -52,64 +61,6 @@ const PersonalBio = ({ mentee, perspective }: PersonalBioProps) => {
       ) : (
         <p className="text-gray-800">
           {bio === "" ? "No personal bio set" : bio}
-        </p>
-      )}
-    </div>
-  );
-};
-
-type AreasOfInterestProps = {
-  mentee: User;
-  perspective: "mentor" | "mentee";
-};
-
-const AreasOfInterest = ({ mentee, perspective }: AreasOfInterestProps) => {
-  const { skills } = useSkills();
-
-  // TODO: fuzzy list to edit/create areas of interest
-  const [isEditing, setIsEditing] = useState(false);
-  //   const [bio, setBio] = useState(mentee.bio ?? "");
-  const canEdit = perspective === "mentee";
-
-  // TODO: connect update to backend
-  return (
-    <div className="space-y-1">
-      <h3 className="flex text-xl font-bold gap-2">
-        Areas of Interest
-        {canEdit && (
-          <button
-            className="ml-2 px-4 flex justify-center items-center  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-            onClick={() => setIsEditing((current) => !current)}
-          >
-            {isEditing ? (
-              <>Save</>
-            ) : (
-              <>
-                <PencilIcon className="w-5 h-5 mr-1" />
-                Edit
-              </>
-            )}
-          </button>
-        )}
-      </h3>
-
-      {canEdit && isEditing ? (
-        <SkillsFuzzyList />
-      ) : (
-        <p className="text-gray-800">
-          {mentee.interests.length > 0
-            ? mentee.interests
-                .map((id) => getSkillFromId(id, skills))
-                .map(
-                  (interest) =>
-                    interest && (
-                      <SessionTopicLabel
-                        key={interest.id}
-                        name={interest.name}
-                      />
-                    )
-                )
-            : "No current interests"}
         </p>
       )}
     </div>
@@ -275,7 +226,7 @@ const MentorProfile = ({
               <div className="text-m text-gray-500">
                 {mentor.business_area.name ?? ""}
               </div>
-              <div className="flex flex-wrap space-x-1 space-y-1">
+              <div className="flex flex-wrap gap-1">
                 {mentor.expertise.length > 0
                   ? mentor.expertise.map((skill) => (
                       <SessionTopicLabel key={skill.id} name={skill.name} />
@@ -382,7 +333,7 @@ export default function GeneralInfo({
       )}
 
       <PersonalBio mentee={mentee} perspective={perspective} />
-      <AreasOfInterest mentee={mentee} perspective={perspective} />
+      <AreasOfInterest user={mentee} canEdit={perspective === "mentee"} />
 
       {/* TODO: mentee giving mentor feedback popup */}
       {/* TODO: mentor giving mentee feedback popup */}
