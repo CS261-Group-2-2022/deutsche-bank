@@ -53,7 +53,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def full(self, request, pk=None):
-        return Response(FullUserSerializer(self.get_object()).data)
+        return Response(UserSerializerFull(self.get_object()).data)
 
     @action(detail=True, methods=['get'])
     def mentees(self, request, pk=None) -> Response:
