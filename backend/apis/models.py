@@ -228,18 +228,34 @@ class User(AbstractBaseUser, Randomisable):
         else:
             expertise = random.sample(skills_pool, random.randrange(1,7))
 
+        mentor_intent = False
+        if 'mentor_intent' in kwargs_for_user_constructor:
+            mentor_intent = kwargs_for_user_constructor.pop('mentor_intent')
+        else:
+            mentor_intent = random.choice([False, True])
+
+
+        password = 'nunya'
+        if 'password' in kwargs_for_user_constructor:
+            password = kwargs_for_user_constructor.pop('password')
+
+
+        email = None
+        if 'email' in kwargs_for_user_constructor:
+            email = kwargs_for_user_constructor.pop('email')
+        else:
+            email = User.make_distinct_email_from(first_name, last_name)
+
         u = cls.objects.create(first_name=first_name,
                                last_name=last_name,
                                business_area=business_area,
-                               email=User.make_distinct_email_from(first_name, last_name),
+                               email=email,
                                is_email_verified=True,
-                               mentor_intent=random.choice([False, True]),
+                               mentor_intent=mentor_intent,
                                **kwargs_for_user_constructor)
 
         # TODO Make tests for this.
-        u.set_password(kwargs_for_user_constructor['password']
-                       if 'password' in kwargs_for_user_constructor
-                       else 'nunya')
+        u.set_password(password)
 
         u.interests.set(interests)
         u.expertise.set(expertise)
