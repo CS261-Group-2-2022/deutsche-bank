@@ -188,7 +188,7 @@ export default function GroupSessions() {
     return (
       session.name.toLowerCase().includes(lowerSearchText) ||
       session.skills?.some((skill) =>
-        skill.toString().toLowerCase().includes(lowerSearchText)
+        skill.name.toLowerCase().includes(lowerSearchText)
       )
     );
   };
