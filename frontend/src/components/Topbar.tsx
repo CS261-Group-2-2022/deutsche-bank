@@ -16,6 +16,7 @@ import { getAreaFromId, useBusinessAreas } from "../utils/business_area";
 type MenuButtonProps = {
   text: string;
   to: string;
+  className?: string;
 };
 
 /** Special Dropdown topbar button to display mentoring links */
@@ -50,7 +51,7 @@ function MentoringButton() {
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-1"
           >
-            <Popover.Panel className="absolute z-10 -ml-4 mt-3 transform px-2 w-screen max-w-md sm:px-0 lg:ml-0 lg:left-1/2 lg:-translate-x-1/2">
+            <Popover.Panel className="absolute z-10 -ml-4 mt-3 transform px-2 w-screen max-w-md sm:px-0 lg:ml-0 lg:left-1/2 lg:-translate-x-1/2 text-left">
               <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
                 <div className="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
                   <Link
@@ -97,14 +98,14 @@ function MentoringButton() {
   );
 }
 
-function MenuButton({ text, to }: MenuButtonProps) {
+function MenuButton({ text, to, className }: MenuButtonProps) {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
         `text-base font-medium ${
           isActive ? "text-gray-800" : "text-gray-400"
-        } rounded-md hover:text-gray-800 transition-colors duration-200`
+        } rounded-md hover:text-gray-800 transition-colors duration-200 ${className}`
       }
     >
       <span className="sr-only">{text}</span>
@@ -164,10 +165,14 @@ export default function Topbar() {
           </div>
 
           {/* Central Buttons */}
-          <nav className="flex space-x-10">
-            <MenuButton text="Home" to="/" />
+          <nav className="grid grid-cols-3 text-center">
+            <MenuButton text="Home" to="/" className="text-right mr-10" />
             <MentoringButton />
-            <MenuButton text="Group Events" to="/groups" />
+            <MenuButton
+              text="Group Events"
+              to="/groups"
+              className="text-left ml-6"
+            />
           </nav>
 
           {/* RHS Panel */}
