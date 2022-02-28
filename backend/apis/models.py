@@ -66,8 +66,8 @@ class User(AbstractBaseUser):
     mentorship: Mentorship = models.OneToOneField(Mentorship, null=True, on_delete=models.SET_NULL)
     mentor_intent: bool = models.BooleanField(default=False)  # whether a user wishes to become a mentor
 
-    interests: List[Skill] = models.ManyToManyField(Skill, related_name='user_interests')
-    expertise: List[Skill] = models.ManyToManyField(Skill, related_name='user_expertise')
+    interests: List[Skill] = models.ManyToManyField(Skill, related_name='user_interests', blank=True)
+    expertise: List[Skill] = models.ManyToManyField(Skill, related_name='user_expertise', blank=True)
 
     objects = UserManager()
 
