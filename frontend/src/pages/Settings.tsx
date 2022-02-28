@@ -35,6 +35,11 @@ export default function Settings() {
       ?.map((id) => skills.find((skill) => skill.id === id))
       .filter((x) => x !== undefined) as Skill[]) ?? []
   );
+  const [interests, setInterests] = useState<readonly Skill[]>(
+    (user?.interests
+      ?.map((id) => skills.find((skill) => skill.id === id))
+      .filter((x) => x !== undefined) as Skill[]) ?? []
+  );
   const passwordStrength = useRef(0);
 
   const [firstNameError, setFirstNameError] = useState<string | undefined>();
@@ -47,6 +52,7 @@ export default function Settings() {
     string | undefined
   >();
   const [expertiseError, setExpertiseError] = useState<string | undefined>();
+  const [interestsError, setInterestsError] = useState<string | undefined>();
 
   const clearErrors = () => {
     setFirstNameError(undefined);
@@ -55,6 +61,7 @@ export default function Settings() {
     setRetypedPasswordError(undefined);
     setBusinessAreaError(undefined);
     setExpertiseError(undefined);
+    setInterestsError(undefined);
   };
 
   const sendSettingsUpdateRequest = async () => {
@@ -97,6 +104,7 @@ export default function Settings() {
           first_name: firstName,
           last_name: lastName,
           expertise: expertise.map((skill) => skill.id),
+          interests: interests.map((skill) => skill.id),
           // password : password,
           business_area: businessArea.id,
         }), // TODO currently you are not able to change the password with this endpoint, will fix this shortly
@@ -118,6 +126,7 @@ export default function Settings() {
       setPasswordError(body.password?.join(" "));
       setBusinessAreaError(body.business_area?.join(" "));
       setExpertiseError(body.expertise?.join(" "));
+      setInterestsError(body.interests?.join(" "));
     }
 
     setIsLoading(false);
@@ -183,6 +192,16 @@ export default function Settings() {
               {expertiseError && (
                 <div className="block text-sm m-1 font-medium text-red-700">
                   {expertiseError}
+                </div>
+              )}
+              <SkillsFuzzyList
+                title="Areas of Interest"
+                skills={interests}
+                setSkills={setInterests}
+              />
+              {interestsError && (
+                <div className="block text-sm m-1 font-medium text-red-700">
+                  {interestsError}
                 </div>
               )}
               <FormInput
