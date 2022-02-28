@@ -32,7 +32,7 @@ function DropdownItem<T extends DropdownOption>({
 
 export type FormMultiSelectProps<T extends DropdownOption> = {
   title: string;
-  subtitle?: string;
+  subtitle?: string | React.ReactNode;
   options: T[];
   selected?: T[];
   setSelected: React.Dispatch<React.SetStateAction<T[]>>;

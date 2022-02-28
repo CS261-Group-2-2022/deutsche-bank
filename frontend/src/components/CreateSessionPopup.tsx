@@ -16,6 +16,7 @@ import { FormInput } from "./FormInput";
 import { FormTextArea } from "./FormTextarea";
 import FormMultiSelect from "./FormMultiSelect";
 import { useUser } from "../utils/authentication";
+import { Link } from "react-router-dom";
 
 /** Verifies whether a create response is succesful or not (and type guards the body) */
 const isCreateSuccess = (
@@ -194,7 +195,19 @@ export default function CreateSessionPopup({
           </div>
           <FormMultiSelect
             title="Session Topics"
-            subtitle="You can only select topics which you are an expert in. You can change your expertise in your settings."
+            subtitle={
+              <>
+                You can only select topics which you are an expert in. You can
+                change your expertise in{" "}
+                <Link
+                  to="/settings"
+                  className="text-blue-600 hover:text-blue-900"
+                >
+                  settings
+                </Link>
+                .
+              </>
+            }
             options={allowedSkills}
             selected={assignedSkills}
             setSelected={setAssignedSkills}
