@@ -175,12 +175,12 @@ function UpcomingSessionsColumn() {
     .filter((c) => Date.parse(c.date) >= Date.now());
 
   return (
-    <div className="rounded-2xl border-gray-100 p-2 text-center max-h-[90vh]">
+    <div className="flex flex-col rounded-2xl border-gray-100 p-2 text-center max-h-[90vh]">
       <h4 className="text-l sm:text-xl font-semibold flex items-center justify-center">
         <CalendarIcon className="mr-2 h-5 w-5" />
         <div className="mb-2">Upcoming Sessions</div>
       </h4>
-      <div className="flex flex-col justify-start gap-1 h-[90%] overflow-auto">
+      <div className="flex flex-col justify-start gap-1 grow overflow-auto">
         {allSessions.length == 0 ? (
           <div className="align-items-">You have no upcoming sessions</div>
         ) : (

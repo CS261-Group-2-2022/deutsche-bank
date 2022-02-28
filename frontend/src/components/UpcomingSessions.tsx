@@ -14,7 +14,7 @@ export default function UpcomingSession({ session }: UpcomingSessionProps) {
     // TODO there are some issues with the link, if you end up clicking the button on the home screen it results in the
     // popup flashing open and closed repeatedly
     <Link
-      className="bg-gray-100 rounded-2xl border-gray-200 border-2 p-2 text-center h-full"
+      className="bg-gray-100 rounded-2xl border-gray-300 border p-2 text-center"
       to={"/groups?id=" + session.id}
     >
       <div className="flex items-center space-x-4">
