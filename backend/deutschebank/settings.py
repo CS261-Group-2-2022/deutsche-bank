@@ -172,17 +172,18 @@ STATIC_ROOT = os.path.join(BASE_DIR, "apifiles")
 STATICFILES_DIRS = [
 ]
 
-# TODO NOCOMMIT Not required anymore.
-CORS_ORIGIN_WHITELIST = [  # TODO: Remove
+CORS_ORIGIN_WHITELIST = [
     # Whitelist default local React ports
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    '*',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     # Whitelist default local React ports
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'http://*',
 ]
 
 # Default primary key field type
