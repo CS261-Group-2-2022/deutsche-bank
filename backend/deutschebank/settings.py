@@ -22,13 +22,30 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-i#!gl500yq#@^odppp6whok!r&mph8tvn#7bajb8c3o2aux_fy'
+SECRET_KEY = os.getenv('SECRET_KEY')
+if SECRET_KEY is None:
+    print("[Security Warning]: ",
+          "Running django app with default secret key. DO NOT do this in production.",
+          "Please set the environment variable 'SECRET_KEY' to the desired key in order to fix this.")
+    DEBUG = True
+    SECRET_KEY = 'django-insecure-i#!gl500yq#@^odppp6whok!r&mph8tvn#7bajb8c3o2aux_fy'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = None
+if os.getenv('PRODUCTION') is None:
+    print("[Security Warning]: ",
+          "Running django app with DEBUG mode. DO NOT do this in production.\n",
+          "Please set the environment variable 'PRODUCTION' to True in order to fix this.\n",
+          "You can do this in the docker-compose.yml file.")
+    DEBUG = True
+else:
+    DEBUG = False
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['api']
+if DEBUG:
+    ALLOWED_HOSTS.append('localhost')
+    ALLOWED_HOSTS.append('127.0.0.1')
 
 # Application definition
 
@@ -81,15 +98,39 @@ TEMPLATES = [
 WSGI_APPLICATION = 'deutschebank.wsgi.application'
 
 
-# Database
+# Database configuration
+# We select the database to use depending on whether or not we're running in Docker or not.
+# This environment variable is set in the backend Dockerfile.
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASES = {}
+if os.getenv('DB_BACKEND_IN_DOCKER'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'deutschebank',
+            'USER': 'django_app_user',
+            'PASSWORD': 'a', # TODO NODEPLOY postgres pwd
+            #'USER': 'postgres',
+            #'PASSWORD': 'postgres',
+            'HOST': 'postgresdb',
+            'PORT': '5432',
+        }
     }
-}
+    print(f'[Database Settings]: Using Postgres database:' +
+          f' (because environment var {os.getenv("DB_BACKEND_IN_DOCKER")=})')
+    print(f' - {DATABASES["default"]["HOST"]=}')
+    print(f' - {DATABASES["default"]["PORT"]=}')
+    print(f' - {DATABASES["default"]["USER"]=}')
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+    print(f'[Database Settings]: Using local Sqlite3 database:' +
+          f' (because environment var {os.getenv("DB_BACKEND_IN_DOCKER")=})')
+    print(f' - {DATABASES["default"]["NAME"]=}')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -122,25 +163,27 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = 'apifiles/'
+STATIC_ROOT = os.path.join(BASE_DIR, "apifiles")
 
 STATICFILES_DIRS = [
 ]
 
-CORS_ORIGIN_WHITELIST = [  # TODO: Remove
+CORS_ORIGIN_WHITELIST = [
     # Whitelist default local React ports
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    '*',
 ]
 
 CORS_ALLOWED_ORIGINS = [
     # Whitelist default local React ports
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'http://*',
 ]
 
 # Default primary key field type
@@ -164,3 +207,6 @@ REST_KNOX = {
     'TOKEN_LIMIT_PER_USER': None,
     'AUTO_REFRESH': True,  # This defines if the token expiry time is extended by TOKEN_TTL each time the token is used
 }
+
+LOGIN_URL = '/api/v1/auth/login/'
+REGISTER_URL = '/api/v1/auth/register/'

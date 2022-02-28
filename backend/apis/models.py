@@ -2,19 +2,55 @@
 from __future__ import annotations  # This allows us to use type hints of a class inside that class.
 
 from datetime import datetime
+import random
 
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.db.models import QuerySet
+from django.db.models import Avg
+
+from .dummy_data_dataset import dataset
 
 from .managers import UserManager
 
 """ This file contains the database models and some associated utilities.
 """
 
+class Randomisable:
+    @classmethod
+    def choose_random(cls) -> Type[cls]:
+        return random.choice(cls.objects.all())
 
-class Skill(models.Model):
+    @classmethod
+    def choose_list_at_random(cls,
+                              minimum_number = 1,
+                              maximum_number = None,
+                              map_with = None) -> List[Type[cls]]:
+        pool = []
+        if map_with == None:
+            pool = list(cls.objects.all())
+        else:
+            pool = list(map_with(cls.objects.all()))
+
+        count = len(pool)
+
+        if maximum_number is not None:
+            maximum_number = min(count, maximum_number)
+        else:
+            maximum_number = count
+
+        how_many_to_choose = 1
+        if minimum_number < maximum_number:
+            how_many_to_choose = random.randint(minimum_number, maximum_number)
+
+        return random.sample(pool, how_many_to_choose)
+
+    @classmethod
+    def make_random(cls) -> Type[cls]:
+        raise NotImplementedError()
+
+class Skill(models.Model, Randomisable):
     """ Database model that holds all the 'kinds' of expertise users may have.
 
     This can then be searched through during account creation to select your areas of expertise.
@@ -23,7 +59,7 @@ class Skill(models.Model):
     name: str = models.CharField(max_length=100, unique=True)
 
 
-class BusinessArea(models.Model):
+class BusinessArea(models.Model, Randomisable):
     """ Database model that stores the business areas that are in the company.
 
     This can then be searched through during account creation to select your business area, or more
@@ -34,6 +70,8 @@ class BusinessArea(models.Model):
     name: str = models.CharField(max_length=100, unique=True)
 
 
+from dataclasses import dataclass
+@dataclass(init=False)
 class Mentorship(models.Model):
     """ Mentorship between mentor and mentee
     """
@@ -52,7 +90,7 @@ class Request(models.Model):
 
 
 # TODO: Remove PermissionsMixin if it is not required
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, Randomisable):
     """ Database model that describes a single User.
     """
     first_name: str = models.CharField(max_length=100)
@@ -68,6 +106,8 @@ class User(AbstractBaseUser):
 
     interests: List[Skill] = models.ManyToManyField(Skill, related_name='user_interests', blank=True)
     expertise: List[Skill] = models.ManyToManyField(Skill, related_name='user_expertise', blank=True)
+
+    interests_description: str = models.CharField(max_length=500, default="")
 
     objects = UserManager()
 
@@ -118,6 +158,112 @@ class User(AbstractBaseUser):
         return GroupSession.objects.all().filter(users__pk__contains=self.pk,
                                                  date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
+    def has_mentees(self) -> bool:
+        return self.get_mentees().count() > 0
+
+    def get_mentorships_where_user_is_mentor(self) -> QuerySet[List[Type[User]]]:
+        return Mentorship.objects.all().filter(mentor__pk__exact=self.pk)
+
+    def get_mentor_rating_average(self) -> float:
+        ret = self.get_mentorships_where_user_is_mentor().aggregate(Avg('rating'))['rating__avg']
+        if ret == None:
+            return 4
+        else:
+            return ret
+
+    @classmethod
+    def choose_random(cls) -> Type[User]:
+        return random.choice(cls.objects.all())
+
+    @classmethod
+    def choose_list_at_random(cls) -> List[Type[User]]:
+        return random.sample(list(cls.objects.all()),
+                             random.randint(1, cls.objects.all().count()))
+
+    # TODO Add to a mixin type thing.
+    @classmethod
+    def make_distinct_email_from(cls, first_name, last_name):
+        email_domain = "deutschebank"
+        email = ''
+        number_of_people_with_same_name = cls.objects.all().filter(first_name=first_name,
+                                                                   last_name=last_name).count()
+        if number_of_people_with_same_name > 0:
+            email = f'{first_name}.{last_name}.{number_of_people_with_same_name}@{email_domain}.com'
+        else:
+            email = f'{first_name}.{last_name}@{email_domain}.com'
+
+        return email
+
+    @classmethod
+    def make_random(cls,
+                    skills_pool : List[Skill] = None,
+                    business_area_pool : List[BusinessArea] = None,
+                    dataset = dataset,
+                    **kwargs_for_user_constructor) -> Type[User]:
+        if skills_pool == None:
+            skills_pool = list(Skill.objects.all())
+
+        business_area = ''
+        if 'business_area' in kwargs_for_user_constructor:
+            business_area = kwargs_for_user_constructor.pop('business_area')
+        else:
+            if business_area_pool == None:
+                business_area_pool = list(BusinessArea.objects.all())
+
+            business_area=random.choice(business_area_pool)
+
+        first_name=random.choice(dataset["first_names"])
+        last_name=random.choice(dataset["last_names"])
+
+        email_domain = "deutschebank.com"
+
+        interests = []
+        if 'interests' in kwargs_for_user_constructor:
+            interests = kwargs_for_user_constructor.pop('interests')
+        else:
+            interests = random.sample(skills_pool, random.randrange(1,7))
+
+        expertise = []
+        if 'expertise' in kwargs_for_user_constructor:
+            expertise = kwargs_for_user_constructor.pop('expertise')
+        else:
+            expertise = random.sample(skills_pool, random.randrange(1,7))
+
+        mentor_intent = False
+        if 'mentor_intent' in kwargs_for_user_constructor:
+            mentor_intent = kwargs_for_user_constructor.pop('mentor_intent')
+        else:
+            mentor_intent = random.choice([False, True])
+
+
+        password = 'nunya'
+        if 'password' in kwargs_for_user_constructor:
+            password = kwargs_for_user_constructor.pop('password')
+
+
+        email = None
+        if 'email' in kwargs_for_user_constructor:
+            email = kwargs_for_user_constructor.pop('email')
+        else:
+            email = User.make_distinct_email_from(first_name, last_name)
+
+        u = cls.objects.create(first_name=first_name,
+                               last_name=last_name,
+                               business_area=business_area,
+                               email=email,
+                               is_email_verified=True,
+                               mentor_intent=mentor_intent,
+                               **kwargs_for_user_constructor)
+
+        # TODO Make tests for this.
+        u.set_password(password)
+
+        u.interests.set(interests)
+        u.expertise.set(expertise)
+
+        u.save()
+
+        return u
 
 class Meeting(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
@@ -158,25 +304,3 @@ class GroupSession(models.Model):
 class Feedback(models.Model):
     date: datetime = models.DateTimeField()
     feedback: str = models.CharField(max_length=1000)
-
-
-from .dummy_data import *
-
-
-def print_all_users() -> None:
-    print(" ,-----------------------------------------------------------")
-    print(" | " + " Printing all users...")
-    try:
-        for u in User.objects.all().iterator():
-            print(" | ---------------------------------------------------- ")
-            print(" | " + str(u))
-            print(f" | {u.pk=}")
-            print(f" | {u.id=}")
-            print(" | " + u.first_name)
-            print(" | " + 'None' if u.mentorship is None else f'{u.mentorship.mentor}')
-    except OperationalError:
-        pass
-    print(" `-----------------------------------------------------------")
-
-# create_dummy_data()
-# print_all_users()
