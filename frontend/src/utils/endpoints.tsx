@@ -18,7 +18,9 @@ export const LEAVE_SESSION_ENDPOINT =
   "http://localhost:8000/api/v1/session/{ID}/leave/";
 export const SKILLS_ENDPOINT = "http://localhost:8000/api/v1/skills/";
 export const SETTINGS_ENDPOINT = "http://localhost:8000/api/v1/user/{ID}/";
-export const FEEDBACK_ENDPOINT = "http://localhost:8000/api/v1/feedback/"
+export const FEEDBACK_ENDPOINT = "http://localhost:8000/api/v1/feedback/";
+export const FULL_USER_ENDPOINT =
+  "http://localhost:8000/api/v1/user/{ID}/full/";
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -63,8 +65,38 @@ export type User = {
   mentor_intent: boolean;
   business_area: number;
   mentorship: null;
-  interests: string[];
-  expertise: string[];
+  interests: number[];
+  expertise: number[];
+
+  // TODO: backend
+  bio?: string;
+};
+
+export type Mentorship = {
+  id: number;
+  rating: null;
+  feedback: null;
+  mentee: number;
+  mentor: number;
+};
+
+export type Interest = {
+  id: number;
+  name: string;
+};
+
+export type UserFull = {
+  id: number;
+  business_area: BusinessArea;
+  expertise: Skill[];
+  mentorship?: Mentorship;
+  last_login: null;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_email_verified: boolean;
+  mentor_intent: boolean;
+  interests: Interest;
 };
 
 // Login
@@ -153,8 +185,46 @@ export type JoinSessionError = {
 export type JoinSessionResponse = JoinSessionSuccess | JoinSessionError;
 
 // Skills
-export type Skill = {
+export interface Skill {
   id: number;
   name: string;
-};
+}
 export type SkillsResponse = Skill[];
+
+export type CreateSkillSuccess = Skill;
+export type CreateSkillError = {
+  name?: string[];
+};
+export type CreateSkillResponse = CreateSkillSuccess | CreateSkillError;
+
+// Meeting
+export type Meeting = {
+  id: number;
+  time: string;
+  mentorship: number;
+
+  // TODO: backend?
+  location: string;
+  description: string;
+  mentee_notes: string;
+  mentor_notes: string;
+};
+
+export type MeetingRequest = {
+  id: number;
+  time: string;
+  location: string;
+  description: string;
+  mentorship: number;
+};
+
+//Plan Of Action
+export type PlanOfAction = {
+  name: string;
+  description: string;
+  // user: User;
+  creation_date: string;
+  completion_date: string;
+};
+
+export type PlanOfActionResponse = PlanOfAction[];

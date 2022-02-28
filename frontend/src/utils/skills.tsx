@@ -33,3 +33,8 @@ export default function SkillsProvider({ children }: ProviderProps) {
     </SkillsContext.Provider>
   );
 }
+
+export const getSkillFromId = (
+  id: number,
+  skills: Skill[]
+): Skill | undefined => skills.find((skill) => skill.id == id);

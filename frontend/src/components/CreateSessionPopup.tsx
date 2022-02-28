@@ -15,6 +15,8 @@ import Popup from "./Popup";
 import { FormInput } from "./FormInput";
 import { FormTextArea } from "./FormTextarea";
 import FormMultiSelect from "./FormMultiSelect";
+import { useUser } from "../utils/authentication";
+import { Link } from "react-router-dom";
 
 /** Verifies whether a create response is succesful or not (and type guards the body) */
 const isCreateSuccess = (
@@ -33,6 +35,7 @@ export default function CreateSessionPopup({
   isOpen,
   closeModal,
 }: CreateSessionPopupProps) {
+  const { user } = useUser();
   const { skills } = useSkills();
 
   const [sessionTitle, setSessionTitle] = useState("");
@@ -57,6 +60,11 @@ export default function CreateSessionPopup({
   const [datetimeError, setDatetimeError] = useState<string | undefined>();
   const [skillsError, setSkillsError] = useState<string | undefined>();
   const [overallError, setOverallError] = useState<string | undefined>();
+
+  // Only allow selecting skills which the user is an expert in
+  const allowedSkills = skills.filter((skill) =>
+    user?.expertise.includes(skill.id)
+  );
 
   const clearErrors = () => {
     setSessionTitleError(undefined);
@@ -87,7 +95,7 @@ export default function CreateSessionPopup({
         description,
         capacity,
         date: datetime,
-        skills: assignedSkills.map((skill) => skill.id), // TODO: only use permitted skills? (ones they are expert in)
+        skills: assignedSkills.map((skill) => skill.id),
         virtual_link: virtualLink,
       }),
     });
@@ -187,7 +195,20 @@ export default function CreateSessionPopup({
           </div>
           <FormMultiSelect
             title="Session Topics"
-            options={skills}
+            subtitle={
+              <>
+                You can only select topics which you are an expert in. You can
+                change your expertise in{" "}
+                <Link
+                  to="/settings"
+                  className="text-blue-600 hover:text-blue-900"
+                >
+                  settings
+                </Link>
+                .
+              </>
+            }
+            options={allowedSkills}
             selected={assignedSkills}
             setSelected={setAssignedSkills}
             error={skillsError}

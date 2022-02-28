@@ -1,26 +1,111 @@
+import { Popover, Transition } from "@headlessui/react";
 import {
   BellIcon,
   CogIcon,
   LogoutIcon,
   ChatAlt2Icon,
+  ChevronDownIcon,
+  IdentificationIcon,
+  UserGroupIcon,
 } from "@heroicons/react/solid";
-import { Link, NavLink } from "react-router-dom";
+import { Fragment } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useUser } from "../utils/authentication";
-import { useBusinessAreas } from "../utils/business_area";
+import { getAreaFromId, useBusinessAreas } from "../utils/business_area";
 
 type MenuButtonProps = {
   text: string;
   to: string;
+  className?: string;
 };
 
-function MenuButton({ text, to }: MenuButtonProps) {
+/** Special Dropdown topbar button to display mentoring links */
+function MentoringButton() {
+  const location = useLocation();
+  const isActive = location.pathname.startsWith("/mentoring");
+
+  return (
+    <Popover className="relative">
+      {({ open }) => (
+        <>
+          <Popover.Button
+            className={`
+              ${isActive || open ? "text-gray-900" : "text-gray-400"}
+              group bg-white rounded-md inline-flex items-center text-base font-medium hover:text-gray-900 transition-colors duration-200`}
+          >
+            <span>Mentoring</span>
+            <ChevronDownIcon
+              className={`${
+                isActive || open ? "text-gray-900" : "text-gray-400"
+              } ml-1 h-5 w-5 group-hover:text-gray-900 transition-colors duration-200`}
+              aria-hidden="true"
+            />
+          </Popover.Button>
+
+          <Transition
+            as={Fragment}
+            enter="transition ease-out duration-200"
+            enterFrom="opacity-0 translate-y-1"
+            enterTo="opacity-100 translate-y-0"
+            leave="transition ease-in duration-150"
+            leaveFrom="opacity-100 translate-y-0"
+            leaveTo="opacity-0 translate-y-1"
+          >
+            <Popover.Panel className="absolute z-10 -ml-4 mt-3 transform px-2 w-screen max-w-md sm:px-0 lg:ml-0 lg:left-1/2 lg:-translate-x-1/2 text-left">
+              <div className="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                <div className="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
+                  <Link
+                    className="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50"
+                    to="/mentoring/me"
+                  >
+                    <IdentificationIcon
+                      className="flex-shrink-0 h-6 w-6 text-blue-600"
+                      aria-hidden="true"
+                    />
+                    <div className="ml-4">
+                      <p className="text-base font-medium text-gray-900">
+                        Your Profile
+                      </p>
+                      <p className="mt-1 text-sm text-gray-500">
+                        View your profile and mentor information
+                      </p>
+                    </div>
+                  </Link>
+                  <Link
+                    className="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50"
+                    to="/mentoring/mentees"
+                  >
+                    <UserGroupIcon
+                      className="flex-shrink-0 h-6 w-6 text-blue-600"
+                      aria-hidden="true"
+                    />
+                    <div className="ml-4">
+                      <p className="text-base font-medium text-gray-900">
+                        Your Mentees
+                      </p>
+                      <p className="mt-1 text-sm text-gray-500">
+                        View all the mentees you are currently mentoring
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </Popover.Panel>
+          </Transition>
+        </>
+      )}
+    </Popover>
+  );
+}
+
+function MenuButton({ text, to, className }: MenuButtonProps) {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `text-base font-medium text-gray-${
-          isActive ? "800" : "400"
-        } rounded-md hover:text-gray-800 transition-colors duration-200`
+        `text-base font-medium ${
+          isActive ? "text-gray-800" : "text-gray-400"
+        } rounded-md hover:text-gray-800 transition-colors duration-200 ${className}`
       }
     >
       <span className="sr-only">{text}</span>
@@ -74,20 +159,24 @@ export default function Topbar() {
             <DashboardUserHero
               name={`${user?.first_name} ${user?.last_name}`}
               businessArea={
-                areas.find((area) => area.id == user?.business_area)?.name ?? ""
+                getAreaFromId(user?.business_area ?? -1, areas)?.name ?? ""
               }
             />
           </div>
 
           {/* Central Buttons */}
-          <nav className="hidden md:flex space-x-10">
-            <MenuButton text="Home" to="/" />
-            <MenuButton text="Mentoring" to="/mentoring" />
-            <MenuButton text="Group Events" to="/groups" />
+          <nav className="grid grid-cols-3 text-center">
+            <MenuButton text="Home" to="/" className="text-right mr-10" />
+            <MentoringButton />
+            <MenuButton
+              text="Group Events"
+              to="/groups"
+              className="text-left ml-6"
+            />
           </nav>
 
           {/* RHS Panel */}
-          <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
+          <div className="flex items-center justify-end md:flex-1 lg:w-0">
             <Link
               to="/feedback"
               className="flex text-gray-600 hover:text-gray-800 items-center mr-5"
