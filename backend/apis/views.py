@@ -197,11 +197,15 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
 
 
 class BusinessAreaViewSet(viewsets.ModelViewSet):
+    # TODO(akiss) If the front-end provides a token that is invalid, these endpoints still do not work.
+    # This is an issue when creating an account while 'remember me' is active.
+    permission_classes = (permissions.AllowAny,)  # User does not need to be authenticated to login
     queryset = BusinessArea.objects.all()
     serializer_class = BusinessAreaSerializer
 
 
 class SkillViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.AllowAny,)  # User does not need to be authenticated to login
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
 
