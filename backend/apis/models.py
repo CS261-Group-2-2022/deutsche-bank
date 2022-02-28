@@ -146,7 +146,8 @@ class ActionPlan(models.Model):
     user: User = models.ForeignKey(User, on_delete=models.CASCADE,
                                    related_name="user_action_plans")  # if the user is deleted action plans
     creation_date: datetime = models.DateTimeField(auto_now_add=True)  # creation date of action plan
-    completion_date: datetime = models.DateTimeField(null=True)  # completion date of action plan
+    due_date: datetime = models.DateTimeField(null=True)  # due date of action plan
+    completed: bool = models.BooleanField(default=False)  # whether the action plan is completed
 
 
 class Notification(models.Model):
