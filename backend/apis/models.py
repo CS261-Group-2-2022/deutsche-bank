@@ -131,7 +131,8 @@ class User(AbstractBaseUser):
 class Meeting(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE, related_name='mentorship_meetings')
     time: datetime = models.DateTimeField()  # time of meeting
-    notes: str = models.CharField(max_length=1000)
+    mentee_notes: str = models.CharField(max_length=1000, null=True)
+    mentor_notes: str = models.CharField(max_length=1000, null=True)
 
 
 class MeetingRequest(models.Model):

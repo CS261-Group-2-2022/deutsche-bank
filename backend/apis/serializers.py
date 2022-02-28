@@ -63,6 +63,10 @@ class MeetingSerializer(ModelSerializer):
     class Meta:
         model = Meeting
         exclude = []
+        extra_kwargs = {
+            'mentee_notes': {'required': False},
+            'mentor_notes': {'required': False}
+        }
 
 
 class MeetingRequestSerializer(ModelSerializer):
