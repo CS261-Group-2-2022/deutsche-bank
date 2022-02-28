@@ -148,6 +148,19 @@ class MentorshipViewSet(viewsets.ModelViewSet):
     queryset = Mentorship.objects.all()
     serializer_class = MentorshipSerializer
 
+    @action(detail=True, methods=['post'])
+    def end(self, request, *args, **kwargs):  # Terminates a mentorship
+        mentorship: Mentorship = self.get_object()
+        user: User = request.user
+        mentee: User = mentorship.mentee
+        if user is not mentorship.mentor or user is not mentorship.mentee:
+            return Response({'error': 'You cannot end this mentorship'}, status=status.HTTP_400_BAD_REQUEST)
+        if mentee.mentorship.pk is not mentorship.pk:
+            return Response({'error': 'This mentorship is not active'}, status=status.HTTP_400_BAD_REQUEST)
+        mentee.mentorship = None
+        mentee.save()
+        return Response(status=status.HTTP_200_OK)
+
 
 class MentorRequestViewSet(viewsets.ModelViewSet):
     queryset = MentorRequest.objects.all()
