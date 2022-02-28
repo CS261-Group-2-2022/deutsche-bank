@@ -246,14 +246,31 @@ class UserModelTests(TestCase):
         if random.choice([True,False]):
             feedback = lorem_random(500)
 
-        user1 = User.make_random(mentorship = NULL, mentor_intent =True)
-        user2 = User.make_random(mentorship =NULL)
+            # TODO Make sure mentor_intent carries through
+        user1 = User.make_random(mentor_intent=True)
+        assert(user1.mentor_intent==True)
+
+        user2 = User.make_random(mentor_intent=False)
+        assert(user2.mentor_intent==False)
+
+        # TODO Put this in a method?
         new_mentorship = Mentorship.objects.create(mentor=user1,
                                                    mentee=user2,
                                                    rating=rating,
                                                    feedback=feedback)
-        loM = User.objects.all().filter(mentorship__mentor__pk__exact=user1.pk).exclude(pk__exact=user1.pk)
-        self.assertTrue(QuerySet[user2] == loM)
+        user2.mentorship = new_mentorship
+        user2.save()
+
+        users_with_user1_as_mentor = User.objects.all().filter(mentorship__mentor__pk__exact=user1.pk)
+
+        ## Check that only 1 user has user1 as mentor
+        self.assertEqual(len(users_with_user1_as_mentor), 1)
+
+        ## Check that the one user, with user1 as mentor, is user2.
+        self.assertEqual(users_with_user1_as_mentor.first(), user2)
+
+        ## Check that user2 is found in user1's mentees.
+        self.assertIn(user2, user1.get_mentees())
 
     def test_meeting_creation(self):
         #this tests if a mentee can create a meeting with their mentor
@@ -266,14 +283,22 @@ class UserModelTests(TestCase):
         if random.choice([True,False]):
             feedback = lorem_random(500)
 
-        user1 = User.make_random(mentorship = NULL, mentor_intent =True)
-        user2 = User.make_random(Mentorship[NULL])
+        # TODO: Make sure mentor_intent actually carries through
+        user1 = User.make_random(mentor_intent=True)
+        user2 = User.make_random(mentor_intent=False)
+
+        assert(user1.mentor_intent == True)
+        assert(user2.mentor_intent == False)
+
         new_mentorship = Mentorship.objects.create(mentor=user1,
                                                    mentee=user2,
                                                    rating=rating,
                                                    feedback=feedback)
-        count_meetings = Meeting.objects.count()
+        meeting_count_before = Meeting.objects.count()
         new_meeting = Meeting.objects.create(mentorship = new_mentorship,
                                              time = time_start + random_delta(),
                                              notes = lorem_random())
-        self.assertTrue(count_meetings < Meeting.objects.count())
+        meeting_count_after = Meeting.objects.count()
+        self.assertTrue(meeting_count_before < meeting_count_after)
+
+        # TODO Add endpoint test to make sure that both users can see their meetings in their upcoming list.
