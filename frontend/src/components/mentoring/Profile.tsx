@@ -78,7 +78,7 @@ export default function MentoringUserProfile({
         selectedIndex={tab}
         onChange={(index) => setSearchParams({ tab: tabIndexToString(index) })}
       >
-        <Tab.List className="flex flex-wrap -mb-px justify-center gap-10 border-b border-gray-200">
+        <Tab.List className="grid grid-cols-3 -mb-px justify-center gap-10 border-b border-gray-200">
           <Tab
             key="info"
             className={({ selected }) =>
