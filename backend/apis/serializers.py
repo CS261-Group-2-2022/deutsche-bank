@@ -69,6 +69,9 @@ class MeetingRequestSerializer(ModelSerializer):
     class Meta:
         model = MeetingRequest
         exclude = []
+        extra_kwargs = {
+            'mentorship': {'read_only': True}
+        }
 
 
 class ActionPlanSerializer(ModelSerializer):
@@ -114,6 +117,15 @@ class MentorshipSerializer(ModelSerializer):
     class Meta:
         model = Mentorship
         exclude = []
+
+
+class MentorRequestSerializer(ModelSerializer):
+    class Meta:
+        model = MentorRequest
+        exclude = []
+        extra_kwargs = {
+            'mentee': {'read_only': True}
+        }
 
 
 class UserSerializerFull(UserSerializer):

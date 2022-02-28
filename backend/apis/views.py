@@ -17,9 +17,7 @@ from .serializers import *
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
-    # authentication_classes = api_settings.DEFAULT_AUTHENTICATION_CLASSES
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     @action(detail=False, methods=['get'])
     def mentor(self, request, *args, **kwargs):
@@ -152,7 +150,22 @@ class MentorshipViewSet(viewsets.ModelViewSet):
 
 class MentorRequestViewSet(viewsets.ModelViewSet):
     queryset = MentorRequest.objects.all()
-    serializer_class = MentorRequest
+    serializer_class = MentorRequestSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def create(self, request, *args, **kwargs):
+        """
+        Creates a mentorship request for the currently authenticated user
+        :return: Serialized meeting request
+        """
+        serializer = self.get_serializer(data=request.data)
+        if request.user.mentorship:  # If the user already has a mentor respond with an error
+            return Response({'error': 'You already have a mentor'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data['mentee'] = request.user
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class MeetingViewSet(viewsets.ModelViewSet):
@@ -163,6 +176,21 @@ class MeetingViewSet(viewsets.ModelViewSet):
 class MeetingRequestViewSet(viewsets.ModelViewSet):
     queryset = MeetingRequest.objects.all()
     serializer_class = MeetingRequestSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def create(self, request, *args, **kwargs):
+        """
+        Creates a meeting request for the currently authenticated user
+        :return: Serialized meeting request
+        """
+        serializer = self.get_serializer(data=request.data)
+        if not request.user.mentorship:  # If the user doesn't have a mentor respond with an error
+            return Response({'error': 'You do not have a mentor'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data['mentorship'] = request.user.mentorship
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class ActionPlanViewSet(viewsets.ModelViewSet):
