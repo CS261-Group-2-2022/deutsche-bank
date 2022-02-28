@@ -43,6 +43,12 @@ class Mentorship(models.Model):
     rating: int = models.SmallIntegerField(null=True)
     feedback: str = models.CharField(null=True, max_length=1000)
 
+    def get_meetings(self):
+        return self.mentorship_meetings.all()
+
+    def get_meeting_requests(self):
+        return self.mentorship_meeting_requests.all()
+
 
 class MentorRequest(models.Model):
     """ Mentorship request from a mentee to a mentor
@@ -122,13 +128,14 @@ class User(AbstractBaseUser):
 
 
 class Meeting(models.Model):
-    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
+    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE, related_name='mentorship_meetings')
     time: datetime = models.DateTimeField()  # time of meeting
     notes: str = models.CharField(max_length=1000)
 
 
 class MeetingRequest(models.Model):
-    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
+    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE,
+                                               related_name='mentorship_meeting_requests')
     time: datetime = models.DateTimeField()  # time of meeting
 
 

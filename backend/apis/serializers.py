@@ -114,9 +114,18 @@ class GroupSessionSerializerFull(GroupSessionSerializer):
 
 
 class MentorshipSerializer(ModelSerializer):
+    meetings = serializers.SerializerMethodField()
+    meeting_requests = serializers.SerializerMethodField()
+
     class Meta:
         model = Mentorship
         exclude = []
+
+    def get_meetings(self, obj: Mentorship):
+        return MeetingSerializer(obj.get_meetings(), many=True).data
+
+    def get_meeting_requests(self, obj: Mentorship):
+        return MeetingRequestSerializer(obj.get_meeting_requests(), many=True).data
 
 
 class MentorRequestSerializer(ModelSerializer):
