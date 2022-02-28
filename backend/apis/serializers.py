@@ -83,7 +83,8 @@ class ActionPlanSerializer(ModelSerializer):
         model = ActionPlan
         exclude = []
         extra_kwargs = {
-            'user': {'required': False}
+            'user': {'required': False},
+            'creation_date': {'read_only': True}
         }
 
 

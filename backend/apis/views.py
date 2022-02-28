@@ -267,6 +267,9 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def list(self, request, *args, **kwargs):
+        return Response(ActionPlanSerializer(request.user.get_action_plans(), many=True), status=status.HTTP_200_OK)
+
 
 class BusinessAreaViewSet(viewsets.ModelViewSet):
     queryset = BusinessArea.objects.all()
