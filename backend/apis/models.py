@@ -38,8 +38,8 @@ class Mentorship(models.Model):
     """ Mentorship between mentor and mentee
     """
 
-    mentee: User = models.ForeignKey('User', related_name='relationship_mentee', on_delete=models.CASCADE)
-    mentor: User = models.ForeignKey('User', related_name='relationship_mentor', on_delete=models.CASCADE)
+    mentee: User = models.ForeignKey('User', related_name='mentorship_mentee', on_delete=models.CASCADE)
+    mentor: User = models.ForeignKey('User', related_name='mentorship_mentor', on_delete=models.CASCADE)
     rating: int = models.SmallIntegerField(null=True)
     feedback: str = models.CharField(null=True, max_length=1000)
 
@@ -101,7 +101,7 @@ class User(AbstractBaseUser):
         """ Retrieves the list of mentees for this user.
         :return the set of users who have this user as their mentor.
         """
-        return User.objects.all().filter(mentorship__mentor__pk__exact=self.pk).exclude(pk__exact=self.pk)
+        return User.objects.all().filter(mentorship__mentor__pk__exact=self.pk)
 
     def find_group_sessions(self) -> QuerySet[List[GroupSession]]:
         """ Retrieves set of suggested group sessions for this user
