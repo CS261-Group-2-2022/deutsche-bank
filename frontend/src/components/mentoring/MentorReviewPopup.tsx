@@ -62,10 +62,6 @@ type StarRatingProps = {
 const StarRating = ({ currentRating, setCurrentRating }: StarRatingProps) => {
   const [hoverRating, setHoverRating] = useState(0);
 
-  useEffect(() => {
-    console.log(hoverRating, currentRating);
-  }, [hoverRating, currentRating]);
-
   return (
     <div className="flex justify-center space-x-0">
       {[...Array(5)].map((_, value) => (

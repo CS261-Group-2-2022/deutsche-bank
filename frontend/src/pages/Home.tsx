@@ -52,7 +52,7 @@ function Action({ actionText, buttonText = "View", onClick }: ActionProps) {
 
 function ActionRequiredBox() {
   return (
-    <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 space-y-2">
+    <div className="rounded-2xl p-2 space-y-2">
       <h4 className="text-l sm:text-xl font-semibold flex items-center">
         <ExclamationIcon className="mr-2 h-6 w-6" />
         Actions Required
@@ -77,7 +77,7 @@ function ActionRequiredBox() {
 function MentoringInfo() {
   return (
     <div className="grid grid-cols-2 gap-5">
-      <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 space-y-2">
+      <div className="rounded-2xl p-2 space-y-2">
         <h4 className="text-l sm:text-xl font-semibold">Your Mentor</h4>
         <p className="text-m align-middle">
           You currently do not have a mentor
@@ -92,7 +92,7 @@ function MentoringInfo() {
           </Link>
         </p>
       </div>
-      <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 space-y-2">
+      <div className="rounded-2xl p-2 space-y-2">
         <h4 className="text-l sm:text-xl font-semibold">Your Mentees</h4>
         <p className="text-m align-middle">
           You are not currently mentoring anyone
@@ -135,7 +135,7 @@ function GroupSessionsInfo() {
     ).length;
 
   return (
-    <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 space-y-2">
+    <div className="bg-gray-50rounded-2xl p-2 space-y-2">
       <h4 className="text-l sm:text-xl font-semibold flex items-center">
         <UserGroupIcon className="mr-2 h-5 w-5" />
         Group Sessions
@@ -163,30 +163,24 @@ function GroupSessionsInfo() {
 }
 
 function UpcomingSessionsColumn() {
-  const { data: apiSessionData } = useSWR<GroupSessionResponse>(
+  const { data: allJoinedSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_USER_JOINED_SESSIONS_ENDPOINT
   );
-  const allJoinedSessions = apiSessionData ?? [];
-
-  const { data: apiHostSessionData } = useSWR<GroupSessionResponse>(
+  const { data: allHostSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_USER_HOSTING_SESSIONS_ENDPOINT
   );
-  const allHostSessions = apiHostSessionData ?? [];
 
-  console.log(allHostSessions.toString());
-
-  let allSessions = [...allJoinedSessions, ...allHostSessions];
-  allSessions = allSessions
+  const allSessions = [...allJoinedSessions, ...allHostSessions]
     .sort((a, b) => Date.parse(a.date) - Date.parse(b.date))
     .filter((c) => Date.parse(c.date) >= Date.now());
 
   return (
-    <div className="bg-gray-50 rounded-2xl border-gray-100 border-2 p-2 text-center h-4/5">
+    <div className="rounded-2xl border-gray-100 p-2 text-center max-h-[90vh]">
       <h4 className="text-l sm:text-xl font-semibold flex items-center justify-center">
         <CalendarIcon className="mr-2 h-5 w-5" />
         <div className="mb-2">Upcoming Sessions</div>
       </h4>
-      <div className="justify justify-center grid grid-cols-1 gap-1 h-[94%] overflow-auto">
+      <div className="flex flex-col justify-start gap-1 h-[90%] overflow-auto">
         {allSessions.length == 0 ? (
           <div className="align-items-">You have no upcoming sessions</div>
         ) : (
@@ -207,7 +201,9 @@ export default function Home() {
         <div className="grid grid-cols-3 mx-5 gap-5">
           <div className="col-span-2 space-y-5">
             <ActionRequiredBox />
+            <hr />
             <MentoringInfo />
+            <hr />
             <GroupSessionsInfo />
           </div>
           <div>
