@@ -17,6 +17,8 @@ function OwnProfile() {
     FULL_USER_ENDPOINT.replace("{ID}", user.id.toString() ?? "-1")
   );
 
+  // const mentor = undefined;
+
   if (/*user.mentorship && */ mentor) {
     return (
       <MentoringUserProfile

@@ -43,6 +43,7 @@ export default function CreatePlanOfActionPopup({
   const [isClosing, setIsClosing] = useState(false);
   const [description, setDescription] = useState("");
   const [planName, setPlanName] = useState("");
+  const [completionDate, setCompletionDate] = useState("");
 
   // When we want to start closing the modal, we want to let the animation
   // start hiding the modal BEFORE we clear the session. Once the animation
@@ -58,6 +59,7 @@ export default function CreatePlanOfActionPopup({
   const [error, setError] = useState<string | undefined>(undefined);
   const [descriptionError, setDescriptionError] = useState<string | undefined>();
   const [planNameError, setPlanNameError] = useState<string | undefined>();
+  const [completionDateError, setCompletionDateError] = useState<string | undefined>();
 
   const clearErrors = () => {
     setDescriptionError(undefined);
@@ -97,6 +99,9 @@ export default function CreatePlanOfActionPopup({
             onChange={setDescription}
             error={descriptionError}
           />
+          <div className="grid grid-cols-2 gap-2 pt-2">
+              <FormInput id={"completion_date"} name={"Date you completed the plan of action"} type={"datetime-local"} placeholder={""} text={completionDate} onChange={setCompletionDate} />
+          </div>
 
           {error && (
             <div className="block text-sm m-1 font-medium text-red-700">
