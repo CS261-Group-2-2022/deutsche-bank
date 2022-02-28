@@ -7,16 +7,22 @@ import {
   User,
   UserFull,
 } from "../../utils/endpoints";
-import { ExclamationIcon, PencilIcon, XIcon } from "@heroicons/react/solid";
+import {
+  ChevronUpIcon,
+  ExclamationIcon,
+  PencilIcon,
+  XIcon,
+} from "@heroicons/react/solid";
 import React, { Fragment, useRef, useState } from "react";
 import { FormTextArea } from "../FormTextarea";
-import { Transition, Dialog } from "@headlessui/react";
+import { Transition, Dialog, Disclosure } from "@headlessui/react";
 import { FormInput } from "../FormInput";
 import { getSkillFromId, useSkills } from "../../utils/skills";
 import SkillsFuzzyList from "../SkillsFuzzyList";
 import MentorReviewPopup from "./MentorReviewPopup";
 import { mutate } from "swr";
 import AreasOfInterest from "./AreasOfInterest";
+import { DateTime } from "luxon";
 
 type PersonalBioProps = {
   mentee: User;
@@ -193,7 +199,7 @@ const MentorProfile = ({
   const [terminatePromptOpen, setTerminatePromptOpen] = useState(false);
 
   return (
-    <div className="w-full border rounded-2xl border-gray-300 p-2">
+    <div className="w-full max-h-min border rounded-2xl border-gray-300 p-2">
       <TerminateRelationshipPrompt
         open={terminatePromptOpen}
         setOpen={setTerminatePromptOpen}
@@ -260,14 +266,98 @@ const MentorProfile = ({
   );
 };
 
+type FeedbackDropdownProps = {
+  feedback: {
+    time: string;
+    going_well?: string;
+    improvement?: string;
+  };
+};
+
+const FeedbackDropdown = ({ feedback }: FeedbackDropdownProps) => {
+  // const [isEditingNotes, setIsEditingNotes] = useState(false);
+  // const [menteeNotes, setMenteeNotes] = useState(meeting.mentee_notes ?? "");
+  // const [mentorNotes, setMentorNotes] = useState(meeting.mentor_notes ?? "");
+  // const isMentor = perspective === "mentor";
+
+  const datetime = DateTime.fromISO(feedback.time);
+  // const notesNotRecorded =
+  // (isMentor && mentorNotes === "") || (!isMentor && menteeNotes === "");
+
+  // TODO: connect updating to backend
+
+  return (
+    <Disclosure>
+      {({ open }) => (
+        <>
+          <Disclosure.Button className="flex justify-between w-full px-4 py-2 text-md font-bold text-left text-gray-900 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus-visible:ring focus-visible:ring-gray-500 focus-visible:ring-opacity-75 border border-gray-400">
+            <div className="flex w-full justify-between font-bold items-center">
+              <div className="flex">{datetime.toFormat("DDDD, t ZZZZ")}</div>
+              <ChevronUpIcon
+                className={`${
+                  open ? "transform rotate-180" : ""
+                } w-5 h-5 text-gray-900`}
+              />
+            </div>
+          </Disclosure.Button>
+          <Disclosure.Panel className="flex flex-col mx-5 my-1">
+            <div className="grid grid-cols-2 gap-5 w-full">
+              <div>
+                <h5 className="font-semibold text-gray-900 text-base flex mb-2">
+                  What{"'"}s going well
+                </h5>
+                <p className="text-sm text-gray-800">
+                  {!feedback.going_well || feedback.going_well === ""
+                    ? "N/A"
+                    : feedback.going_well}
+                </p>
+              </div>
+              <div>
+                <h5 className="font-semibold text-gray-900 text-base flex mb-2">
+                  Areas of Improvement
+                </h5>
+
+                <p className="text-sm text-gray-800">
+                  {!feedback.improvement || feedback.improvement === ""
+                    ? "N/A"
+                    : feedback.improvement}
+                </p>
+              </div>
+            </div>
+          </Disclosure.Panel>
+        </>
+      )}
+    </Disclosure>
+  );
+};
+
 const MenteeFeedback = () => {
+  const feedback = [
+    // { time: new Date(Date.now()).toISOString() },
+    // { time: new Date(Date.now()).toISOString() },
+    // { time: new Date(Date.now()).toISOString() },
+    // { time: new Date(Date.now()).toISOString() },
+    // { time: new Date(Date.now()).toISOString() },
+    { time: new Date(Date.now()).toISOString() },
+  ];
+
   return (
     <div className="w-full">
       <h3 className="text-xl font-bold">Feedback Reports</h3>
+      <h4 className="text-gray-600 text-sm">
+        These are general feedback reports provided by the mentor to highlight
+        the mentee{"'"}s progress.
+      </h4>
+
       {/* TODO: give feedback button for mentor */}
 
-      <div>REPORT ONE</div>
-      {/* TODO: Report disclosures */}
+      <div className="flex flex-col gap-1 mt-1">
+        {feedback.length > 0
+          ? feedback.map((feedback) => (
+              <FeedbackDropdown key={feedback.time} feedback={feedback} />
+            ))
+          : "No feedback has been provided yet"}
+      </div>
     </div>
   );
 };
@@ -339,7 +429,7 @@ export default function GeneralInfo({
       {/* TODO: mentor giving mentee feedback popup */}
 
       {/* TODO: mentor can also give feedback to mentee */}
-      <div className="grid grid-cols-2 gap-5">
+      <div className="flex flex-col gap-5">
         <MentorProfile
           mentor={mentor}
           perspective={perspective}
