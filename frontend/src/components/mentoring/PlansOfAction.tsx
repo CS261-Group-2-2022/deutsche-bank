@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PlanOfAction, User, UserFull } from "../../utils/endpoints";
+import CreatePlanOfActionPopup from "./CreatePlanOfActionPopup";
 import PlanOfActionPopup from "./PlanOfActionPopup";
 import PlansOfActionColumn from "./PlansOfActionColumn";
 
@@ -20,20 +21,18 @@ export default function GeneralInfo({
 
   return (
     <div>
-      <PlanOfActionPopup
-        planOfAction={openedPlanOfAction}
-        isOpen={openedPlanOfAction !== undefined}
-        closeModal={() => setOpenedPlanOfAction(undefined)}
-      />
       <div className="grid grid-cols-3 gap-5 mt-5">
         <PlansOfActionColumn
-          is_completed_goals={false}
-          setOpenedPlanOfAction={setOpenedPlanOfAction}
-        />
+          is_completed_goals={false} setOpenedPlanOfAction={function (plan: PlanOfAction): unknown {
+            throw new Error("Function not implemented.");
+          } } setOpenedCreatePlanOfAction={function (plan: PlanOfAction): unknown {
+            throw new Error("Function not implemented.");
+          } }        />
         <PlansOfActionColumn
           is_completed_goals={true}
-          setOpenedPlanOfAction={setOpenedPlanOfAction}
-        />
+          setOpenedCreatePlanOfAction={setOpenedPlanOfAction} setOpenedPlanOfAction={function (plan: PlanOfAction): unknown {
+            throw new Error("Function not implemented.");
+          } }        />
       </div>
     </div>
   );

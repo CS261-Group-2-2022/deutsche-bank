@@ -8,16 +8,21 @@ import useSWR from "swr";
 import { PlanOfAction, PlanOfActionResponse } from "../../utils/endpoints";
 import PlanOfActionInfo from "./PlanOfActionInfo";
 import { useUser } from "../../utils/authentication";
+import CreatePlanOfActionPopup from "./CreatePlanOfActionPopup";
+import { useState } from "react";
 
 type PlansOfActionColumnProps = {
   is_completed_goals: boolean;
   setOpenedPlanOfAction: (plan: PlanOfAction) => unknown;
+  setOpenedCreatePlanOfAction: (plan: PlanOfAction) => unknown;
 };
 
 export default function PlansOfActionColumn({
   is_completed_goals,
   setOpenedPlanOfAction,
+  setOpenedCreatePlanOfAction,
 }: PlansOfActionColumnProps) {
+  const [createPlanOfActionOpen, setCreatePlanOfActionOpen] = useState(false);
   // let { data: plansOfActionData } = useSWR<PlanOfActionResponse>(
   //   "PLANS_OF_ACTION_ENDPOINT"
   // );
@@ -33,77 +38,77 @@ export default function PlansOfActionColumn({
 
   const plansOfActionData = [
     {
-      name: "Plan Name",
+      name: "Plan Name1",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
       completion_date: "Completion Date",
     },
     {
-      name: "Plan Name",
+      name: "Plan Name2",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
       completion_date: "Completion Date",
     },
     {
-      name: "Plan Name",
+      name: "Plan Name3",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
       completion_date: "Completion Date",
     },
     {
-      name: "Plan Name",
+      name: "Plan Name4",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
       completion_date: "Completion Date",
     },
     {
-      name: "Plan Name",
+      name: "Plan Name5",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
       completion_date: "Completion Date",
     },
     {
-      name: "Plan Name",
+      name: "Plan Name6",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
       completion_date: "Completion Date",
     },
     {
-      name: "Plan Name",
+      name: "Plan Name7",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
       completion_date: "Completion Date",
     },
     {
-      name: "Plan Name",
+      name: "Plan Name8",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
       completion_date: "Completion Date",
     },
     {
-      name: "Plan Name",
+      name: "Plan Name9",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
       completion_date: "Completion Date",
     },
     {
-      name: "Plan Name",
+      name: "Plan Name10",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
       completion_date: "Completion Date",
     },
     {
-      name: "Plan Name",
+      name: "Plan Name11",
       description: "Plan Description",
       // user: useUser().user,
       creation_date: "Creation Date",
@@ -118,6 +123,8 @@ export default function PlansOfActionColumn({
 
   return (
     <div className="bg-gray-100 rounded-2xl border-gray-200 border-2 p-2 text-center h-2/5">
+      <CreatePlanOfActionPopup isOpen={createPlanOfActionOpen} closeModal={() => setCreatePlanOfActionOpen(false)} menteeID={1}/>
+
       <h4 className="text-l sm:text-xl font-semibold flex items-center ml-3">
         {is_completed_goals ? (
           <CheckCircleIcon className="mr-2 h-5 w-5 mb-2" />
@@ -138,13 +145,14 @@ export default function PlansOfActionColumn({
               planOfAction={plan}
               setOpenedPlanOfAction={setOpenedPlanOfAction}
             />
+            // TODO here make key equal to something unique, for example the id of the plan of action
           ))
         )}
       </div>
       {is_completed_goals ? (
         <></>
       ) : (
-        <button className="items-center gap-2 justify-center flex rounded-2xl border-gray-200 border-2 p-2 text-center font-bold w-full mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white">
+        <button className="items-center gap-2 justify-center flex rounded-2xl border-gray-200 border-2 p-2 text-center font-bold w-full mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white" onClick={() => setCreatePlanOfActionOpen(true)}>
           <PlusIcon className="w-5" />
           Create new Goal
         </button>
