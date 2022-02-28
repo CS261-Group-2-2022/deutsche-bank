@@ -230,3 +230,75 @@ class UserModelTests(TestCase):
         self.assertIn('email', data, msg=f'{response.json()=}')
         # Check the warning has some text content.
         self.assertGreater(len(data['email'][0]), 0, msg=f'{response.json()=}')
+        
+        
+    def test_mentor_mentee_registration(self):
+        #create two new user, one with mentor_intent = true and mentorship = true 
+        # and the other one with false mentor_intent and mentorship = true.
+        #mentor_intent is true for a user wanting to become a mentor
+        #user 1 will become a mentor for user 2.
+        #this will test FR-2.
+        rating = None
+        if random.choice([True,False]):
+            rating = random.randrange(0,10)
+
+        feedback = None
+        if random.choice([True,False]):
+            feedback = lorem_random(500)
+
+            # TODO Make sure mentor_intent carries through
+        user1 = User.make_random(mentor_intent=True)
+        assert(user1.mentor_intent==True)
+
+        user2 = User.make_random(mentor_intent=False)
+        assert(user2.mentor_intent==False)
+
+        # TODO Put this in a method?
+        new_mentorship = Mentorship.objects.create(mentor=user1,
+                                                   mentee=user2,
+                                                   rating=rating,
+                                                   feedback=feedback)
+        user2.mentorship = new_mentorship
+        user2.save()
+
+        users_with_user1_as_mentor = User.objects.all().filter(mentorship__mentor__pk__exact=user1.pk)
+
+        ## Check that only 1 user has user1 as mentor
+        self.assertEqual(len(users_with_user1_as_mentor), 1)
+
+        ## Check that the one user, with user1 as mentor, is user2.
+        self.assertEqual(users_with_user1_as_mentor.first(), user2)
+
+        ## Check that user2 is found in user1's mentees.
+        self.assertIn(user2, user1.get_mentees())
+
+    def test_meeting_creation(self):
+        #this tests if a mentee can create a meeting with their mentor
+        #which is saved in the database
+        rating = None
+        if random.choice([True,False]):
+            rating = random.randrange(0,10)
+
+        feedback = None
+        if random.choice([True,False]):
+            feedback = lorem_random(500)
+
+        # TODO: Make sure mentor_intent actually carries through
+        user1 = User.make_random(mentor_intent=True)
+        user2 = User.make_random(mentor_intent=False)
+
+        assert(user1.mentor_intent == True)
+        assert(user2.mentor_intent == False)
+
+        new_mentorship = Mentorship.objects.create(mentor=user1,
+                                                   mentee=user2,
+                                                   rating=rating,
+                                                   feedback=feedback)
+        meeting_count_before = Meeting.objects.count()
+        new_meeting = Meeting.objects.create(mentorship = new_mentorship,
+                                             time = time_start + random_delta(),
+                                             notes = lorem_random())
+        meeting_count_after = Meeting.objects.count()
+        self.assertTrue(meeting_count_before < meeting_count_after)
+
+        # TODO Add endpoint test to make sure that both users can see their meetings in their upcoming list.
