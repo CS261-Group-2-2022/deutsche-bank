@@ -7,22 +7,18 @@ import {
 import useSWR from "swr";
 import { PlanOfAction, PlanOfActionResponse } from "../../utils/endpoints";
 import PlanOfActionInfo from "./PlanOfActionInfo";
-import { useUser } from "../../utils/authentication";
-import CreatePlanOfActionPopup from "./CreatePlanOfActionPopup";
-import { useState } from "react";
 
 type PlansOfActionColumnProps = {
   is_completed_goals: boolean;
   setOpenedPlanOfAction: (plan: PlanOfAction) => unknown;
-  setOpenedCreatePlanOfAction: (plan: PlanOfAction) => unknown;
+  setCreatePlanOfActionOpen: (open: boolean) => unknown;
 };
 
 export default function PlansOfActionColumn({
   is_completed_goals,
   setOpenedPlanOfAction,
-  setOpenedCreatePlanOfAction,
+  setCreatePlanOfActionOpen,
 }: PlansOfActionColumnProps) {
-  const [createPlanOfActionOpen, setCreatePlanOfActionOpen] = useState(false);
   // let { data: plansOfActionData } = useSWR<PlanOfActionResponse>(
   //   "PLANS_OF_ACTION_ENDPOINT"
   // );
@@ -123,8 +119,6 @@ export default function PlansOfActionColumn({
 
   return (
     <div className="bg-gray-100 rounded-2xl border-gray-200 border-2 p-2 text-center h-2/5">
-      <CreatePlanOfActionPopup isOpen={createPlanOfActionOpen} closeModal={() => setCreatePlanOfActionOpen(false)} menteeID={1}/>
-
       <h4 className="text-l sm:text-xl font-semibold flex items-center ml-3">
         {is_completed_goals ? (
           <CheckCircleIcon className="mr-2 h-5 w-5 mb-2" />
@@ -152,7 +146,10 @@ export default function PlansOfActionColumn({
       {is_completed_goals ? (
         <></>
       ) : (
-        <button className="items-center gap-2 justify-center flex rounded-2xl border-gray-200 border-2 p-2 text-center font-bold w-full mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white" onClick={() => setCreatePlanOfActionOpen(true)}>
+        <button
+          className="items-center gap-2 justify-center flex rounded-2xl border-gray-200 border-2 p-2 text-center font-bold w-full mt-3 bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white"
+          onClick={() => setCreatePlanOfActionOpen(true)}
+        >
           <PlusIcon className="w-5" />
           Create new Goal
         </button>

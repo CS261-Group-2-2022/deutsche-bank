@@ -18,21 +18,36 @@ export default function GeneralInfo({
   const [openedPlanOfAction, setOpenedPlanOfAction] = useState<
     PlanOfAction | undefined
   >();
+  const [createPlanOfActionOpen, setCreatePlanOfActionOpen] = useState(false);
 
   return (
     <div>
+<<<<<<< HEAD
       <div className="grid grid-cols-2 gap-5 mt-5">
+=======
+      <PlanOfActionPopup
+        planOfAction={openedPlanOfAction}
+        isOpen={openedPlanOfAction !== undefined}
+        closeModal={() => setOpenedPlanOfAction(undefined)}
+      />
+      <CreatePlanOfActionPopup
+        isOpen={createPlanOfActionOpen}
+        closeModal={() => setCreatePlanOfActionOpen(false)}
+        menteeID={mentee.id}
+      />
+
+      <div className="grid grid-cols-3 gap-5 mt-5">
+>>>>>>> 07ff2bf529b97124b7d52db77e6d76cbd3f1ec01
         <PlansOfActionColumn
-          is_completed_goals={false} setOpenedPlanOfAction={function (plan: PlanOfAction): unknown {
-            throw new Error("Function not implemented.");
-          } } setOpenedCreatePlanOfAction={function (plan: PlanOfAction): unknown {
-            throw new Error("Function not implemented.");
-          } }        />
+          is_completed_goals={false}
+          setOpenedPlanOfAction={setOpenedPlanOfAction}
+          setCreatePlanOfActionOpen={setCreatePlanOfActionOpen}
+        />
         <PlansOfActionColumn
           is_completed_goals={true}
-          setOpenedCreatePlanOfAction={setOpenedPlanOfAction} setOpenedPlanOfAction={function (plan: PlanOfAction): unknown {
-            throw new Error("Function not implemented.");
-          } }        />
+          setOpenedPlanOfAction={setOpenedPlanOfAction}
+          setCreatePlanOfActionOpen={setCreatePlanOfActionOpen}
+        />
       </div>
     </div>
   );

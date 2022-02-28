@@ -2,7 +2,7 @@ import { Tab } from "@headlessui/react";
 import { ArrowLeftIcon } from "@heroicons/react/solid";
 import { Link, useSearchParams } from "react-router-dom";
 import { UserFull, User } from "../../utils/endpoints";
-import MentoringMeetings from "./MentoringMeetings";
+import MentoringMeetings from "./Meetings";
 import { useEffect, useState } from "react";
 import GeneralInfo from "./GeneralInfo";
 import PlansOfAction from "./PlansOfAction";
