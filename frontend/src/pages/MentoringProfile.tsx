@@ -2,7 +2,7 @@ import { LockClosedIcon, XIcon } from "@heroicons/react/solid";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import useSWR from "swr";
 import MentoringMatchingPage from "../components/mentoring/MentoringMatching";
-import MentoringUserProfile from "../components/mentoring/MentoringUserProfile";
+import MentoringUserProfile from "../components/mentoring/Profile";
 import Topbar from "../components/Topbar";
 import { useUser } from "../utils/authentication";
 import Error404 from "./Error404";
