@@ -87,7 +87,7 @@ export default function CreatePlanOfActionPopup({
           }}
         >
           {/* TODO: Star rating */}
-          <FormInput id={"planname"} name={"Name of Plan of Action"} type={"text"} placeholder={"Enter the name of your Plan of Action"} text={""} onChange={setPlanName} />
+          <FormInput id={"planname"} name={"Name of Plan of Action"} type={"text"} placeholder={"Enter the name of your Plan of Action"} text={planName} onChange={setPlanName} />
           <FormTextArea
             id="feedback"
             name="Plan of Action Description"
