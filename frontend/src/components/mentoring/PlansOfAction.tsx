@@ -22,9 +22,6 @@ export default function GeneralInfo({
 
   return (
     <div>
-<<<<<<< HEAD
-      <div className="grid grid-cols-2 gap-5 mt-5">
-=======
       <PlanOfActionPopup
         planOfAction={openedPlanOfAction}
         isOpen={openedPlanOfAction !== undefined}
@@ -36,8 +33,7 @@ export default function GeneralInfo({
         menteeID={mentee.id}
       />
 
-      <div className="grid grid-cols-3 gap-5 mt-5">
->>>>>>> 07ff2bf529b97124b7d52db77e6d76cbd3f1ec01
+      <div className="grid grid-cols-2 gap-5 mt-5">
         <PlansOfActionColumn
           is_completed_goals={false}
           setOpenedPlanOfAction={setOpenedPlanOfAction}
