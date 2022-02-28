@@ -230,3 +230,50 @@ class UserModelTests(TestCase):
         self.assertIn('email', data, msg=f'{response.json()=}')
         # Check the warning has some text content.
         self.assertGreater(len(data['email'][0]), 0, msg=f'{response.json()=}')
+        
+        
+    def test_mentor_mentee_registration(self):
+        #create two new user, one with mentor_intent = true and mentorship = true 
+        # and the other one with false mentor_intent and mentorship = true.
+        #mentor_intent is true for a user wanting to become a mentor
+        #user 1 will become a mentor for user 2.
+        #this will test FR-2.
+        rating = None
+        if random.choice([True,False]):
+            rating = random.randrange(0,10)
+
+        feedback = None
+        if random.choice([True,False]):
+            feedback = lorem_random(500)
+
+        user1 = User.make_random(mentorship = NULL, mentor_intent =True)
+        user2 = User.make_random(mentorship =NULL)
+        new_mentorship = Mentorship.objects.create(mentor=user1,
+                                                   mentee=user2,
+                                                   rating=rating,
+                                                   feedback=feedback)
+        loM = User.objects.all().filter(mentorship__mentor__pk__exact=user1.pk).exclude(pk__exact=user1.pk)
+        self.assertTrue(QuerySet[user2] == loM)
+
+    def test_meeting_creation(self):
+        #this tests if a mentee can create a meeting with their mentor
+        #which is saved in the database
+        rating = None
+        if random.choice([True,False]):
+            rating = random.randrange(0,10)
+
+        feedback = None
+        if random.choice([True,False]):
+            feedback = lorem_random(500)
+
+        user1 = User.make_random(mentorship = NULL, mentor_intent =True)
+        user2 = User.make_random(Mentorship[NULL])
+        new_mentorship = Mentorship.objects.create(mentor=user1,
+                                                   mentee=user2,
+                                                   rating=rating,
+                                                   feedback=feedback)
+        count_meetings = Meeting.objects.count()
+        new_meeting = Meeting.objects.create(mentorship = new_mentorship,
+                                             time = time_start + random_delta(),
+                                             notes = lorem_random())
+        self.assertTrue(count_meetings < Meeting.objects.count())
