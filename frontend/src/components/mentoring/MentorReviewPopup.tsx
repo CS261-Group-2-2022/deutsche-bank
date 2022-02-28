@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { mutate } from "swr";
 import useSWR from "swr";
 import { Dialog, Disclosure } from "@headlessui/react";
-import { ChevronUpIcon } from "@heroicons/react/solid";
+import { ChevronUpIcon, StarIcon } from "@heroicons/react/solid";
 import {
   getAuthToken,
   GroupSession,
@@ -18,6 +18,71 @@ import Popup from "../Popup";
 import CapacityText from "../CapacityText";
 import { PlanOfAction } from "../../utils/endpoints";
 import { FormTextArea } from "../FormTextarea";
+
+type StarProps = {
+  value: number;
+  hoverRating: number;
+  currentRating: number;
+  setHoveringRating: (value: number) => unknown;
+  setRating: (value: number) => unknown;
+};
+
+const Star = ({
+  currentRating,
+  value,
+  hoverRating,
+  setRating,
+  setHoveringRating,
+}: StarProps) => {
+  return (
+    <button
+      onClick={() => setRating(value)}
+      onMouseOver={() => setHoveringRating(value)}
+      onMouseLeave={() => setHoveringRating(currentRating)}
+      aria-hidden="true"
+      title={`${value} star`}
+      className={`rounded-sm fill-current focus:outline-none focus:shadow-outline p-1 w-12 m-0 cursor-pointer transition-colors duration-75 ${
+        currentRating >= value && hoverRating >= value
+          ? "text-yellow-400"
+          : hoverRating >= value
+          ? "text-gray-600"
+          : "text-gray-400"
+      }`}
+    >
+      <StarIcon />
+    </button>
+  );
+};
+
+type StarRatingProps = {
+  currentRating: number;
+  setCurrentRating: React.Dispatch<React.SetStateAction<number>>;
+};
+
+const StarRating = ({ currentRating, setCurrentRating }: StarRatingProps) => {
+  const [hoverRating, setHoverRating] = useState(0);
+
+  useEffect(() => {
+    console.log(hoverRating, currentRating);
+  }, [hoverRating, currentRating]);
+
+  return (
+    <div className="flex justify-center space-x-0">
+      {[...Array(5)].map((_, value) => (
+        <Star
+          key={value}
+          value={value + 1}
+          hoverRating={hoverRating}
+          currentRating={currentRating}
+          setHoveringRating={setHoverRating}
+          setRating={(value) =>
+            setCurrentRating((current) => (current === value ? 0 : value))
+          }
+        />
+      ))}
+    </div>
+  );
+};
 
 /** Verifies whether a join response is succesful or not (and type guards the body) */
 const isJoinSuccess = (
@@ -39,6 +104,7 @@ export default function MentorReviewPopup({
   const { user } = useUser();
 
   const [isClosing, setIsClosing] = useState(false);
+  const [currentRating, setCurrentRating] = useState(0);
   const [review, setReview] = useState("");
 
   // When we want to start closing the modal, we want to let the animation
@@ -81,7 +147,17 @@ export default function MentorReviewPopup({
             // createSessionRequest();
           }}
         >
-          {/* TODO: Star rating */}
+          <div>
+            <h4 className="flex text-sm font-medium text-gray-700">
+              Enter an overall rating
+              <p className="text-red-500 pl-1">*</p>
+            </h4>
+            <StarRating
+              currentRating={currentRating}
+              setCurrentRating={setCurrentRating}
+            />
+          </div>
+
           <FormTextArea
             id="feedback"
             name="Mentor Review"
