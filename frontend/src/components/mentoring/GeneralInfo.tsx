@@ -11,6 +11,7 @@ import {
   ChevronUpIcon,
   ExclamationIcon,
   PencilIcon,
+  PlusIcon,
   XIcon,
 } from "@heroicons/react/solid";
 import React, { Fragment, useRef, useState } from "react";
@@ -23,6 +24,7 @@ import MentorReviewPopup from "./MentorReviewPopup";
 import { mutate } from "swr";
 import AreasOfInterest from "./AreasOfInterest";
 import { DateTime } from "luxon";
+import FeedbackReportPopup from "./FeedbackReportPopup";
 
 type PersonalBioProps = {
   mentee: User;
@@ -331,7 +333,13 @@ const FeedbackDropdown = ({ feedback }: FeedbackDropdownProps) => {
   );
 };
 
-const MenteeFeedback = () => {
+type MenteeFeedbackProps = {
+  perspective: "mentor" | "mentee";
+};
+
+const MenteeFeedback = ({ perspective }: MenteeFeedbackProps) => {
+  const [createOpen, setCreateOpen] = useState(false);
+
   const feedback = [
     // { time: new Date(Date.now()).toISOString() },
     // { time: new Date(Date.now()).toISOString() },
@@ -343,13 +351,30 @@ const MenteeFeedback = () => {
 
   return (
     <div className="w-full">
-      <h3 className="text-xl font-bold">Feedback Reports</h3>
-      <h4 className="text-gray-600 text-sm">
-        These are general feedback reports provided by the mentor to highlight
-        the mentee{"'"}s progress.
-      </h4>
-
-      {/* TODO: give feedback button for mentor */}
+      <FeedbackReportPopup
+        isOpen={createOpen}
+        closeModal={() => setCreateOpen(false)}
+      />
+      <div className="flex justify-between">
+        <div>
+          <h3 className="text-xl font-bold">Feedback Reports</h3>
+          <h4 className="text-gray-600 text-sm">
+            These are general feedback reports provided by the mentor to
+            highlight the mentee{"'"}s progress.
+          </h4>
+        </div>
+        <div>
+          {perspective === "mentor" && (
+            <button
+              className="ml-2 mr-4 px-4 py-2 flex items-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+              onClick={() => setCreateOpen(true)}
+            >
+              <PlusIcon className="w-5 h-5 mr-1" />
+              Add Report
+            </button>
+          )}
+        </div>
+      </div>
 
       <div className="flex flex-col gap-1 mt-1">
         {feedback.length > 0
@@ -435,7 +460,7 @@ export default function GeneralInfo({
           perspective={perspective}
           setMentorReviewOpen={setMentorReviewOpen}
         />
-        <MenteeFeedback />
+        <MenteeFeedback perspective={perspective} />
       </div>
     </div>
   );
