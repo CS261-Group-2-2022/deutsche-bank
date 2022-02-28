@@ -32,21 +32,25 @@ function DropdownItem<T extends DropdownOption>({
 
 export type FormMultiSelectProps<T extends DropdownOption> = {
   title: string;
+  subtitle?: string | React.ReactNode;
   options: T[];
   selected?: T[];
   setSelected: React.Dispatch<React.SetStateAction<T[]>>;
   placeholder?: string;
   error?: string;
+  required?: boolean;
   hashColouredLabels?: boolean;
 };
 
 export default function FormMultiSelect<T extends DropdownOption>({
   title,
+  subtitle,
   selected,
   options,
   setSelected,
   placeholder,
   error,
+  required = false,
   hashColouredLabels = false,
 }: FormMultiSelectProps<T>) {
   const borderColour = error ? "red" : "gray";
@@ -73,9 +77,11 @@ export default function FormMultiSelect<T extends DropdownOption>({
     <Listbox value={selected} onChange={updateSelection}>
       {({ open }) => (
         <div>
-          <Listbox.Label className="block text-sm font-medium text-gray-700">
+          <Listbox.Label className="flex flex-row text-sm font-medium text-gray-700">
             {title}
+            {required && <p className="text-red-500 pl-1">*</p>}
           </Listbox.Label>
+          {subtitle && <p className="text-xs text-gray-600">{subtitle}</p>}
           <div className="mt-1 relative">
             <Listbox.Button
               className={`relative w-full bg-white border border-${borderColour}-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-${focusBorderColour}-500 focus:border-${focusBorderColour}-500 sm:text-sm transition`}

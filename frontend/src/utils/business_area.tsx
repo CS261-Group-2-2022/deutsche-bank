@@ -39,3 +39,8 @@ export default function BusinessAreaProvider({ children }: ProviderProps) {
     </BusinessAreaContext.Provider>
   );
 }
+
+export const getAreaFromId = (
+  id: number,
+  areas: BusinessArea[]
+): BusinessArea | undefined => areas.find((area) => area.id == id);

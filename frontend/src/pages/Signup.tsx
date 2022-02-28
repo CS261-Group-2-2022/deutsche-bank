@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import FormDropdown from "../components/FormDropdown";
 import { FormInput } from "../components/FormInput";
 import PasswordStrengthIndicator from "../components/PasswordStrengthIndicator";
-import { useUser } from "../utils/authentication";
 import { useBusinessAreas } from "../utils/business_area";
 import {
   BusinessArea,
@@ -12,7 +11,6 @@ import {
   setAuthToken,
   SIGNUP_ENDPOINT,
 } from "../utils/endpoints";
-import { LocationState } from "../utils/location_state";
 
 /** Verifies whether a login response is succesful or not (and type guards the body) */
 const isRegisterSuccess = (
@@ -24,8 +22,6 @@ const isRegisterSuccess = (
 
 export default function Signup() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { isLoggedIn } = useUser();
   const { areas } = useBusinessAreas();
 
   const [firstName, setFirstName] = useState("");
@@ -36,6 +32,7 @@ export default function Signup() {
   const [businessArea, setBusinessArea] = useState<BusinessArea | undefined>(
     areas[0]
   );
+  const passwordStrength = useRef(0);
 
   const [firstNameError, setFirstNameError] = useState<string | undefined>();
   const [lastNameError, setLastNameError] = useState<string | undefined>();
@@ -48,18 +45,6 @@ export default function Signup() {
     string | undefined
   >();
   const [overallError, setOverallError] = useState<string | undefined>();
-
-  /** Navigates back to the page we originated from, or the home page if we don't know where from */
-  const navigateBack = () =>
-    navigate((location.state as LocationState)?.from ?? "/");
-
-  // Effect which runs if we have a user logged in.
-  // If we are logged in, we need to redirect to where we came from, as we don't need to signup again
-  useEffect(() => {
-    if (isLoggedIn) {
-      navigateBack();
-    }
-  }, [isLoggedIn]);
 
   const clearErrors = () => {
     setFirstNameError(undefined);
@@ -78,6 +63,12 @@ export default function Signup() {
       return false;
     } else {
       setRetypedPasswordError(undefined);
+    }
+
+    // Check the score is high enough
+    if (passwordStrength.current <= 2) {
+      setPasswordError("This password is too weak, try something stronger.");
+      return false;
     }
 
     // Check business area is set
@@ -195,6 +186,7 @@ export default function Signup() {
               <PasswordStrengthIndicator
                 password={password}
                 otherInputs={[firstName, lastName, email]}
+                updateResult={(score) => (passwordStrength.current = score)}
               />
               <FormDropdown
                 title="Business Area"

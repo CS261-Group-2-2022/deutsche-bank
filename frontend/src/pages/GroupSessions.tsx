@@ -38,7 +38,7 @@ type SessionInfoProps = {
 
 function SessionInfo({ session, selectSession }: SessionInfoProps) {
   return (
-    <div className="w-full rounded-lg p-2">
+    <div className="w-full flex justify-between items-center rounded-lg p-2">
       <div className="flex items-center space-x-4">
         <img
           alt="Session Image"
@@ -48,7 +48,7 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
 
         <div className="flex-auto flex-col">
           <h1 className="font-bold text-xl">{session.name}</h1>
-          <div className="flex space-x-1">
+          <div className="flex flex-wrap gap-1">
             {session.skills?.map((skill) => (
               <SessionTopicLabel key={skill.id} name={skill.name} />
             ))}
@@ -59,16 +59,16 @@ function SessionInfo({ session, selectSession }: SessionInfoProps) {
           />
           <DateTextProps date={session.date} />
         </div>
+      </div>
 
-        <div>
-          <button
-            type="button"
-            onClick={selectSession}
-            className="py-2 px-5 text-xl bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-          >
-            View More
-          </button>
-        </div>
+      <div className="basis-auto shrink-0">
+        <button
+          type="button"
+          onClick={selectSession}
+          className="py-2 px-5 text-xl bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+        >
+          View More
+        </button>
       </div>
     </div>
   );
@@ -118,7 +118,7 @@ function HideableSessionsInfo({
 
 export default function GroupSessions() {
   // Pull in session data from backend
-  const { data: allSessions = [] } = useSWR<GroupSessionResponse>(
+  const { data: allSessions = [], isValidating } = useSWR<GroupSessionResponse>(
     LIST_GROUP_SESSIONS_ENDPOINT
   );
   const { data: joinedSessions } = useSWR<GroupSessionResponse>(
@@ -149,17 +149,13 @@ export default function GroupSessions() {
     }
   }, [allSessions]);
 
-  // When the selected session changes, we should update the search parameters
-  useEffect(() => {
-    if (selectedSession) {
-      setSearchParams({ id: selectedSession.id.toString() });
-    } else {
-      setSearchParams({});
-    }
-  }, [selectedSession, setSearchParams]);
-
   // Read the search parameters to set the selected session
   useEffect(() => {
+    // If the data is only just loading, then ignore for now
+    if (isValidating) {
+      return;
+    }
+
     const selectedIdText = searchParams.get("id");
     if (selectedIdText) {
       const selectedId = Number(selectedIdText);
@@ -174,27 +170,32 @@ export default function GroupSessions() {
       } else {
         setSearchParams({});
       }
-    } else {
-      // Disable the selected session if it has changed
-      if (selectedSession) {
-        setSelectedSession(undefined);
-      }
     }
-  }, [searchParams, setSelectedSession, setSearchParams]);
+  }, [searchParams, isValidating, setSelectedSession, setSearchParams]);
+
+  const selectSession = (session: GroupSession | undefined) => {
+    setSelectedSession(session);
+    // Update the search parameters with the new session
+    if (session) {
+      setSearchParams({ id: session.id.toString() });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   const sessionFilter = (session: GroupSession) => {
     if (!isFiltering) return true;
     return (
       session.name.toLowerCase().includes(lowerSearchText) ||
       session.skills?.some((skill) =>
-        skill.toString().toLowerCase().includes(lowerSearchText)
+        skill.name.toLowerCase().includes(lowerSearchText)
       )
     );
   };
 
   const filteredSessions = allSessions
-    // TODO: Only show sessions in the future
-    // .filter((session) => Date.parse(session.date) >= Date.now())
+    // Only show sessions in the future
+    .filter((session) => Date.parse(session.date) >= Date.now())
     // Filter out sessions you are hosting or have already joined
     .filter(
       (session) =>
@@ -203,9 +204,10 @@ export default function GroupSessions() {
         ) &&
         !hostingSessions?.find((otherSession) => session.id == otherSession.id)
     )
-    .filter(sessionFilter); // Filter by the user searchbar input
-  // TODO: Sort by the closest start date
-  // .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+    // Filter by the user searchbar input
+    .filter(sessionFilter)
+    // Sort by the closest start date
+    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
 
   return (
     <>
@@ -213,7 +215,7 @@ export default function GroupSessions() {
       <SessionInfoPopup
         session={selectedSession}
         isOpen={selectedSession !== undefined}
-        closeModal={() => setSelectedSession(undefined)}
+        closeModal={() => selectSession(undefined)}
       />
       <CreateSessionPopup
         isOpen={creatingSession}
@@ -232,7 +234,7 @@ export default function GroupSessions() {
           <HideableSessionsInfo
             title="Sessions You're Hosting"
             sessions={hostingSessions}
-            setSelectedSession={setSelectedSession}
+            setSelectedSession={selectSession}
           />
         )}
 
@@ -240,7 +242,7 @@ export default function GroupSessions() {
           <HideableSessionsInfo
             title="Sessions You've Joined"
             sessions={joinedSessions}
-            setSelectedSession={setSelectedSession}
+            setSelectedSession={selectSession}
           />
         )}
 
@@ -251,7 +253,7 @@ export default function GroupSessions() {
             <SessionInfo
               key={session.id}
               session={session}
-              selectSession={() => setSelectedSession(session)}
+              selectSession={() => selectSession(session)}
             />
           ))}
 

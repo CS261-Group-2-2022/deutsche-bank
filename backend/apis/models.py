@@ -104,8 +104,8 @@ class User(AbstractBaseUser, Randomisable):
     mentorship: Mentorship = models.OneToOneField(Mentorship, null=True, on_delete=models.SET_NULL)
     mentor_intent: bool = models.BooleanField(default=False)  # whether a user wishes to become a mentor
 
-    interests: List[Skill] = models.ManyToManyField(Skill, related_name='user_interests')
-    expertise: List[Skill] = models.ManyToManyField(Skill, related_name='user_expertise')
+    interests: List[Skill] = models.ManyToManyField(Skill, related_name='user_interests', blank=True)
+    expertise: List[Skill] = models.ManyToManyField(Skill, related_name='user_expertise', blank=True)
 
     interests_description: str = models.CharField(max_length=500, default="")
 
@@ -149,13 +149,14 @@ class User(AbstractBaseUser, Randomisable):
         """ Retrieves set of hosted group sessions for this user
         :return: set of hosted group sessions for this user
         """
-        return self.session_host.all()
+        return self.session_host.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
     def get_sessions(self):
         """  Retrieves set of group sessions this user is in
         :return: set of group sessions this user is in
         """
-        return GroupSession.objects.all().filter(users__pk__contains=self.pk)
+        return GroupSession.objects.all().filter(users__pk__contains=self.pk,
+                                                 date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
     def has_mentees(self) -> bool:
         return self.get_mentees().count() > 0
@@ -297,4 +298,9 @@ class GroupSession(models.Model):
     capacity: int = models.IntegerField(null=True)
     skills: List[Skill] = models.ManyToManyField(Skill)
     date: datetime = models.DateTimeField()
-    users: List[User] = models.ManyToManyField(User, default=[])
+    users: List[User] = models.ManyToManyField(User, default=[], blank=True)
+
+
+class Feedback(models.Model):
+    date: datetime = models.DateTimeField()
+    feedback: str = models.CharField(max_length=1000)
