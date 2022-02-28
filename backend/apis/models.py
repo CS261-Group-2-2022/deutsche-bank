@@ -115,13 +115,14 @@ class User(AbstractBaseUser):
         """ Retrieves set of hosted group sessions for this user
         :return: set of hosted group sessions for this user
         """
-        return self.session_host.all()
+        return self.session_host.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
     def get_sessions(self):
         """  Retrieves set of group sessions this user is in
         :return: set of group sessions this user is in
         """
-        return GroupSession.objects.all().filter(users__pk__contains=self.pk)
+        return GroupSession.objects.all().filter(users__pk__contains=self.pk,
+                                                 date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
     def get_action_plans(self):
         return self.user_action_plans.all()
@@ -168,6 +169,11 @@ class GroupSession(models.Model):
     skills: List[Skill] = models.ManyToManyField(Skill)
     date: datetime = models.DateTimeField()
     users: List[User] = models.ManyToManyField(User, default=[])
+
+
+class Feedback(models.Model):
+    date: datetime = models.DateTimeField()
+    feedback: str = models.CharField(max_length=1000)
 
 
 from .dummy_data import *

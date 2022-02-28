@@ -145,3 +145,9 @@ class UserSerializerFull(UserSerializer):
 
     def get_action_plans(self, obj: User):
         return ActionPlanSerializer(obj.get_action_plans(), many=True).data
+
+
+class FeedbackSerializer(ModelSerializer):
+    class Meta:
+        model = Feedback
+        exclude = []

@@ -186,10 +186,8 @@ function UpcomingSessionsColumn() {
         </div>
       </h4>
       <div className="justify justify-center grid grid-cols-1 gap-1">
-        {allSessions.map((session) => (
-          <>
-          <UpcomingSessions session={session}/>
-          </>
+        {allSessions.length == 0 ? <div className="align-items-">You have no upcoming sessions</div> : allSessions.map((session) => (
+          <UpcomingSessions key={session.id} session={session}/>
         ))}
       </div>
     </div>

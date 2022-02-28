@@ -193,6 +193,7 @@ export default function CreateSessionPopup({
             error={skillsError}
             placeholder="Select topics for the session"
             hashColouredLabels
+            required
           />
           <FormTextArea
             id="description"
