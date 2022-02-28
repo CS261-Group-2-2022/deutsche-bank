@@ -44,7 +44,7 @@ class Mentorship(models.Model):
     feedback: str = models.CharField(null=True, max_length=1000)
 
 
-class Request(models.Model):
+class MentorRequest(models.Model):
     """ Mentorship request from a mentee to a mentor
     """
     mentee: User = models.ForeignKey('User', related_name='request_mentee', on_delete=models.CASCADE)
@@ -125,6 +125,11 @@ class Meeting(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
     time: datetime = models.DateTimeField()  # time of meeting
     notes: str = models.CharField(max_length=1000)
+
+
+class MeetingRequest(models.Model):
+    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
+    time: datetime = models.DateTimeField()  # time of meeting
 
 
 class ActionPlan(models.Model):

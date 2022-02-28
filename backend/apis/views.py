@@ -150,9 +150,19 @@ class MentorshipViewSet(viewsets.ModelViewSet):
     serializer_class = MentorshipSerializer
 
 
+class MentorRequestViewSet(viewsets.ModelViewSet):
+    queryset = MentorRequest.objects.all()
+    serializer_class = MentorRequest
+
+
 class MeetingViewSet(viewsets.ModelViewSet):
     queryset = Meeting.objects.all()
     serializer_class = MeetingSerializer
+
+
+class MeetingRequestViewSet(viewsets.ModelViewSet):
+    queryset = MeetingRequest.objects.all()
+    serializer_class = MeetingRequestSerializer
 
 
 class ActionPlanViewSet(viewsets.ModelViewSet):

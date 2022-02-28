@@ -65,6 +65,12 @@ class MeetingSerializer(ModelSerializer):
         exclude = []
 
 
+class MeetingRequestSerializer(ModelSerializer):
+    class Meta:
+        model = MeetingRequest
+        exclude = []
+
+
 class ActionPlanSerializer(ModelSerializer):
     class Meta:
         model = ActionPlan
