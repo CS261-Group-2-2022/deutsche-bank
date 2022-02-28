@@ -152,7 +152,7 @@ class GroupSession(models.Model):
     capacity: int = models.IntegerField(null=True)
     skills: List[Skill] = models.ManyToManyField(Skill)
     date: datetime = models.DateTimeField()
-    users: List[User] = models.ManyToManyField(User, default=[])
+    users: List[User] = models.ManyToManyField(User, default=[], blank=True)
 
 
 class Feedback(models.Model):
