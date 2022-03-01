@@ -24,7 +24,7 @@ export const FormTextArea = ({
 
   return (
     <div>
-      <div className="block text-sm mb-1 font-medium text-gray-700">
+      <div className="flex text-sm mb-1 font-medium text-gray-700">
         {name}
         {required && <p className="text-red-500 pl-1">*</p>}
       </div>

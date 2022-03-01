@@ -1,11 +1,10 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useUser } from "../utils/authentication";
 
-type ProtectedPageProps = {
-  children: React.ReactNode;
-};
-
-export default function ProtectedPage({ children }: ProtectedPageProps) {
+/** Page wrapper to protect specific page routes.
+ * If the user is not authenticated, they will be redirected to login
+ */
+export default function ProtectedPage() {
   const { isLoggedIn, isLoading } = useUser();
   const location = useLocation();
 
@@ -15,7 +14,7 @@ export default function ProtectedPage({ children }: ProtectedPageProps) {
   }
 
   return isLoggedIn ? (
-    <>{children}</>
+    <Outlet />
   ) : (
     <Navigate to="/login" replace state={{ from: location }} />
   );

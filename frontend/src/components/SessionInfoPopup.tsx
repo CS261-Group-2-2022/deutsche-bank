@@ -158,9 +158,9 @@ export default function SessionInfoPopup({
       closeModal={closeModal}
     >
       <Dialog.Title as="h3" className="leading-6 text-gray-900 space-x-2">
-        <span className="text-3xl font-black uppercase">{session?.name}</span>{" "}
+        <span className="text-3xl font-black uppercase">{session?.name}</span>
       </Dialog.Title>
-      <div className="space-x-1 space-y-1 text-lg">
+      <div className="pt-1 flex flex-wrap gap-1 text-lg">
         {session?.skills?.map((skill) => (
           <SessionTopicLabel key={skill.id} name={skill.name} />
         ))}
