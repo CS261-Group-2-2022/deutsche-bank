@@ -88,6 +88,12 @@ class UserViewSet(viewsets.ModelViewSet):
         cereal = SkillSerializer(user.expertise.all(), many=True)
         return Response(cereal.data)
 
+    @action(detail=True, methods=['get'])
+    def plans(self, request, pk=None) -> Response:
+        user: User = self.get_object()
+
+        return Response(ActionPlanSerializer(user.get_action_plans(), many=True).data)
+
 
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
