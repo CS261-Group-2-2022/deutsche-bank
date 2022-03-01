@@ -231,38 +231,6 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(detail=True, methods=['post'])
-    def cancel(self, request, *args, **kwargs):  # Cancels a meeting request
-        request: MeetingRequest = self.get_object()
-        user: User = request.user
-        if request.mentorship.mentee is not user:
-            return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
-        request.delete()
-
-        return Response(status=status.HTTP_200_OK)
-
-    @action(detail=True, methods=['post'])
-    def accept(self, request, *args, **kwargs):  # Accepts a meeting request, creating a meeting
-        meeting_request: MeetingRequest = self.get_object()
-        user: User = request.user
-        if meeting_request.mentorship.mentor is not user:
-            return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
-        meeting_request.delete()
-        meeting: Meeting = Meeting(mentorship=meeting_request.mentorship, time=meeting_request.time)
-        meeting.save()
-
-        return Response(data=MeetingSerializer(meeting).data, status=status.HTTP_200_OK)
-
-    @action(detail=True, methods=['post'])
-    def decline(self, request, *args, **kwargs):  # Declines a meeting request
-        meeting_request: MeetingRequest = self.get_object()
-        user: User = request.user
-        if meeting_request.mentorship.mentor is not user:
-            return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # TODO: Finish implementation
-        return Response(status=status.HTTP_200_OK)
-
 
 class MeetingViewSet(viewsets.ModelViewSet):
     queryset = Meeting.objects.all()
@@ -294,6 +262,38 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, *args, **kwargs):  # Cancels a meeting request
+        request: MeetingRequest = self.get_object()
+        user: User = request.user
+        if request.mentorship.mentee is not user:
+            return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
+        request.delete()
+
+        return Response(status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def accept(self, request, *args, **kwargs):  # Accepts a meeting request, creating a meeting
+        meeting_request: MeetingRequest = self.get_object()
+        user: User = request.user
+        if meeting_request.mentorship.mentor is not user:
+            return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
+        meeting_request.delete()
+        meeting: Meeting = Meeting(mentorship=meeting_request.mentorship, time=meeting_request.time)
+        meeting.save()
+
+        return Response(data=MeetingSerializer(meeting).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def decline(self, request, *args, **kwargs):  # Declines a meeting request
+        meeting_request: MeetingRequest = self.get_object()
+        user: User = request.user
+        if meeting_request.mentorship.mentor is not user:
+            return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # TODO: Finish implementation
+        return Response(status=status.HTTP_200_OK)
 
 
 class ActionPlanViewSet(viewsets.ModelViewSet):
