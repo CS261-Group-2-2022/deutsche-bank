@@ -54,18 +54,20 @@ const TerminateRelationshipPrompt = ({
     setIsLoading(true);
     setError(undefined);
 
-    const res = await fetch(END_MENTORSHIP_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Token ${getAuthToken()}`,
-      },
-      body: JSON.stringify({
-        current_password: password,
-      }),
-    });
+    const res = await fetch(
+      END_MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()),
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
+        },
+        body: JSON.stringify({
+          current_password: password,
+        }),
+      }
+    );
 
-    const body = await res.json();
     if (res.ok) {
       setOpen(false);
 
@@ -73,8 +75,12 @@ const TerminateRelationshipPrompt = ({
       mutate(PROFILE_ENDPOINT);
       mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
     } else {
+      const body = await res.json();
       setPasswordError(body.password?.join(" "));
-      setError(body.non_field_errors?.join(" ")); // TODO: right field?
+      setError(
+        body.error ??
+          "An error occured when ending this pairing. Please try again"
+      );
     }
 
     setIsLoading(false);

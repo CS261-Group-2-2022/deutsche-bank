@@ -230,13 +230,12 @@ const RequestedMeeting = ({
         },
       });
 
-      const body = await res.json();
-
       if (res.ok) {
         // Revalidate the caches for mentorship information
         mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
       } else {
-        setError(body.error?.join(" ") ?? error);
+        const body = await res.json();
+        setError(body.error ?? error);
       }
 
       setIsLoading(false);
@@ -362,14 +361,13 @@ const ScheduledMeeting = ({ mentorship, meeting }: ScheduledMeetingProps) => {
       }
     );
 
-    const body = await res.json();
-
     if (res.ok) {
       // Revalidate the caches for mentorship information
       mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
     } else {
+      const body = await res.json();
       setError(
-        body.error?.join(" ") ??
+        body.error ??
           "An error occured when cancelling this meeting. Please try again."
       );
     }
@@ -485,17 +483,23 @@ export default function MentoringMeetings({
         scheduled={scheduledMeetings}
       />
 
-      <h3 className="text-xl font-bold mb-2">Previous Meetings</h3>
+      <h3 className="text-xl font-bold my-2">Previous Meetings</h3>
 
       <div className="flex flex-col gap-2">
-        {pastMeetings.map((meeting) => (
-          <MeetingInfo
-            key={meeting.id}
-            mentorship={mentorship}
-            meeting={meeting}
-            perspective={perspective}
-          />
-        ))}
+        {pastMeetings && pastMeetings.length > 0 ? (
+          pastMeetings.map((meeting) => (
+            <MeetingInfo
+              key={meeting.id}
+              mentorship={mentorship}
+              meeting={meeting}
+              perspective={perspective}
+            />
+          ))
+        ) : (
+          <h4 className="font-medium text-xl text-gray-700 mt-10 text-center">
+            There are no recorded past meetings.
+          </h4>
+        )}
       </div>
     </>
   );

@@ -1,9 +1,10 @@
 import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BusinessArea,
   FULL_USER_ENDPOINT,
+  getAuthToken,
   PROFILE_ENDPOINT,
   SETTINGS_ENDPOINT,
   Skill,
@@ -54,6 +55,23 @@ export default function Settings() {
   const [expertiseError, setExpertiseError] = useState<string | undefined>();
   const [interestsError, setInterestsError] = useState<string | undefined>();
 
+  // If areas and skills get updated, update the values
+  useEffect(() => {
+    setBusinessArea(
+      user ? getAreaFromId(user.business_area, areas) : undefined
+    );
+    setExpertise(
+      (user?.expertise
+        ?.map((id) => skills.find((skill) => skill.id === id))
+        .filter((x) => x !== undefined) as Skill[]) ?? []
+    );
+    setInterests(
+      (user?.interests
+        ?.map((id) => skills.find((skill) => skill.id === id))
+        .filter((x) => x !== undefined) as Skill[]) ?? []
+    );
+  }, [areas, skills, user]);
+
   const clearErrors = () => {
     setFirstNameError(undefined);
     setLastNameError(undefined);
@@ -94,23 +112,21 @@ export default function Settings() {
     // TODO: verify with current password
     // TODO: no authorization token passed?
 
-    const res = await fetch(
-      SETTINGS_ENDPOINT.replace("{ID}", user.id.toString()),
-      {
-        method: "PATCH",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName,
-          expertise: expertise.map((skill) => skill.id),
-          interests: interests.map((skill) => skill.id),
-          // password : password,
-          business_area: businessArea.id,
-        }), // TODO currently you are not able to change the password with this endpoint, will fix this shortly
-      }
-    );
+    const res = await fetch(PROFILE_ENDPOINT, {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        expertise: expertise.map((skill) => skill.id),
+        interests: interests.map((skill) => skill.id),
+        // password : password,
+        business_area: businessArea.id,
+      }), // TODO currently you are not able to change the password with this endpoint, will fix this shortly
+    });
 
     const body = await res.json();
 

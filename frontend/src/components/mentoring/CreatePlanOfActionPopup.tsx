@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { Dialog, Disclosure } from "@headlessui/react";
 import { ChevronUpIcon } from "@heroicons/react/solid";
 import {
+  CREATE_MENTEES_PLAN,
   getAuthToken,
   GroupSession,
   JoinSessionResponse,
@@ -37,13 +38,12 @@ type CreatePlanOfActionPopupProps = {
 export default function CreatePlanOfActionPopup({
   isOpen,
   closeModal,
+  menteeID,
 }: CreatePlanOfActionPopupProps) {
-  const { user } = useUser();
-
   const [isClosing, setIsClosing] = useState(false);
   const [description, setDescription] = useState("");
   const [planName, setPlanName] = useState("");
-  const [completionDate, setCompletionDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
 
   // When we want to start closing the modal, we want to let the animation
   // start hiding the modal BEFORE we clear the session. Once the animation
@@ -57,13 +57,40 @@ export default function CreatePlanOfActionPopup({
   }, [isOpen]);
 
   const [error, setError] = useState<string | undefined>(undefined);
-  const [descriptionError, setDescriptionError] = useState<string | undefined>();
+  const [descriptionError, setDescriptionError] = useState<
+    string | undefined
+  >();
   const [planNameError, setPlanNameError] = useState<string | undefined>();
-  const [completionDateError, setCompletionDateError] = useState<string | undefined>();
+  const [dueDateError, setDueDateError] = useState<string | undefined>();
 
   const clearErrors = () => {
     setDescriptionError(undefined);
     setPlanNameError(undefined);
+    setPlanNameError(undefined);
+    setDueDateError(undefined);
+  };
+
+  const createMenteesPlan = async () => {
+    const { user } = useUser();
+
+    const res = await fetch(CREATE_MENTEES_PLAN, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        name: planName,
+        description,
+        completed: null,
+        due_date: dueDate,
+        user: menteeID,
+      }),
+    });
+
+    if (res.ok) {
+      alert("Plan Created!");
+    }
   };
 
   return (
@@ -85,11 +112,18 @@ export default function CreatePlanOfActionPopup({
           className="space-y-1"
           onSubmit={(e) => {
             e.preventDefault();
-            // createSessionRequest();
+            createMenteesPlan();
           }}
         >
-          {/* TODO: Star rating */}
-          <FormInput id={"planname"} name={"Name of Plan of Action"} type={"text"} placeholder={"Enter the name of your Plan of Action"} text={planName} onChange={setPlanName} />
+          <FormInput
+            id={"planname"}
+            name={"Name of Plan of Action"}
+            type={"text"}
+            placeholder={"Enter the name of your Plan of Action"}
+            text={planName}
+            onChange={setPlanName}
+            error={planNameError}
+          />
           <FormTextArea
             id="feedback"
             name="Plan of Action Description"
@@ -100,7 +134,15 @@ export default function CreatePlanOfActionPopup({
             error={descriptionError}
           />
           <div className="grid grid-cols-2 gap-2 pt-2">
-              <FormInput id={"completion_date"} name={"Date you completed the plan of action"} type={"datetime-local"} placeholder={""} text={completionDate} onChange={setCompletionDate} />
+            <FormInput
+              id={"dueDate"}
+              name={"Date the plan of action is due"}
+              type={"datetime-local"}
+              placeholder={""}
+              text={dueDate}
+              onChange={setDueDate}
+              error={dueDateError}
+            />
           </div>
 
           {error && (

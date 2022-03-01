@@ -5,7 +5,12 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/solid";
 import useSWR from "swr";
-import { PlanOfAction, PlanOfActionResponse } from "../../utils/endpoints";
+import { useUser } from "../../utils/authentication";
+import {
+  GET_USERS_PLANS,
+  PlanOfAction,
+  PlanOfActionResponse,
+} from "../../utils/endpoints";
 import PlanOfActionInfo from "./PlanOfActionInfo";
 
 type PlansOfActionColumnProps = {
@@ -19,98 +24,30 @@ export default function PlansOfActionColumn({
   setOpenedPlanOfAction,
   setCreatePlanOfActionOpen,
 }: PlansOfActionColumnProps) {
-  // let { data: plansOfActionData } = useSWR<PlanOfActionResponse>(
-  //   "PLANS_OF_ACTION_ENDPOINT"
-  // );
-  // plansOfActionData = plansOfActionData ?? [
+  const { user } = useUser();
+
+  let { data: plansOfActionData } = useSWR<PlanOfActionResponse>(
+    GET_USERS_PLANS.replace("{ID}", user?.id.toString() ?? "-1")
+  );
+
+  plansOfActionData = plansOfActionData ?? [
+    {
+      name: "No Plans Found",
+      description: "No Plans Found but as a Description",
+      completed: "1111-11-11T11:11:11Z",
+      dueDate: "1111-11-11T11:11:11Z",
+    },
+  ];
+
+  // const plansOfActionData = [
   //   {
-  //     name: "Plan Name",
+  //     name: "Plan Name1",
   //     description: "Plan Description",
-  //     user: useUser(),
+  //     // user: useUser().user,
   //     creation_date: "Creation Date",
   //     completion_date: "Completion Date",
   //   },
   // ];
-
-  const plansOfActionData = [
-    {
-      name: "Plan Name1",
-      description: "Plan Description",
-      // user: useUser().user,
-      creation_date: "Creation Date",
-      completion_date: "Completion Date",
-    },
-    {
-      name: "Plan Name2",
-      description: "Plan Description",
-      // user: useUser().user,
-      creation_date: "Creation Date",
-      completion_date: "Completion Date",
-    },
-    // {
-    //   name: "Plan Name3",
-    //   description: "Plan Description",
-    //   // user: useUser().user,
-    //   creation_date: "Creation Date",
-    //   completion_date: "Completion Date",
-    // },
-    // {
-    //   name: "Plan Name4",
-    //   description: "Plan Description",
-    //   // user: useUser().user,
-    //   creation_date: "Creation Date",
-    //   completion_date: "Completion Date",
-    // },
-    // {
-    //   name: "Plan Name5",
-    //   description: "Plan Description",
-    //   // user: useUser().user,
-    //   creation_date: "Creation Date",
-    //   completion_date: "Completion Date",
-    // },
-    // {
-    //   name: "Plan Name6",
-    //   description: "Plan Description",
-    //   // user: useUser().user,
-    //   creation_date: "Creation Date",
-    //   completion_date: "Completion Date",
-    // },
-    // {
-    //   name: "Plan Name7",
-    //   description: "Plan Description",
-    //   // user: useUser().user,
-    //   creation_date: "Creation Date",
-    //   completion_date: "Completion Date",
-    // },
-    // {
-    //   name: "Plan Name8",
-    //   description: "Plan Description",
-    //   // user: useUser().user,
-    //   creation_date: "Creation Date",
-    //   completion_date: "Completion Date",
-    // },
-    // {
-    //   name: "Plan Name9",
-    //   description: "Plan Description",
-    //   // user: useUser().user,
-    //   creation_date: "Creation Date",
-    //   completion_date: "Completion Date",
-    // },
-    // {
-    //   name: "Plan Name10",
-    //   description: "Plan Description",
-    //   // user: useUser().user,
-    //   creation_date: "Creation Date",
-    //   completion_date: "Completion Date",
-    // },
-    // {
-    //   name: "Plan Name11",
-    //   description: "Plan Description",
-    //   // user: useUser().user,
-    //   creation_date: "Creation Date",
-    //   completion_date: "Completion Date",
-    // },
-  ];
 
   // let allSessions = [...allJoinedSessions, ...allHostSessions];
   // allSessions = allSessions
@@ -130,10 +67,10 @@ export default function PlansOfActionColumn({
         </span>
       </h4>
       <div className="flex flex-col justify-start gap-1 grow overflow-auto">
-        {plansOfActionData.length == 0 ? (
+        {plansOfActionData?.length == 0 ? (
           <div className="align-items-">You have no plans of action</div>
         ) : (
-          plansOfActionData.map((plan) => (
+          plansOfActionData?.map((plan) => (
             <PlanOfActionInfo
               key={plan.name}
               planOfAction={plan}

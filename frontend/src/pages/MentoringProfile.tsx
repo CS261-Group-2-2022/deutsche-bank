@@ -28,7 +28,9 @@ function WrapProfile({ user, mentorship_id, perspective }: WrapProfileProps) {
     MENTORSHIP_ENDPOINT.replace("{ID}", mentorship_id.toString())
   );
   const { data: mentor } = useSWR<UserFull>(
-    FULL_USER_ENDPOINT.replace("{ID}", user.id.toString() ?? "-1")
+    mentorship
+      ? FULL_USER_ENDPOINT.replace("{ID}", mentorship.mentor.toString() ?? "-1")
+      : null
   );
 
   if (!mentorship || !mentor) return <></>;
@@ -56,7 +58,7 @@ function OwnProfile() {
       />
     );
   } else {
-    return <MentoringMatchingPage />;
+    return <MentoringMatchingPage user={user} />;
   }
 }
 
@@ -112,17 +114,17 @@ function OtherProfile({ userId }: OtherProfileProps) {
 
   // Check to see whether the current user is actually the mentor for this user
   const allowedToViewProfile =
-    !user ||
-    !otherUserInfo ||
-    !otherUserInfo.mentorship ||
-    otherUserInfo.mentorship.mentor != user.id;
+    user &&
+    otherUserInfo &&
+    otherUserInfo.mentorship &&
+    otherUserInfo.mentorship.mentor === user.id;
 
   if (allowedToViewProfile) {
     return (
       <WrapProfile
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        user={userFullToUser(otherUserInfo!)} // TODO: can we not need to do this?
-        mentorship_id={otherUserInfo?.mentorship?.id ?? -1} // This can never give -1 since allowedToViewProfile prevents this. TypeScript restriction :(
+        user={userFullToUser(otherUserInfo)}
+        mentorship_id={otherUserInfo.mentorship?.id ?? -1} // This can never give -1 since allowedToViewProfile prevents this. TypeScript restriction :(
         perspective="mentor"
       />
     );

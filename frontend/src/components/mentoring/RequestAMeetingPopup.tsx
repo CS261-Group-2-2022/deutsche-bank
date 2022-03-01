@@ -39,6 +39,8 @@ export default function RequestMeetingPopup({
 
   const clearErrors = () => {
     setDatetimeError(undefined);
+    setMeetingLocationError(undefined);
+    setDescriptionError(undefined);
     setOverallError(undefined);
   };
 
@@ -62,7 +64,7 @@ export default function RequestMeetingPopup({
       body: JSON.stringify({
         mentorship: mentorship.id,
         time: datetime,
-        location,
+        location: meetingLocation,
         description,
       }),
     });

@@ -19,11 +19,21 @@ export const FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/feedback/`;
 export const FULL_USER_ENDPOINT = `${HOSTNAME}/api/v1/user/{ID}/full/`;
 export const MENTORSHIP_ENDPOINT = `${HOSTNAME}/api/v1/mentorship/{ID}/`;
 export const END_MENTORSHIP_ENDPOINT = `${HOSTNAME}/api/v1/mentorship/{ID}/end/`;
+export const CURRENT_MENTEES_ENDPOINT = `${HOSTNAME}/api/v1/user/mentees/`;
+export const SUGGESTED_MENTORS_ENDPOINT = `${HOSTNAME}/api/v1/user/matching/`;
+export const OUTGOING_REQUESTS_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/outgoing/`;
+export const INCOMING_REQUESTS_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/incoming/`;
+export const CREATE_MENTORING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/`;
+export const ACCEPT_MENTORING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/{ID}/accept/`;
+export const DECLINE_MENTORING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/{ID}/decline/`;
+export const CANCEL_MENTORING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/{ID}/cancel/`;
 export const UPDATE_MEETING_ENDPOINT = `${HOSTNAME}/api/v1/meeting/{ID}/`;
 export const CREATE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/`;
 export const ACCEPT_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/accept/`;
 export const DECLINE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/decline/`;
 export const CANCEL_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/cancel/`;
+export const GET_USERS_PLANS = `${HOSTNAME}/api/v1/user/{ID}/mentees/`;
+export const CREATE_MENTEES_PLAN = `${HOSTNAME}/api/v1/plan/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -220,6 +230,12 @@ export type Mentorship = {
   mentor: number;
 };
 
+export type MentorshipRequest = {
+  id: number;
+  mentor: User;
+  mentee: User;
+};
+
 // Meeting
 export type Meeting = {
   id: number;
@@ -246,8 +262,8 @@ export type PlanOfAction = {
   name: string;
   description: string;
   // user: User;
-  creation_date: string;
-  completion_date: string;
+  dueDate: string;
+  completed: string;
 };
 
 export type PlanOfActionResponse = PlanOfAction[];

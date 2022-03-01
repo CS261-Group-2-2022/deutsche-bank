@@ -54,62 +54,6 @@ export default function PlanOfActionPopup({
 
   const [error, setError] = useState<string | undefined>(undefined);
 
-  //   const joinSession = async () => {
-  //     try {
-  //       const res = await fetch(
-  //         JOIN_SESSION_ENDPOINT.replace("{ID}", session?.id.toString() ?? ""),
-  //         {
-  //           method: "POST",
-  //           headers: {
-  //             "content-type": "application/json",
-  //             authorization: `Token ${getAuthToken()}`,
-  //           },
-  //         }
-  //       );
-
-  //       // Clear existing errors
-  //       setError(undefined);
-  //       const body: JoinSessionResponse = await res.json();
-
-  //       if (isJoinSuccess(res, body)) {
-  //         // Update the list of available group sessions
-  //         mutate(LIST_GROUP_SESSIONS_ENDPOINT);
-  //         mutate(LIST_USER_JOINED_SESSIONS_ENDPOINT);
-  //       } else {
-  //         setError(body.error ?? "An error occurred");
-  //       }
-  //     } catch (err) {
-  //       setError("An error occurered");
-  //     }
-  //   };
-
-  //   const leaveSession = async () => {
-  //     try {
-  //       const res = await fetch(
-  //         LEAVE_SESSION_ENDPOINT.replace("{ID}", session?.id.toString() ?? ""),
-  //         {
-  //           method: "POST",
-  //           headers: {
-  //             "content-type": "application/json",
-  //             authorization: `Token ${getAuthToken()}`,
-  //           },
-  //         }
-  //       );
-  //       setError(undefined);
-  //       const body: JoinSessionResponse = await res.json();
-
-  //       if (isJoinSuccess(res, body)) {
-  //         Update the list of available group sessions
-  //         mutate(LIST_GROUP_SESSIONS_ENDPOINT);
-  //         mutate(LIST_USER_JOINED_SESSIONS_ENDPOINT);
-  //       } else {
-  //         setError(body.error ?? "An error occurred");
-  //       }
-  //     } catch (err) {
-  //       setError("An error occurered");
-  //     }
-  //   };
-
   return (
     <Popup
       isOpen={isOpen}
@@ -123,7 +67,20 @@ export default function PlanOfActionPopup({
         </span>{" "}
       </Dialog.Title>
       <div className="flex flex-row gap-2">
-        Due in: <DateText date={"2025-04-11T14:46:00Z"} />
+        Due in:{" "}
+        <DateText
+          date={planOfAction?.dueDate.toString() ?? "1111-11-11T11:11:11Z"}
+        />
+        {planOfAction?.completed ? (
+          <>
+            <span>Completed: </span>
+            <DateText
+              date={planOfAction?.dueDate.toString() ?? "1111-11-11T11:11:11Z"}
+            />
+          </>
+        ) : (
+          <></>
+        )}
       </div>
 
       <div className="my-2">

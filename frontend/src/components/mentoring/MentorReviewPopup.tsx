@@ -28,6 +28,7 @@ const Star = ({
 }: StarProps) => {
   return (
     <button
+      type="button"
       onClick={() => setRating(value)}
       onMouseOver={() => setHoveringRating(value)}
       onMouseLeave={() => setHoveringRating(currentRating)}
@@ -52,7 +53,7 @@ type StarRatingProps = {
 };
 
 const StarRating = ({ currentRating, setCurrentRating }: StarRatingProps) => {
-  const [hoverRating, setHoverRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(currentRating);
 
   return (
     <div className="flex justify-center space-x-0">
@@ -117,17 +118,20 @@ export default function MentorReviewPopup({
       return;
     }
 
-    const res = await fetch(MENTORSHIP_ENDPOINT, {
-      method: "PATCH",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Token ${getAuthToken()}`,
-      },
-      body: JSON.stringify({
-        feedback: review,
-        rating: currentRating,
-      }),
-    });
+    const res = await fetch(
+      MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()),
+      {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
+        },
+        body: JSON.stringify({
+          feedback: review,
+          rating: currentRating,
+        }),
+      }
+    );
 
     const body = await res.json();
     if (res.ok) {
@@ -137,7 +141,11 @@ export default function MentorReviewPopup({
       mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
     } else {
       setReviewError(body.feedback?.join(" "));
-      setError(body.rating?.join(" ") ?? body.non_field_errors?.join(" "));
+      setError(
+        body.rating?.join(" ") ??
+          body.non_field_errors?.join(" ") ??
+          "An error occurred when updating your review. Please try again"
+      );
     }
 
     setIsLoading(false);
