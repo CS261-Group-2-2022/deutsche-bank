@@ -1,23 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { mutate } from "swr";
-import useSWR from "swr";
-import { Dialog, Disclosure } from "@headlessui/react";
-import { ChevronUpIcon, StarIcon } from "@heroicons/react/solid";
+import { Dialog } from "@headlessui/react";
+import { StarIcon } from "@heroicons/react/solid";
 import {
   getAuthToken,
-  GroupSession,
-  JoinSessionResponse,
-  JoinSessionSuccess,
-  User,
+  Mentorship,
+  MENTORSHIP_ENDPOINT,
 } from "../../utils/endpoints";
-import { useUser } from "../../utils/authentication";
-import SessionTopicLabel from "../SessionTopicLabel";
-import LocationText from "../LocationText";
-import DateText from "../DateText";
 import Popup from "../Popup";
-import CapacityText from "../CapacityText";
-import { PlanOfAction } from "../../utils/endpoints";
 import { FormTextArea } from "../FormTextarea";
+import { LoadingButton } from "../LoadingButton";
 
 type StarProps = {
   value: number;
@@ -80,28 +72,21 @@ const StarRating = ({ currentRating, setCurrentRating }: StarRatingProps) => {
   );
 };
 
-/** Verifies whether a join response is succesful or not (and type guards the body) */
-const isJoinSuccess = (
-  res: Response,
-  body: JoinSessionResponse
-): body is JoinSessionSuccess => {
-  return res.ok;
-};
-
 type MentorReviewPopupProps = {
+  mentorship: Mentorship;
   isOpen: boolean;
   closeModal: () => unknown;
 };
 
 export default function MentorReviewPopup({
+  mentorship,
   isOpen,
   closeModal,
 }: MentorReviewPopupProps) {
-  const { user } = useUser();
-
   const [isClosing, setIsClosing] = useState(false);
-  const [currentRating, setCurrentRating] = useState(0);
-  const [review, setReview] = useState("");
+  const [currentRating, setCurrentRating] = useState(mentorship.rating ?? 0);
+  const [review, setReview] = useState(mentorship.feedback ?? "");
+  const [isLoading, setIsLoading] = useState(false);
 
   // When we want to start closing the modal, we want to let the animation
   // start hiding the modal BEFORE we clear the session. Once the animation
@@ -118,7 +103,44 @@ export default function MentorReviewPopup({
   const [reviewError, setReviewError] = useState<string | undefined>();
 
   const clearErrors = () => {
+    setError(undefined);
     setReviewError(undefined);
+  };
+
+  const updateReview = async () => {
+    setIsLoading(true);
+    clearErrors();
+
+    if (currentRating <= 0) {
+      setError("You must select an overall star rating");
+      setIsLoading(false);
+      return;
+    }
+
+    const res = await fetch(MENTORSHIP_ENDPOINT, {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        feedback: review,
+        rating: currentRating,
+      }),
+    });
+
+    const body = await res.json();
+    if (res.ok) {
+      initiateClose();
+
+      // Revalidate the cache of all meetings
+      mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
+    } else {
+      setReviewError(body.feedback?.join(" "));
+      setError(body.rating?.join(" ") ?? body.non_field_errors?.join(" "));
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -140,7 +162,7 @@ export default function MentorReviewPopup({
           className="space-y-1"
           onSubmit={(e) => {
             e.preventDefault();
-            // createSessionRequest();
+            updateReview();
           }}
         >
           <div>
@@ -162,6 +184,7 @@ export default function MentorReviewPopup({
             text={review}
             onChange={setReview}
             error={reviewError}
+            required
           />
 
           {error && (
@@ -171,12 +194,13 @@ export default function MentorReviewPopup({
           )}
 
           <div className="grid grid-cols-10 gap-2 pt-2">
-            <button
+            <LoadingButton
               type="submit"
               className="inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none"
+              isLoading={isLoading}
             >
               Submit Review
-            </button>
+            </LoadingButton>
             <button
               type="button"
               className="inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"

@@ -443,6 +443,7 @@ export default function GeneralInfo({
   return (
     <div className="mx-5 space-y-5">
       <MentorReviewPopup
+        mentorship={mentorship}
         isOpen={mentorReviewOpen}
         closeModal={() => setMentorReviewOpen(false)}
       />
