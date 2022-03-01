@@ -276,7 +276,7 @@ class User(AbstractBaseUser, Randomisable):
 
 class Meeting(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE, related_name='mentorship_meetings')
-    name: str = models.CharField(max_length=100)
+    description: str = models.CharField(max_length=100)
     location: str = models.CharField(max_length=100, null=True)
     time: datetime = models.DateTimeField()  # time of meeting
     mentee_notes: str = models.CharField(max_length=1000, null=True)
@@ -286,7 +286,7 @@ class Meeting(models.Model):
 class MeetingRequest(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE,
                                                related_name='mentorship_meeting_requests')
-    name: str = models.CharField(max_length=100)
+    description: str = models.CharField(max_length=100)
     location: str = models.CharField(max_length=100, null=True)
     time: datetime = models.DateTimeField()  # time of meeting
 
