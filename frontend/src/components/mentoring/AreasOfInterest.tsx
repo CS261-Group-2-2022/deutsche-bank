@@ -3,6 +3,7 @@ import { useState } from "react";
 import { mutate } from "swr";
 import {
   FULL_USER_ENDPOINT,
+  getAuthToken,
   PROFILE_ENDPOINT,
   SETTINGS_ENDPOINT,
   Skill,
@@ -48,6 +49,7 @@ export default function AreasOfInterest({
         method: "PATCH",
         headers: {
           "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
         },
         body: JSON.stringify({ interests: interests.map((x) => x.id) }),
       }
