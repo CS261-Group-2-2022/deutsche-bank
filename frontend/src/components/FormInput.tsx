@@ -1,7 +1,7 @@
 type FormInputProps = {
   id: string;
   name: string;
-  type: string;
+  type: React.HTMLInputTypeAttribute;
   autoComplete?: string;
   placeholder: string;
   error?: string;
