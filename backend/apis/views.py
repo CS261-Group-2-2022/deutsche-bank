@@ -347,7 +347,8 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
         if meeting_request.mentorship.mentor != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
         meeting_request.delete()
-        meeting: Meeting = Meeting(mentorship=meeting_request.mentorship, time=meeting_request.time)
+        meeting: Meeting = Meeting(mentorship=meeting_request.mentorship, time=meeting_request.time,
+                                   description=meeting_request.description, location=meeting_request.location)
         meeting.save()
 
         return Response(data=MeetingSerializer(meeting).data, status=status.HTTP_200_OK)
