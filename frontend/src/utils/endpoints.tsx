@@ -80,9 +80,7 @@ export type User = {
   mentorship?: number;
   interests: number[];
   expertise: number[];
-
-  // TODO: backend
-  bio?: string;
+  interests_description?: string;
 };
 
 export type UserFull = {
@@ -97,6 +95,7 @@ export type UserFull = {
   is_email_verified: boolean;
   mentor_intent: boolean;
   interests: Skill[];
+  interests_description?: string;
 };
 
 /** Drops down a UserFull data type to just a User, for simplicity */
