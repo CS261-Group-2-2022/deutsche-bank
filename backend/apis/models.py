@@ -203,7 +203,7 @@ class User(AbstractBaseUser, Randomisable):
 
     def get_mentor_rating_average(self) -> float:
         ret = self.get_mentorships_where_user_is_mentor().aggregate(Avg('rating'))['rating__avg']
-        if ret == None:
+        if ret is None:
             return 4
         else:
             return ret
@@ -302,6 +302,7 @@ class User(AbstractBaseUser, Randomisable):
 
         return u
 
+
 class Meeting(models.Model):
     mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE, related_name='mentorship_meetings')
     description: str = models.CharField(max_length=100)
@@ -317,6 +318,12 @@ class MeetingRequest(models.Model):
     description: str = models.CharField(max_length=100)
     location: str = models.CharField(max_length=100, null=True)
     time: datetime = models.DateTimeField()  # time of meeting
+
+
+class MentorFeedback(models.Model):
+    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE, related_name='mentorship_feedback')
+    positives: str = models.CharField(max_length=1000)
+    improvements: str = models.CharField(max_length=1000)
 
 
 class ActionPlan(models.Model):
