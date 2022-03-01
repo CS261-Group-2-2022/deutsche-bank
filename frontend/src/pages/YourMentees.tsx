@@ -2,6 +2,7 @@ import { ArrowRightIcon, CheckIcon, XIcon } from "@heroicons/react/solid";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import AreasOfExpertise from "../components/mentoring/AreasOfExpertise";
+import InterestsDescription from "../components/mentoring/InterestsDescription";
 import { UserPanel } from "../components/mentoring/MentoringUserPanel";
 import SessionTopicLabel from "../components/SessionTopicLabel";
 import Toggle from "../components/Toggle";
@@ -157,8 +158,6 @@ export default function YourMentees() {
           <h1 className="font-bold text-2xl">Your Mentees</h1>
         </div>
 
-        {/* TODO: Personal Bio */}
-
         <div className="border rounded-lg p-2 my-2">
           <AreasOfExpertise
             subHeading="Your areas of expertise will help inform your matches to find the most compatible mentees."
@@ -166,6 +165,14 @@ export default function YourMentees() {
             canEdit
           />
         </div>
+        <div className="border rounded-lg p-2 my-2">
+          <InterestsDescription
+            subHeading="Your interests description is a free-text field which will be analysed to find mentees with similar interests."
+            user={user}
+            canEdit
+          />
+        </div>
+
         <PendingRequests requests={pendingRequests} />
         <CurrentMentees currentMentees={currentMentees} />
       </div>

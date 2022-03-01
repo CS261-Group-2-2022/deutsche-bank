@@ -25,55 +25,7 @@ import { mutate } from "swr";
 import AreasOfInterest from "./AreasOfInterest";
 import { DateTime } from "luxon";
 import FeedbackReportPopup from "./FeedbackReportPopup";
-
-type PersonalBioProps = {
-  mentee: User;
-  perspective: "mentor" | "mentee";
-};
-
-const PersonalBio = ({ mentee, perspective }: PersonalBioProps) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState(mentee.bio ?? "");
-  const canEdit = perspective === "mentee";
-
-  // TODO: connect update to backend
-  return (
-    <div className="space-y-1">
-      <h3 className="flex text-xl font-bold gap-2">
-        Personal Bio
-        {canEdit && (
-          <button
-            className="ml-2 px-4 flex justify-center items-center  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-            onClick={() => setIsEditing((current) => !current)}
-          >
-            {isEditing ? (
-              <>Save</>
-            ) : (
-              <>
-                <PencilIcon className="w-5 h-5 mr-1" />
-                Edit
-              </>
-            )}
-          </button>
-        )}
-      </h3>
-
-      {canEdit && isEditing ? (
-        <FormTextArea
-          id="notes"
-          name=""
-          placeholder="Enter a description about yourself. This will be used to advise your mentoring pairings."
-          text={bio}
-          onChange={setBio}
-        />
-      ) : (
-        <p className="text-gray-800">
-          {bio === "" ? "No personal bio set" : bio}
-        </p>
-      )}
-    </div>
-  );
-};
+import InterestsDescription from "./InterestsDescription";
 
 type TerminateRelationshipPromptProps = {
   open: boolean;
@@ -447,7 +399,7 @@ export default function GeneralInfo({
         <BusinessAreaConflictWarning perspective={perspective} />
       )}
 
-      <PersonalBio mentee={mentee} perspective={perspective} />
+      <InterestsDescription user={mentee} canEdit={perspective === "mentee"} />
       <AreasOfInterest user={mentee} canEdit={perspective === "mentee"} />
 
       {/* TODO: mentee giving mentor feedback popup */}

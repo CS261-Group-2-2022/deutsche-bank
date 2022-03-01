@@ -5,6 +5,7 @@ import { UserPanel } from "./MentoringUserPanel";
 import SessionTopicLabel from "../SessionTopicLabel";
 import { getSkillFromId, useSkills } from "../../utils/skills";
 import AreasOfInterest from "./AreasOfInterest";
+import InterestsDescription from "./InterestsDescription";
 
 export default function MentoringMatchingPage() {
   const { skills } = useSkills();
@@ -26,11 +27,17 @@ export default function MentoringMatchingPage() {
         </h2>
       </div>
 
-      {/* TODO: Personal Bio */}
-
       <div className="border rounded-lg p-2 mt-2">
         <AreasOfInterest
           subHeading="Your areas of interest will help inform your matches to find the best mentor for you."
+          user={user}
+          canEdit
+        />
+      </div>
+
+      <div className="border rounded-lg p-2 mt-2">
+        <InterestsDescription
+          subHeading="Your interests description is a free-text field which will be analysed to find mentors with similar interests."
           user={user}
           canEdit
         />
