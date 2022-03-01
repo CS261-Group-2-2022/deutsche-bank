@@ -46,7 +46,7 @@ class UserViewSet(viewsets.ModelViewSet):
         users_who_want_to_mentor: List[User] = list(User.objects.all().filter(mentor_intent=True))
         all_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
-        all_requests: List[Request] = list(Request.objects.all())
+        all_requests: List[MentorRequest] = list(MentorRequest.objects.all())
 
         potential_mentors: List[User] = matching_algorithm(user,
                                                            all_users,

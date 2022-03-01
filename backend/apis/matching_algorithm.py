@@ -31,7 +31,7 @@ def matching_algorithm(user_looking_for_mentor: User,
                        all_mentorships: List[Mentorship],
                        current_mentorships: List[Mentorship],
 
-                       all_requests: List[Request]) -> List[User]:
+                       all_requests: List[MentorRequest]) -> List[User]:
 
     prior_user_mentorships = list(filter(lambda m: m.mentee == user_looking_for_mentor,
                                          all_mentorships))
