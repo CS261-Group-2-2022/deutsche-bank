@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import FormDropdown from "../components/FormDropdown";
 import { FormInput } from "../components/FormInput";
@@ -32,6 +32,7 @@ export default function Signup() {
   const [businessArea, setBusinessArea] = useState<BusinessArea | undefined>(
     areas[0]
   );
+  const passwordStrength = useRef(0);
 
   const [firstNameError, setFirstNameError] = useState<string | undefined>();
   const [lastNameError, setLastNameError] = useState<string | undefined>();
@@ -62,6 +63,12 @@ export default function Signup() {
       return false;
     } else {
       setRetypedPasswordError(undefined);
+    }
+
+    // Check the score is high enough
+    if (passwordStrength.current <= 2) {
+      setPasswordError("This password is too weak, try something stronger.");
+      return false;
     }
 
     // Check business area is set
@@ -179,6 +186,7 @@ export default function Signup() {
               <PasswordStrengthIndicator
                 password={password}
                 otherInputs={[firstName, lastName, email]}
+                updateResult={(score) => (passwordStrength.current = score)}
               />
               <FormDropdown
                 title="Business Area"

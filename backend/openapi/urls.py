@@ -5,5 +5,5 @@ from django.urls import path
 from rest_framework.schemas import get_schema_view
 
 urlpatterns: List[str] = [
-    path('schema/', get_schema_view()),
+    path('schema/', get_schema_view(), name='fetch-openapi-schema'),
 ]

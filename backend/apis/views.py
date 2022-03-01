@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+from typing import *
 
+from pprint import pprint
 from django.contrib.auth import login
 from knox.models import AuthToken
 from knox.views import LoginView as KnoxLoginView
@@ -13,7 +15,9 @@ from rest_framework.viewsets import GenericViewSet
 
 from .models import *
 from .serializers import *
+from .dummy_data import create_dummy_data
 
+from .matching_algorithm import matching_algorithm
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -28,6 +32,36 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({'error': 'This user does not have a mentor'}, status=status.HTTP_204_NO_CONTENT)
 
         return Response(UserSerializerFull(user.mentorship.mentor))
+
+    @action(detail=True, methods=['get'])
+    def reset(self, request, pk=None):
+        #clear_database()
+        create_dummy_data()
+        return Response("Reset database.")
+
+    @action(detail=True, methods=['get'])
+    def matching(self, request, pk=None):
+        user: User = self.get_object()
+        all_users: List[User] = list(User.objects.all())
+        users_who_want_to_mentor: List[User] = list(User.objects.all().filter(mentor_intent=True))
+        all_mentorships: List[Mentorship] = list(Mentorship.objects.all())
+        current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
+        all_requests: List[MentorRequest] = list(MentorRequest.objects.all())
+
+        potential_mentors: List[User] = matching_algorithm(user,
+                                                           all_users,
+                                                           users_who_want_to_mentor,
+                                                           all_mentorships,
+                                                           current_mentorships,
+                                                           all_requests)
+
+        cereal = UserSerializer(potential_mentors, many=True)
+
+        return Response(cereal.data)
+
+    @action(detail=True, methods=['get'])
+    def full(self, request, pk=None):
+        return Response(UserSerializerFull(self.get_object()).data)
 
     @action(detail=False, methods=['get'])
     def mentees(self, request, *args, **kwargs) -> Response:
@@ -71,7 +105,9 @@ class LoginView(KnoxLoginView):
         serializer = LoginSerializer(data=request.data)  # Deserialize request data
         serializer.is_valid(raise_exception=True)  # Validate request data
         user = serializer.validated_data['user']  # Get user from serializer
+
         login(request, user)  # Login user object
+
         return super(LoginView, self).post(request, format=None)  # Create auth token
 
 
@@ -279,11 +315,15 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
 
 
 class BusinessAreaViewSet(viewsets.ModelViewSet):
+    # TODO(akiss) If the front-end provides a token that is invalid, these endpoints still do not work.
+    # This is an issue when creating an account while 'remember me' is active.
+    permission_classes = (permissions.AllowAny,)  # User does not need to be authenticated to login
     queryset = BusinessArea.objects.all()
     serializer_class = BusinessAreaSerializer
 
 
 class SkillViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.AllowAny,)  # User does not need to be authenticated to login
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
 

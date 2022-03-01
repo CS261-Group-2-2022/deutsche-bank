@@ -1,24 +1,29 @@
 import { mutate } from "swr";
 
-export const LOGIN_ENDPOINT = "http://localhost:8000/api/v1/auth/login/";
-export const SIGNUP_ENDPOINT = "http://localhost:8000/api/v1/auth/register/";
-export const PROFILE_ENDPOINT = "http://localhost:8000/api/v1/auth/profile/";
-export const BUSINESS_AREAS_ENDPOINT = "http://localhost:8000/api/v1/area/";
-export const LIST_GROUP_SESSIONS_ENDPOINT =
-  "http://localhost:8000/api/v1/session/";
-export const LIST_USER_JOINED_SESSIONS_ENDPOINT =
-  "http://localhost:8000/api/v1/session/user";
-export const LIST_USER_HOSTING_SESSIONS_ENDPOINT =
-  "http://localhost:8000/api/v1/session/host";
-export const CREATE_GROUP_SESSION_ENDPOINT =
-  "http://localhost:8000/api/v1/session/";
-export const JOIN_SESSION_ENDPOINT =
-  "http://localhost:8000/api/v1/session/{ID}/join/";
-export const LEAVE_SESSION_ENDPOINT =
-  "http://localhost:8000/api/v1/session/{ID}/leave/";
-export const SKILLS_ENDPOINT = "http://localhost:8000/api/v1/skills/";
-export const SETTINGS_ENDPOINT = "http://localhost:8000/api/v1/user/{ID}/";
-export const FEEDBACK_ENDPOINT = "http://localhost:8000/api/v1/feedback/"
+const HOSTNAME =
+  process.env.NODE_ENV === "production" ? "" : "http://localhost:8000";
+
+export const LOGIN_ENDPOINT = `${HOSTNAME}/api/v1/auth/login/`;
+export const SIGNUP_ENDPOINT = `${HOSTNAME}/api/v1/auth/register/`;
+export const PROFILE_ENDPOINT = `${HOSTNAME}/api/v1/auth/profile/`;
+export const BUSINESS_AREAS_ENDPOINT = `${HOSTNAME}/api/v1/area/`;
+export const LIST_GROUP_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/`;
+export const LIST_USER_JOINED_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/user`;
+export const LIST_USER_HOSTING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/host`;
+export const CREATE_GROUP_SESSION_ENDPOINT = `${HOSTNAME}/api/v1/session/`;
+export const JOIN_SESSION_ENDPOINT = `${HOSTNAME}/api/v1/session/{ID}/join/`;
+export const LEAVE_SESSION_ENDPOINT = `${HOSTNAME}/api/v1/session/{ID}/leave/`;
+export const SKILLS_ENDPOINT = `${HOSTNAME}/api/v1/skills/`;
+export const SETTINGS_ENDPOINT = `${HOSTNAME}/api/v1/user/{ID}/`;
+export const FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/feedback/`;
+export const FULL_USER_ENDPOINT = `${HOSTNAME}/api/v1/user/{ID}/full/`;
+export const MENTORSHIP_ENDPOINT = `${HOSTNAME}/api/v1/mentorship/{ID}/`;
+export const END_MENTORSHIP_ENDPOINT = `${HOSTNAME}/api/v1/mentorship/{ID}/end/`;
+export const UPDATE_MEETING_ENDPOINT = `${HOSTNAME}/api/v1/meeting/{ID}/`;
+export const CREATE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/`;
+export const ACCEPT_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/accept/`;
+export const DECLINE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/decline/`;
+export const CANCEL_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/cancel/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -62,9 +67,48 @@ export type User = {
   is_email_verified: boolean;
   mentor_intent: boolean;
   business_area: number;
-  mentorship: null;
-  interests: string[];
-  expertise: string[];
+  mentorship?: number;
+  interests: number[];
+  expertise: number[];
+
+  // TODO: backend
+  bio?: string;
+};
+
+export type UserFull = {
+  id: number;
+  business_area: BusinessArea;
+  expertise: Skill[];
+  mentorship?: Mentorship;
+  last_login: null;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_email_verified: boolean;
+  mentor_intent: boolean;
+  interests: Skill[];
+};
+
+/** Drops down a UserFull data type to just a User, for simplicity */
+export const userFullToUser = (user: UserFull): User => {
+  return Object.assign(
+    {},
+    {
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      is_email_verified: user.is_email_verified,
+      mentor_intent: user.mentor_intent,
+      business_area: user.business_area.id,
+      mentorship: user.mentorship?.id,
+      interests: user.interests.map((skill) => skill.id),
+      expertise: user.expertise.map((skill) => skill.id),
+
+      // TODO: bio
+      bio: "",
+    }
+  );
 };
 
 // Login
@@ -153,8 +197,57 @@ export type JoinSessionError = {
 export type JoinSessionResponse = JoinSessionSuccess | JoinSessionError;
 
 // Skills
-export type Skill = {
+export interface Skill {
   id: number;
   name: string;
-};
+}
 export type SkillsResponse = Skill[];
+
+export type CreateSkillSuccess = Skill;
+export type CreateSkillError = {
+  name?: string[];
+};
+export type CreateSkillResponse = CreateSkillSuccess | CreateSkillError;
+
+// Mentorship
+export type Mentorship = {
+  id: number;
+  meetings: Meeting[];
+  meeting_requests: MeetingRequest[];
+  rating?: number;
+  feedback?: string;
+  mentee: number;
+  mentor: number;
+};
+
+// Meeting
+export type Meeting = {
+  id: number;
+  time: string;
+  mentorship: number;
+  mentee_notes?: string;
+  mentor_notes?: string;
+
+  // TODO: backend?
+  location: string;
+  description: string;
+};
+
+export type MeetingRequest = {
+  id: number;
+  time: string;
+  location: string;
+  description: string;
+  mentorship: number;
+};
+
+//Plan Of Action
+export type PlanOfAction = {
+  name: string;
+  description: string;
+  // user: User;
+  creation_date: string;
+  completion_date: string;
+};
+
+export type PlanOfActionResponse = PlanOfAction[];
