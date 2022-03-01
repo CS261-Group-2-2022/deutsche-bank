@@ -33,15 +33,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(UserSerializerFull(user.mentorship.mentor))
 
-    @action(detail=True, methods=['get'])
-    def reset(self, request, pk=None):
-        #clear_database()
-        create_dummy_data()
-        return Response("Reset database.")
-
-    @action(detail=True, methods=['get'])
-    def matching(self, request, pk=None):
-        user: User = self.get_object()
+    @action(detail=False, methods=['get'])
+    def matching(self, request, *args, **kwargs):
+        user: User = request.user
         all_users: List[User] = list(User.objects.all())
         users_who_want_to_mentor: List[User] = list(User.objects.all().filter(mentor_intent=True))
         all_mentorships: List[Mentorship] = list(Mentorship.objects.all())
@@ -58,6 +52,12 @@ class UserViewSet(viewsets.ModelViewSet):
         cereal = UserSerializer(potential_mentors, many=True)
 
         return Response(cereal.data)
+
+    @action(detail=True, methods=['get'])
+    def reset(self, request, pk=None):
+        # clear_database()
+        create_dummy_data()
+        return Response("Reset database.")
 
     @action(detail=True, methods=['get'])
     def full(self, request, pk=None):
