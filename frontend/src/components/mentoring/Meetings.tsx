@@ -338,42 +338,44 @@ const RequestedMeetings = ({
 };
 
 type ScheduledMeetingProps = {
+  mentorship: Mentorship;
   meeting: Meeting;
 };
 
-const ScheduledMeeting = ({ meeting }: ScheduledMeetingProps) => {
+const ScheduledMeeting = ({ mentorship, meeting }: ScheduledMeetingProps) => {
   const datetime = DateTime.fromISO(meeting.time);
-  // const [error, setError] = useState<string | undefined>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>();
 
-  // // TODO: connect cancel to backend
-  // const cancelMeeting = async () => {
-  //   setError(undefined);
+  const cancelMeeting = async () => {
+    setIsLoading(true);
+    setError(undefined);
 
-  //   const res = await fetch(
-  //     CANCEL_MEETING_REQUEST_ENDPOINT.replace("{ID}", user.id.toString()),
-  //     {
-  //       method: "PATCH",
-  //       headers: {
-  //         "content-type": "application/json",
-  //       },
-  //       body: JSON.stringify({ interests: interests.map((x) => x.id) }),
-  //     }
-  //   );
+    const res = await fetch(
+      UPDATE_MEETING_ENDPOINT.replace("{ID}", meeting.id.toString()),
+      {
+        method: "DELETE",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
+        },
+      }
+    );
 
-  //   const body = await res.json();
+    const body = await res.json();
 
-  //   if (res.ok) {
-  //     setIsEditing(false);
-  //     // Revalidate the caches for profile and users
-  //     mutate(PROFILE_ENDPOINT);
-  //     mutate(FULL_USER_ENDPOINT.replace("{ID}", user.id.toString()));
-  //   } else {
-  //     setError(
-  //       body.interests?.join(" ") ??
-  //         "An error occured when updating your interests. Please try again."
-  //     );
-  //   }
-  // };
+    if (res.ok) {
+      // Revalidate the caches for mentorship information
+      mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
+    } else {
+      setError(
+        body.error?.join(" ") ??
+          "An error occured when cancelling this meeting. Please try again."
+      );
+    }
+
+    setIsLoading(false);
+  };
 
   return (
     <div className="w-full flex justify-between my-2 rounded-lg px-2 py-1">
@@ -383,30 +385,45 @@ const ScheduledMeeting = ({ meeting }: ScheduledMeetingProps) => {
         </h6>
         <p className="text-sm text-gray-700">{meeting.description}</p>
         <LocationText location={meeting.location} />
+        {error && (
+          <div className="block text-sm m-1 font-medium text-red-700">
+            {error}
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-3">
-        <button
+        <LoadingButton
           type="button"
           className="flex flex-row items-center py-1 px-3 text-md bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white transition ease-in duration-100 text-center font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+          isLoading={isLoading}
+          onClick={() => cancelMeeting()}
         >
           <XIcon className="h-5 w-5 mr-2" />
           Cancel
-        </button>
+        </LoadingButton>
       </div>
     </div>
   );
 };
 
 type ScheduledMeetingsProps = {
+  mentorship: Mentorship;
   scheduled: Meeting[];
 };
 
-const ScheduledMeetings = ({ scheduled }: ScheduledMeetingsProps) => {
+const ScheduledMeetings = ({
+  mentorship,
+  scheduled,
+}: ScheduledMeetingsProps) => {
   return scheduled.length > 0 ? (
     <div className="my-3">
       <h3 className="text-xl font-bold">Scheduled Meetings</h3>
       {scheduled.map((meeting) => (
-        <ScheduledMeeting key={meeting.id} meeting={meeting} />
+        <ScheduledMeeting
+          key={meeting.id}
+          mentorship={mentorship}
+          meeting={meeting}
+        />
       ))}
       <hr />
     </div>
@@ -463,7 +480,10 @@ export default function MentoringMeetings({
         perspective={perspective}
         requests={requests}
       />
-      <ScheduledMeetings scheduled={scheduledMeetings} />
+      <ScheduledMeetings
+        mentorship={mentorship}
+        scheduled={scheduledMeetings}
+      />
 
       <h3 className="text-xl font-bold mb-2">Previous Meetings</h3>
 
