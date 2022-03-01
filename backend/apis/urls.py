@@ -21,6 +21,8 @@ router.register(r'feedback', FeedbackViewSet)
 urlpatterns: List[str] = [
     path('', include(router.urls)),
 
+    path(r'events/', EventsView.as_view(), name='events'),  # Gets upcoming events
+
     path(r'auth/profile/', CurrentUserView.as_view(), name='profile'),  # Gets current user
     path(r'auth/register/', RegisterView.as_view(), name='register'),  # Creates user and token
     path(r'auth/login/', LoginView.as_view(), name='login'),  # Creates token

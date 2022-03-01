@@ -111,6 +111,19 @@ class LoginView(KnoxLoginView):
         return super(LoginView, self).post(request, format=None)  # Create auth token
 
 
+class EventsView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to get user
+    serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs) -> Response:
+        user: User = request.user
+
+        return Response({
+            'meetings': MeetingSerializer(user.get_meetings(), many=True).data,
+            'sessions': GroupSessionSerializer(user.get_all_sessions(), many=True).data
+        })
+
+
 class CurrentUserView(APIView):
     permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to get user
     serializer_class = UserSerializer
