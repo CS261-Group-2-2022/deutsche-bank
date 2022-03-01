@@ -167,6 +167,18 @@ class User(AbstractBaseUser, Randomisable):
     def get_action_plans(self):
         return self.user_action_plans.all()
 
+    def get_outgoing_mentor_requests(self):
+        """ Retreives set of mentor requests which this user has sent to mentors
+        :return: set of mentor requests which this user has sent to mentors
+        """
+        return self.request_mentee.all()
+
+    def get_incoming_mentor_requests(self):
+        """ Retreives set of mentor requests which this user has been sent by potential mentees
+        :return: Retreives set of mentor requests which this user has been sent by potential mentees
+        """
+        return self.request_mentor.all()
+
     def has_mentees(self) -> bool:
         return self.get_mentees().count() > 0
 

@@ -203,9 +203,9 @@ class MentorshipViewSet(viewsets.ModelViewSet):
         mentorship: Mentorship = self.get_object()
         user: User = request.user
         mentee: User = mentorship.mentee
-        if user is not mentorship.mentor or user is not mentorship.mentee:
+        if user != mentorship.mentor or user != mentorship.mentee:
             return Response({'error': 'You cannot end this mentorship'}, status=status.HTTP_400_BAD_REQUEST)
-        if mentee.mentorship.pk is not mentorship.pk:
+        if mentee.mentorship.pk != mentorship.pk:
             return Response({'error': 'This mentorship is not active'}, status=status.HTTP_400_BAD_REQUEST)
         mentee.mentorship = None
         mentee.save()
@@ -216,6 +216,16 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
     queryset = MentorRequest.objects.all()
     serializer_class = MentorRequestSerializer
     permission_classes = (permissions.IsAuthenticated,)
+
+    @action(detail=False, methods=['get'])
+    def incoming(self, request, *args, **kwargs) -> Response:
+        user: User = request.user
+        return Response(MentorRequestSerializer(user.get_incoming_mentor_requests(), many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def outgoing(self, request, *args, **kwargs) -> Response:
+        user: User = request.user
+        return Response(MentorRequestSerializer(user.get_outgoing_mentor_requests(), many=True).data)
 
     def create(self, request, *args, **kwargs):
         """
@@ -231,6 +241,43 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, *args, **kwargs):  # Cancels a meeting request
+        mentor_request: MentorRequest = self.get_object()
+        user: User = request.user
+        if mentor_request.mentee == user:
+            return Response({'error': 'You cannot cancel this mentor request'}, status=status.HTTP_400_BAD_REQUEST)
+        request.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'])
+    def accept(self, request, *args, **kwargs):  # Accepts a meeting request, creating a meeting
+        mentor_request: MentorRequest = self.get_object()
+        mentor: User = request.user
+        if mentor_request.mentor != mentor:
+            return Response({'error': 'You cannot accept this mentor request'}, status=status.HTTP_400_BAD_REQUEST)
+        mentee: User = mentor_request.mentee
+        mentee.get_outgoing_mentor_requests().delete()
+        if mentee.mentorship is not None:
+            return Response({'error': 'This user already has a mentor'}, status=status.HTTP_400_BAD_REQUEST)
+        mentorship: Mentorship = Mentorship(mentee=mentee, mentor=mentor)
+        mentorship.save()
+        mentee.mentorship = mentorship
+        mentee.save()
+        return Response(data=MentorshipSerializer(mentorship).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def decline(self, request, *args, **kwargs):  # Declines a meeting request
+        mentor_request: MentorRequest = self.get_object()
+        user: User = request.user
+        if mentor_request.mentor != user:
+            return Response({'error': 'You cannot cancel this mentor request'}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.delete()
+        # TODO: Finish implementation
+        return Response(status=status.HTTP_200_OK)
+
 
 class MeetingViewSet(viewsets.ModelViewSet):
     queryset = Meeting.objects.all()
@@ -238,7 +285,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.mentorship.mentor is not request.user and instance.mentorship.mentee is not request.user:
+        if instance.mentorship.mentor != request.user and instance.mentorship.mentee != request.user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -265,11 +312,11 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, *args, **kwargs):  # Cancels a meeting request
-        request: MeetingRequest = self.get_object()
+        meeting_request: MeetingRequest = self.get_object()
         user: User = request.user
-        if request.mentorship.mentee is not user:
+        if meeting_request.mentorship.mentee != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
-        request.delete()
+        meeting_request.delete()
 
         return Response(status=status.HTTP_200_OK)
 
@@ -277,7 +324,7 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
     def accept(self, request, *args, **kwargs):  # Accepts a meeting request, creating a meeting
         meeting_request: MeetingRequest = self.get_object()
         user: User = request.user
-        if meeting_request.mentorship.mentor is not user:
+        if meeting_request.mentorship.mentor != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
         meeting_request.delete()
         meeting: Meeting = Meeting(mentorship=meeting_request.mentorship, time=meeting_request.time)
@@ -289,7 +336,7 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
     def decline(self, request, *args, **kwargs):  # Declines a meeting request
         meeting_request: MeetingRequest = self.get_object()
         user: User = request.user
-        if meeting_request.mentorship.mentor is not user:
+        if meeting_request.mentorship.mentor != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
 
         # TODO: Finish implementation
