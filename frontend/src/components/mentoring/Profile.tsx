@@ -1,17 +1,11 @@
 import { Tab } from "@headlessui/react";
 import { ArrowLeftIcon } from "@heroicons/react/solid";
 import { Link, useSearchParams } from "react-router-dom";
-import {
-  UserFull,
-  User,
-  Mentorship,
-  MENTORSHIP_ENDPOINT,
-} from "../../utils/endpoints";
+import { UserFull, User, Mentorship } from "../../utils/endpoints";
 import MentoringMeetings from "./Meetings";
 import { useEffect, useState } from "react";
 import GeneralInfo from "./GeneralInfo";
 import PlansOfAction from "./PlansOfAction";
-import useSWR from "swr";
 
 type UserProfileProps = {
   mentee: User;
@@ -77,6 +71,7 @@ export default function MentoringUserProfile({
           {perspective === "mentee"
             ? "Your Profile"
             : `${mentee.first_name} ${mentee.last_name}'s Profile`}
+          {/* TODO: if mentor, show mentees image, business area and email address */}
         </h1>
 
         <div className="col-span-2" />

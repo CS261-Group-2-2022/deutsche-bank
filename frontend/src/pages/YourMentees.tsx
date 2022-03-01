@@ -49,8 +49,7 @@ const PendingUserPanel = ({ request }: PendingUserPanelProps) => {
       const body = await res.json();
 
       if (res.ok) {
-        // TODO: Revalidate the caches for current mentees
-        // mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
+        // Revalidate the caches for current mentees
         mutate(CURRENT_MENTEES_ENDPOINT);
         mutate(INCOMING_REQUESTS_ENDPOINT);
       } else {

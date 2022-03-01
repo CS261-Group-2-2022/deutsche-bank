@@ -114,9 +114,7 @@ export const userFullToUser = (user: UserFull): User => {
       mentorship: user.mentorship?.id,
       interests: user.interests.map((skill) => skill.id),
       expertise: user.expertise.map((skill) => skill.id),
-
-      // TODO: bio
-      bio: "",
+      interests_description: user.interests_description,
     }
   );
 };
@@ -243,8 +241,6 @@ export type Meeting = {
   mentorship: number;
   mentee_notes?: string;
   mentor_notes?: string;
-
-  // TODO: backend?
   location: string;
   description: string;
 };

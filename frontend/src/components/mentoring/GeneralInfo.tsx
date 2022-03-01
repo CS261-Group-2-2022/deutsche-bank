@@ -63,7 +63,7 @@ const TerminateRelationshipPrompt = ({
           authorization: `Token ${getAuthToken()}`,
         },
         body: JSON.stringify({
-          current_password: password,
+          current_password: password, // TODO: check password on backend?
         }),
       }
     );
@@ -253,7 +253,6 @@ const MentorProfile = ({
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          {/* TODO connect up to backend */}
           {perspective === "mentee" && (
             <button
               className="ml-2 px-4 py-2 flex items-center bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500 focus:ring-offset-yellow-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
@@ -347,6 +346,8 @@ type MenteeFeedbackProps = {
 
 const MenteeFeedback = ({ perspective }: MenteeFeedbackProps) => {
   const [createOpen, setCreateOpen] = useState(false);
+
+  // TODO: get from backend
 
   const feedback = [
     // { time: new Date(Date.now()).toISOString() },

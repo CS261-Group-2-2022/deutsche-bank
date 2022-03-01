@@ -110,7 +110,6 @@ export default function Settings() {
     }
 
     // TODO: verify with current password
-    // TODO: no authorization token passed?
 
     const res = await fetch(PROFILE_ENDPOINT, {
       method: "PATCH",
