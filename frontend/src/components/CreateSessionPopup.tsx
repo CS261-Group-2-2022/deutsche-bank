@@ -4,11 +4,11 @@ import { Dialog } from "@headlessui/react";
 import {
   CreateSessionResponse,
   CreateSessionSuccess,
-  LIST_GROUP_SESSIONS_ENDPOINT,
   CREATE_GROUP_SESSION_ENDPOINT,
   getAuthToken,
   Skill,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
+  LIST_All_GROUP_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 import { useSkills } from "../utils/skills";
 import Popup from "./Popup";
@@ -109,7 +109,7 @@ export default function CreateSessionPopup({
       initiateClose();
 
       // Update the list of available group sessions
-      mutate(LIST_GROUP_SESSIONS_ENDPOINT);
+      mutate(LIST_All_GROUP_SESSIONS_ENDPOINT);
       mutate(LIST_USER_HOSTING_SESSIONS_ENDPOINT);
     } else {
       setSessionTitleError(body.name?.join(" "));

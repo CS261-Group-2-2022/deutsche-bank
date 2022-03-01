@@ -11,9 +11,9 @@ import Topbar from "../components/Topbar";
 import UpcomingSessions from "../components/UpcomingSessions";
 import {
   GroupSessionResponse,
-  LIST_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
+  LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 
 type ActionProps = {
@@ -112,27 +112,11 @@ function MentoringInfo() {
 }
 
 function GroupSessionsInfo() {
-  const { data: allSessions = [] } = useSWR<GroupSessionResponse>(
-    LIST_GROUP_SESSIONS_ENDPOINT
-  );
-  const { data: joinedSessions } = useSWR<GroupSessionResponse>(
-    LIST_USER_JOINED_SESSIONS_ENDPOINT
-  );
-  const { data: hostingSessions } = useSWR<GroupSessionResponse>(
-    LIST_USER_HOSTING_SESSIONS_ENDPOINT
+  const { data: recommendedSessions = [] } = useSWR<GroupSessionResponse>(
+    LIST_USER_SUGGESTED_SESSIONS_ENDPOINT
   );
 
-  const numAvailableSessions = allSessions
-    // TODO: Only show sessions in the future
-    // .filter((session) => Date.parse(session.date) >= Date.now())
-    // Filter out sessions you are hosting or have already joined
-    .filter(
-      (session) =>
-        !joinedSessions?.find(
-          (otherSession) => session.id == otherSession.id
-        ) &&
-        !hostingSessions?.find((otherSession) => session.id == otherSession.id)
-    ).length;
+  const numAvailableSessions = recommendedSessions.length;
 
   return (
     <div className="bg-gray-50rounded-2xl p-2 space-y-2">
@@ -169,6 +153,8 @@ function UpcomingSessionsColumn() {
   const { data: allHostSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_USER_HOSTING_SESSIONS_ENDPOINT
   );
+
+  // TODO: include mentoring meetings
 
   const allSessions = [...allJoinedSessions, ...allHostSessions]
     .sort((a, b) => Date.parse(a.date) - Date.parse(b.date))
