@@ -1,15 +1,22 @@
 import { Tab } from "@headlessui/react";
 import { ArrowLeftIcon } from "@heroicons/react/solid";
 import { Link, useSearchParams } from "react-router-dom";
-import { UserFull, User } from "../../utils/endpoints";
+import {
+  UserFull,
+  User,
+  Mentorship,
+  MENTORSHIP_ENDPOINT,
+} from "../../utils/endpoints";
 import MentoringMeetings from "./Meetings";
 import { useEffect, useState } from "react";
 import GeneralInfo from "./GeneralInfo";
 import PlansOfAction from "./PlansOfAction";
+import useSWR from "swr";
 
 type UserProfileProps = {
   mentee: User;
   mentor: UserFull;
+  mentorship: Mentorship;
   perspective: "mentor" | "mentee";
 };
 
@@ -39,6 +46,7 @@ const tabStringToIndex = (str: string | null) => {
 export default function MentoringUserProfile({
   mentee,
   mentor,
+  mentorship,
   perspective,
 }: UserProfileProps) {
   const [tab, setTab] = useState(0);
@@ -125,7 +133,12 @@ export default function MentoringUserProfile({
             />
           </Tab.Panel>
           <Tab.Panel key="meetings">
-            <MentoringMeetings perspective={perspective} />
+            <MentoringMeetings
+              perspective={perspective}
+              mentorship={mentorship}
+              meetings={mentorship.meetings}
+              requests={mentorship.meeting_requests}
+            />
           </Tab.Panel>
           <Tab.Panel key="plans">
             <PlansOfAction

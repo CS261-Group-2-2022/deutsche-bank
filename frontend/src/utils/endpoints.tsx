@@ -17,6 +17,12 @@ export const SKILLS_ENDPOINT = `${HOSTNAME}/api/v1/skills/`;
 export const SETTINGS_ENDPOINT = `${HOSTNAME}/api/v1/user/{ID}/`;
 export const FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/feedback/`;
 export const FULL_USER_ENDPOINT = `${HOSTNAME}/api/v1/user/{ID}/full/`;
+export const MENTORSHIP_ENDPOINT = `${HOSTNAME}/api/v1/mentorship/{ID}`;
+export const UPDATE_MEETING_ENDPOINT = `${HOSTNAME}/api/v1/meeting/{ID}/`;
+export const CREATE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/`;
+export const ACCEPT_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/accept/`;
+export const DECLINE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/decline/`;
+export const CANCEL_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/cancel/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -60,25 +66,12 @@ export type User = {
   is_email_verified: boolean;
   mentor_intent: boolean;
   business_area: number;
-  mentorship: null;
+  mentorship?: number;
   interests: number[];
   expertise: number[];
 
   // TODO: backend
   bio?: string;
-};
-
-export type Mentorship = {
-  id: number;
-  rating: null;
-  feedback: null;
-  mentee: number;
-  mentor: number;
-};
-
-export type Interest = {
-  id: number;
-  name: string;
 };
 
 export type UserFull = {
@@ -92,7 +85,29 @@ export type UserFull = {
   email: string;
   is_email_verified: boolean;
   mentor_intent: boolean;
-  interests: Interest;
+  interests: Skill[];
+};
+
+/** Drops down a UserFull data type to just a User, for simplicity */
+export const userFullToUser = (user: UserFull): User => {
+  return Object.assign(
+    {},
+    {
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      is_email_verified: user.is_email_verified,
+      mentor_intent: user.mentor_intent,
+      business_area: user.business_area.id,
+      mentorship: user.mentorship?.id,
+      interests: user.interests.map((skill) => skill.id),
+      expertise: user.expertise.map((skill) => skill.id),
+
+      // TODO: bio
+      bio: "",
+    }
+  );
 };
 
 // Login
@@ -193,17 +208,28 @@ export type CreateSkillError = {
 };
 export type CreateSkillResponse = CreateSkillSuccess | CreateSkillError;
 
+// Mentorship
+export type Mentorship = {
+  id: number;
+  meetings: Meeting[];
+  meeting_requests: MeetingRequest[];
+  rating?: null;
+  feedback?: null;
+  mentee: number;
+  mentor: number;
+};
+
 // Meeting
 export type Meeting = {
   id: number;
   time: string;
   mentorship: number;
+  mentee_notes?: string;
+  mentor_notes?: string;
 
   // TODO: backend?
   location: string;
   description: string;
-  mentee_notes: string;
-  mentor_notes: string;
 };
 
 export type MeetingRequest = {

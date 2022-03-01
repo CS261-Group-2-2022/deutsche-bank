@@ -8,17 +8,30 @@ import {
 } from "@heroicons/react/solid";
 import { DateTime } from "luxon";
 import { useState } from "react";
-import { Meeting, MeetingRequest } from "../../utils/endpoints";
+import { mutate } from "swr";
+import {
+  ACCEPT_MEETING_REQUEST_ENDPOINT,
+  CANCEL_MEETING_REQUEST_ENDPOINT,
+  DECLINE_MEETING_REQUEST_ENDPOINT,
+  getAuthToken,
+  Meeting,
+  MeetingRequest,
+  Mentorship,
+  MENTORSHIP_ENDPOINT,
+  UPDATE_MEETING_ENDPOINT,
+} from "../../utils/endpoints";
 import { FormTextArea } from "../FormTextarea";
 import LocationText from "../LocationText";
+import { LoadingButton } from "../LoadingButton";
 import RequestMeetingPopup from "../RequestAMeetingPopup";
 
 type MeetingProps = {
+  mentorship: Mentorship;
   meeting: Meeting;
   perspective: "mentor" | "mentee";
 };
 
-function MeetingInfo({ meeting, perspective }: MeetingProps) {
+function MeetingInfo({ mentorship, meeting, perspective }: MeetingProps) {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [menteeNotes, setMenteeNotes] = useState(meeting.mentee_notes ?? "");
   const [mentorNotes, setMentorNotes] = useState(meeting.mentor_notes ?? "");
@@ -28,7 +41,45 @@ function MeetingInfo({ meeting, perspective }: MeetingProps) {
   const notesNotRecorded =
     (isMentor && mentorNotes === "") || (!isMentor && menteeNotes === "");
 
-  // TODO: connect updating to backend
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+
+  const updateNotes = async () => {
+    setIsLoading(true);
+    setError(undefined);
+
+    const res = await fetch(
+      UPDATE_MEETING_ENDPOINT.replace("{ID}", meeting.id.toString()),
+      {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
+        },
+        body: JSON.stringify({
+          mentor_notes: isMentor ? mentorNotes : undefined,
+          mentee_notes: !isMentor ? menteeNotes : undefined,
+        }),
+      }
+    );
+
+    const body = await res.json();
+
+    if (res.ok) {
+      setIsEditingNotes(false);
+
+      // Revalidate the caches for meetings
+      mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
+    } else {
+      setError(
+        body.mentor_notes?.join(" ") ??
+          body.mentee_notes?.join(" ") ??
+          "An error occured when updating your notes. Please try again."
+      );
+    }
+
+    setIsLoading(false);
+  };
 
   return (
     <Disclosure>
@@ -58,9 +109,12 @@ function MeetingInfo({ meeting, perspective }: MeetingProps) {
                 <h5 className="font-semibold text-gray-900 text-base flex mb-2">
                   Mentor Notes
                   {isMentor && (
-                    <button
+                    <LoadingButton
                       className="ml-2 px-4 flex justify-center items-center  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-                      onClick={() => setIsEditingNotes((current) => !current)}
+                      onClick={() =>
+                        isEditingNotes ? updateNotes() : setIsEditingNotes(true)
+                      }
+                      isLoading={isLoading}
                     >
                       {isEditingNotes ? (
                         <>
@@ -73,9 +127,14 @@ function MeetingInfo({ meeting, perspective }: MeetingProps) {
                           Edit
                         </>
                       )}
-                    </button>
+                    </LoadingButton>
                   )}
                 </h5>
+                {isMentor && error && (
+                  <div className="block text-sm m-1 font-medium text-red-700">
+                    {error}
+                  </div>
+                )}
                 {isMentor && isEditingNotes ? (
                   <FormTextArea
                     id="notes"
@@ -94,9 +153,12 @@ function MeetingInfo({ meeting, perspective }: MeetingProps) {
                 <h5 className="font-semibold text-gray-900 text-base flex mb-2">
                   Mentee Notes
                   {!isMentor && (
-                    <button
+                    <LoadingButton
                       className="ml-2 px-4 flex justify-center items-center  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-                      onClick={() => setIsEditingNotes((current) => !current)}
+                      onClick={() =>
+                        isEditingNotes ? updateNotes() : setIsEditingNotes(true)
+                      }
+                      isLoading={isLoading}
                     >
                       {isEditingNotes ? (
                         <>
@@ -109,9 +171,14 @@ function MeetingInfo({ meeting, perspective }: MeetingProps) {
                           Edit
                         </>
                       )}
-                    </button>
+                    </LoadingButton>
                   )}
                 </h5>
+                {!isMentor && error && (
+                  <div className="block text-sm m-1 font-medium text-red-700">
+                    {error}
+                  </div>
+                )}
                 {!isMentor && isEditingNotes ? (
                   <FormTextArea
                     id="notes"
@@ -135,14 +202,61 @@ function MeetingInfo({ meeting, perspective }: MeetingProps) {
 }
 
 type RequestedMeetingProp = {
+  mentorship: Mentorship;
   request: MeetingRequest;
   perspective: "mentor" | "mentee";
 };
 
-const RequestedMeeting = ({ request, perspective }: RequestedMeetingProp) => {
+const RequestedMeeting = ({
+  mentorship,
+  request,
+  perspective,
+}: RequestedMeetingProp) => {
   const datetime = DateTime.fromISO(request.time);
 
-  // TODO: connect accept/decline/cancel to backend
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+
+  const makeRequest = (endpoint: string, error: string) => {
+    return async () => {
+      setIsLoading(true);
+      setError(undefined);
+
+      const res = await fetch(endpoint.replace("{ID}", request.id.toString()), {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
+        },
+      });
+
+      const body = await res.json();
+
+      if (res.ok) {
+        // Revalidate the caches for mentorship information
+        mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
+      } else {
+        setError(body.error?.join(" ") ?? error);
+      }
+
+      setIsLoading(false);
+    };
+  };
+
+  const acceptRequest = makeRequest(
+    ACCEPT_MEETING_REQUEST_ENDPOINT,
+    "An error occured when accepting this meeting. Please try again."
+  );
+
+  const declineRequest = makeRequest(
+    DECLINE_MEETING_REQUEST_ENDPOINT,
+    "An error occured when declining this meeting. Please try again."
+  );
+
+  const cancelRequest = makeRequest(
+    CANCEL_MEETING_REQUEST_ENDPOINT,
+    "An error occured when cancelling this meeting. Please try again."
+  );
 
   return (
     <div className="w-full flex justify-between my-2 rounded-lg px-2 py-1">
@@ -152,33 +266,44 @@ const RequestedMeeting = ({ request, perspective }: RequestedMeetingProp) => {
         </h6>
         <p className="text-sm text-gray-700">{request.description}</p>
         <LocationText location={request.location} />
+        {error && (
+          <div className="block text-sm m-1 font-medium text-red-700">
+            {error}
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-3">
         {perspective === "mentor" ? (
           <>
-            <button
+            <LoadingButton
               type="button"
               className="flex flex-row items-center py-1 px-3 text-md bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in duration-100 text-center font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+              isLoading={isLoading}
+              onClick={() => acceptRequest()}
             >
               <CheckIcon className="h-5 w-5 mr-2" />
               Accept
-            </button>
-            <button
+            </LoadingButton>
+            <LoadingButton
               type="button"
               className="flex flex-row items-center py-1 px-3 text-md bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white transition ease-in duration-100 text-center font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+              isLoading={isLoading}
+              onClick={() => declineRequest()}
             >
               <XIcon className="h-5 w-5 mr-2" />
               Decline
-            </button>
+            </LoadingButton>
           </>
         ) : (
-          <button
+          <LoadingButton
             type="button"
             className="flex flex-row items-center py-1 px-3 text-md bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white transition ease-in duration-100 text-center font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+            isLoading={isLoading}
+            onClick={() => cancelRequest()}
           >
             <XIcon className="h-5 w-5 mr-2" />
             Cancel
-          </button>
+          </LoadingButton>
         )}
       </div>
     </div>
@@ -186,40 +311,22 @@ const RequestedMeeting = ({ request, perspective }: RequestedMeetingProp) => {
 };
 
 type RequestedMeetingsProps = {
+  mentorship: Mentorship;
   perspective: "mentor" | "mentee";
+  requests: MeetingRequest[];
 };
 
-const RequestedMeetings = ({ perspective }: RequestedMeetingsProps) => {
-  // TODO: connect from backend
-  const requested_meetings: MeetingRequest[] = [
-    {
-      id: 1,
-      time: new Date(Date.now() + 100 * 100).toISOString(),
-      location: "Narina",
-      description: "Want to talk about goals",
-      mentorship: 1,
-    },
-    {
-      id: 2,
-      time: new Date(Date.now() + 100 * 100).toISOString(),
-      location: "Narina",
-      description: "Want to talk about goals",
-      mentorship: 1,
-    },
-    {
-      id: 3,
-      time: new Date(Date.now() + 100 * 100).toISOString(),
-      location: "Narina",
-      description: "Want to talk about goals",
-      mentorship: 1,
-    },
-  ];
-
-  return requested_meetings.length > 0 ? (
+const RequestedMeetings = ({
+  mentorship,
+  perspective,
+  requests,
+}: RequestedMeetingsProps) => {
+  return requests.length > 0 ? (
     <div className="my-3">
       <h3 className="text-xl font-bold">Requested Meetings</h3>
-      {requested_meetings.map((request) => (
+      {requests.map((request) => (
         <RequestedMeeting
+          mentorship={mentorship}
           key={request.id}
           perspective={perspective}
           request={request}
@@ -236,8 +343,37 @@ type ScheduledMeetingProps = {
 
 const ScheduledMeeting = ({ meeting }: ScheduledMeetingProps) => {
   const datetime = DateTime.fromISO(meeting.time);
+  // const [error, setError] = useState<string | undefined>();
 
-  // TODO: connect cancel to backend
+  // // TODO: connect cancel to backend
+  // const cancelMeeting = async () => {
+  //   setError(undefined);
+
+  //   const res = await fetch(
+  //     CANCEL_MEETING_REQUEST_ENDPOINT.replace("{ID}", user.id.toString()),
+  //     {
+  //       method: "PATCH",
+  //       headers: {
+  //         "content-type": "application/json",
+  //       },
+  //       body: JSON.stringify({ interests: interests.map((x) => x.id) }),
+  //     }
+  //   );
+
+  //   const body = await res.json();
+
+  //   if (res.ok) {
+  //     setIsEditing(false);
+  //     // Revalidate the caches for profile and users
+  //     mutate(PROFILE_ENDPOINT);
+  //     mutate(FULL_USER_ENDPOINT.replace("{ID}", user.id.toString()));
+  //   } else {
+  //     setError(
+  //       body.interests?.join(" ") ??
+  //         "An error occured when updating your interests. Please try again."
+  //     );
+  //   }
+  // };
 
   return (
     <div className="w-full flex justify-between my-2 rounded-lg px-2 py-1">
@@ -261,24 +397,15 @@ const ScheduledMeeting = ({ meeting }: ScheduledMeetingProps) => {
   );
 };
 
-const ScheduledMeetings = () => {
-  // TODO: connect from backend
-  const scheduled_meeting: Meeting[] = [
-    {
-      id: 1,
-      time: new Date(Date.now() + 100 * 100).toISOString(),
-      location: "Narina",
-      description: "Want to talk about goals",
-      mentorship: 1,
-      mentee_notes: "",
-      mentor_notes: "",
-    },
-  ];
+type ScheduledMeetingsProps = {
+  scheduled: Meeting[];
+};
 
-  return scheduled_meeting.length > 0 ? (
+const ScheduledMeetings = ({ scheduled }: ScheduledMeetingsProps) => {
+  return scheduled.length > 0 ? (
     <div className="my-3">
       <h3 className="text-xl font-bold">Scheduled Meetings</h3>
-      {scheduled_meeting.map((meeting) => (
+      {scheduled.map((meeting) => (
         <ScheduledMeeting key={meeting.id} meeting={meeting} />
       ))}
       <hr />
@@ -288,32 +415,36 @@ const ScheduledMeetings = () => {
 
 type MentoringMeetingsProps = {
   perspective: "mentor" | "mentee";
+  mentorship: Mentorship;
+  meetings: Meeting[];
+  requests: MeetingRequest[];
 };
 
 export default function MentoringMeetings({
   perspective,
+  mentorship,
+  meetings,
+  requests,
 }: MentoringMeetingsProps) {
-  const meetings: Meeting[] = [
-    {
-      id: 1,
-      time: new Date(Date.now() + 1000).toISOString(),
-      mentee_notes: "",
-      mentor_notes: "",
-      mentorship: 1,
-      location: "Lecture Hall",
-      description: "Looking to learn more about what I can do to improve",
-    },
-  ];
-
-  // TODO: sort meetings by date, newest first?
-
   const [isRequestingMeeting, setIsRequestingMeeting] = useState(false);
+
+  // Sort meetings by date, newest first
+  const sortedMeetings = meetings.sort(
+    (a, b) => Date.parse(a.time) - Date.parse(b.time)
+  );
+  const scheduledMeetings = sortedMeetings.filter(
+    (meeting) => Date.parse(meeting.time) > Date.now()
+  );
+  const pastMeetings = sortedMeetings.filter(
+    (meeting) => Date.parse(meeting.time) <= Date.now()
+  );
 
   return (
     <>
       {perspective === "mentee" && (
         <>
           <RequestMeetingPopup
+            mentorship={mentorship}
             isOpen={isRequestingMeeting}
             closeModal={() => setIsRequestingMeeting(false)}
           />
@@ -327,15 +458,20 @@ export default function MentoringMeetings({
         </>
       )}
 
-      <RequestedMeetings perspective={perspective} />
-      <ScheduledMeetings />
+      <RequestedMeetings
+        mentorship={mentorship}
+        perspective={perspective}
+        requests={requests}
+      />
+      <ScheduledMeetings scheduled={scheduledMeetings} />
 
       <h3 className="text-xl font-bold mb-2">Previous Meetings</h3>
 
       <div className="flex flex-col gap-2">
-        {meetings.map((meeting) => (
+        {pastMeetings.map((meeting) => (
           <MeetingInfo
             key={meeting.id}
+            mentorship={mentorship}
             meeting={meeting}
             perspective={perspective}
           />
