@@ -265,7 +265,7 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
     def cancel(self, request, *args, **kwargs):  # Cancels a meeting request
         mentor_request: MentorRequest = self.get_object()
         user: User = request.user
-        if mentor_request.mentee == user:
+        if mentor_request.mentee != user:
             return Response({'error': 'You cannot cancel this mentor request'}, status=status.HTTP_400_BAD_REQUEST)
         request.delete()
 
