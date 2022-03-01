@@ -223,7 +223,7 @@ class MentorshipViewSet(viewsets.ModelViewSet):
         mentorship: Mentorship = self.get_object()
         user: User = request.user
         mentee: User = mentorship.mentee
-        if user != mentorship.mentor or user != mentorship.mentee:
+        if user != mentorship.mentor and user != mentorship.mentee:
             return Response({'error': 'You cannot end this mentorship'}, status=status.HTTP_400_BAD_REQUEST)
         if mentee.mentorship.pk != mentorship.pk:
             return Response({'error': 'This mentorship is not active'}, status=status.HTTP_400_BAD_REQUEST)
