@@ -145,13 +145,13 @@ class MentorRequestSerializer(ModelSerializer):
 
 
 class MentorRequestMentorSerializer(MentorRequestSerializer):
-    class Meta:
+    class Meta(MentorRequestSerializer.Meta):
         depth = 1
         include = ['mentor']
 
 
-class MentorRequestMenteeSerializer(MentorRequestSerializer):
-    class Meta:
+class MentorRequestMentorSerializer(MentorRequestSerializer):
+    class Meta(MentorRequestSerializer.Meta):
         depth = 1
         include = ['mentee']
 
