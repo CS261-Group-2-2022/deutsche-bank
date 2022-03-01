@@ -37,10 +37,10 @@ jobs:
       - name: Run coverage report
         run: |
           cd backend
-          sh branch-coverage.sh
-          sh print-coverage.sh
+          bash branch-coverage.sh
+          bash print-coverage.sh
 
       - name: Run tests
         run: |
           cd backend
-          sh run-tests.sh
+          bash run-tests.sh
