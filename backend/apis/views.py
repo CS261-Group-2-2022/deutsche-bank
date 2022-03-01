@@ -267,7 +267,7 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
         user: User = request.user
         if mentor_request.mentee != user:
             return Response({'error': 'You cannot cancel this mentor request'}, status=status.HTTP_400_BAD_REQUEST)
-        request.delete()
+        mentor_request.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
