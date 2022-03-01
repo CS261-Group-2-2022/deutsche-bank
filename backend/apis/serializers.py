@@ -150,7 +150,7 @@ class MentorRequestMentorSerializer(MentorRequestSerializer):
         include = ['mentor']
 
 
-class MentorRequestMentorSerializer(MentorRequestSerializer):
+class MentorRequestMenteeSerializer(MentorRequestSerializer):
     class Meta(MentorRequestSerializer.Meta):
         depth = 1
         include = ['mentee']
