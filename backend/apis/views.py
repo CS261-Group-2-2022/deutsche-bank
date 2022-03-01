@@ -252,9 +252,9 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
         Creates a mentorship request for the currently authenticated user
         :return: Serialized meeting request
         """
-        serializer = self.get_serializer(data=request.data)
         if request.user.mentorship:  # If the user already has a mentor respond with an error
             return Response({'error': 'You already have a mentor'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.validated_data['mentee'] = request.user
         self.perform_create(serializer)
