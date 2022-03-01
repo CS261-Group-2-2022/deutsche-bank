@@ -23,7 +23,7 @@ import {
 import { FormTextArea } from "../FormTextarea";
 import LocationText from "../LocationText";
 import { LoadingButton } from "../LoadingButton";
-import RequestMeetingPopup from "../RequestAMeetingPopup";
+import RequestMeetingPopup from "./RequestAMeetingPopup";
 
 type MeetingProps = {
   mentorship: Mentorship;

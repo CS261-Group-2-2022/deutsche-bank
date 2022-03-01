@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
-import Popup from "./Popup";
-import { FormInput } from "./FormInput";
-import { FormTextArea } from "./FormTextarea";
+import Popup from "../Popup";
+import { FormInput } from "../FormInput";
+import { FormTextArea } from "../FormTextarea";
 import {
   CREATE_MEETING_REQUEST_ENDPOINT,
   getAuthToken,
   Mentorship,
   MENTORSHIP_ENDPOINT,
-} from "../utils/endpoints";
+} from "../../utils/endpoints";
 import { mutate } from "swr";
-import { LoadingButton } from "./LoadingButton";
+import { LoadingButton } from "../LoadingButton";
 
 type CreateSessionPopupProps = {
   mentorship: Mentorship;
