@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
@@ -17,7 +18,8 @@ from .models import *
 from .serializers import *
 from .dummy_data import create_dummy_data
 
-from .matching_algorithm import matching_algorithm
+from .matching_algorithm import matching_algorithm, NoPossibleMentorsError
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -42,16 +44,21 @@ class UserViewSet(viewsets.ModelViewSet):
         current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         all_requests: List[MentorRequest] = list(MentorRequest.objects.all())
 
-        potential_mentors: List[User] = matching_algorithm(user,
-                                                           all_users,
-                                                           users_who_want_to_mentor,
-                                                           all_mentorships,
-                                                           current_mentorships,
-                                                           all_requests)
+        try:
+            potential_mentors: List[User] = matching_algorithm(user,
+                                                               all_users,
+                                                               users_who_want_to_mentor,
+                                                               all_mentorships,
+                                                               current_mentorships,
+                                                               all_requests)
+            response_status = HTTP_200_OK
+        except NoPossibleMentorsError:
+            potential_mentors = []
+            response_status = HTTP_204_NO_CONTENT
 
         cereal = UserSerializer(potential_mentors, many=True)
 
-        return Response(cereal.data)
+        return Response(cereal.data, status=response_status)
 
     @action(detail=True, methods=['get'])
     def reset(self, request, pk=None):
