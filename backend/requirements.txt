@@ -7,3 +7,5 @@ django-rest-knox
 django-cors-headers
 numpy
 yake
+pyyaml
+uritemplate
