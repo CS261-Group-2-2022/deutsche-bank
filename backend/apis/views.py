@@ -233,12 +233,12 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def incoming(self, request, *args, **kwargs) -> Response:
         user: User = request.user
-        return Response(MentorRequestSerializer(user.get_incoming_mentor_requests(), many=True).data)
+        return Response(MentorRequestMenteeSerializer(user.get_incoming_mentor_requests(), many=True).data)
 
     @action(detail=False, methods=['get'])
     def outgoing(self, request, *args, **kwargs) -> Response:
         user: User = request.user
-        return Response(MentorRequestSerializer(user.get_outgoing_mentor_requests(), many=True).data)
+        return Response(MentorRequestMentorSerializer(user.get_outgoing_mentor_requests(), many=True).data)
 
     def create(self, request, *args, **kwargs):
         """

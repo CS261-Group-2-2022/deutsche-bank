@@ -139,9 +139,20 @@ class MentorRequestSerializer(ModelSerializer):
     class Meta:
         model = MentorRequest
         exclude = []
+        depth = 1
         extra_kwargs = {
             'mentee': {'read_only': True}
         }
+
+
+class MentorRequestMentorSerializer(MentorRequestSerializer):
+    class Meta:
+        include = ['mentor']
+
+
+class MentorRequestMenteeSerializer(MentorRequestSerializer):
+    class Meta:
+        include = ['mentee']
 
 
 class UserSerializerFull(UserSerializer):
