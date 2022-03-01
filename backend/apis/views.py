@@ -232,6 +232,13 @@ class MeetingViewSet(viewsets.ModelViewSet):
     queryset = Meeting.objects.all()
     serializer_class = MeetingSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.mentorship.mentor is not request.user and instance.mentorship.mentee is not request.user:
+            return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class MeetingRequestViewSet(viewsets.ModelViewSet):
     queryset = MeetingRequest.objects.all()
