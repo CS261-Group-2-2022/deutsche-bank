@@ -1,6 +1,10 @@
 import SessionTopicLabel from "../SessionTopicLabel";
 import {
+  END_MENTORSHIP_ENDPOINT,
   FULL_USER_ENDPOINT,
+  getAuthToken,
+  Mentorship,
+  MENTORSHIP_ENDPOINT,
   PROFILE_ENDPOINT,
   SETTINGS_ENDPOINT,
   Skill,
@@ -26,20 +30,55 @@ import AreasOfInterest from "./AreasOfInterest";
 import { DateTime } from "luxon";
 import FeedbackReportPopup from "./FeedbackReportPopup";
 import InterestsDescription from "./InterestsDescription";
+import { LoadingButton } from "../LoadingButton";
 
 type TerminateRelationshipPromptProps = {
+  mentorship: Mentorship;
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const TerminateRelationshipPrompt = ({
+  mentorship,
   open,
   setOpen,
 }: TerminateRelationshipPromptProps) => {
   const cancelButtonRef = useRef(null);
 
-  // TODO: connect to backend
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+  const [passwordError, setPasswordError] = useState<string | undefined>();
+
+  const terminateRelationship = async () => {
+    setIsLoading(true);
+    setError(undefined);
+
+    const res = await fetch(END_MENTORSHIP_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        current_password: password,
+      }),
+    });
+
+    const body = await res.json();
+    if (res.ok) {
+      setOpen(false);
+
+      // Revalidate the cache of profiles and mentorships
+      mutate(PROFILE_ENDPOINT);
+      mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
+    } else {
+      setPasswordError(body.password?.join(" "));
+      setError(body.non_field_errors?.join(" ")); // TODO: right field?
+    }
+
+    setIsLoading(false);
+  };
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -108,20 +147,28 @@ const TerminateRelationshipPrompt = ({
                       text={password}
                       onChange={setPassword}
                       required
+                      error={passwordError}
                     />
                   </div>
                 </div>
+                {error && (
+                  <div className="block text-sm m-1 font-medium text-red-700">
+                    {error}
+                  </div>
+                )}
               </div>
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
+                <LoadingButton
                   type="button"
                   className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm ${
                     password === "" ? "opacity-25 cursor-not-allowed" : ""
                   }`}
-                  onClick={() => setOpen(false)}
+                  disabled={password === ""}
+                  isLoading={isLoading}
+                  onClick={() => terminateRelationship()}
                 >
                   Terminate
-                </button>
+                </LoadingButton>
                 <button
                   type="button"
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
@@ -140,12 +187,14 @@ const TerminateRelationshipPrompt = ({
 };
 
 type MentorProfileProps = {
+  mentorship: Mentorship;
   mentor: UserFull;
   perspective: "mentor" | "mentee";
   setMentorReviewOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const MentorProfile = ({
+  mentorship,
   mentor,
   perspective,
   setMentorReviewOpen,
@@ -155,6 +204,7 @@ const MentorProfile = ({
   return (
     <div className="w-full max-h-min border rounded-2xl border-gray-300 p-2">
       <TerminateRelationshipPrompt
+        mentorship={mentorship}
         open={terminatePromptOpen}
         setOpen={setTerminatePromptOpen}
       />
@@ -375,6 +425,7 @@ const BusinessAreaConflictWarning = ({
 };
 
 type GeneralInfoProps = {
+  mentorship: Mentorship;
   mentee: User;
   mentor: UserFull;
   perspective: "mentor" | "mentee";
@@ -383,6 +434,7 @@ type GeneralInfoProps = {
 export default function GeneralInfo({
   mentor,
   mentee,
+  mentorship,
   perspective,
 }: GeneralInfoProps) {
   const [mentorReviewOpen, setMentorReviewOpen] = useState(false);
@@ -402,12 +454,9 @@ export default function GeneralInfo({
       <InterestsDescription user={mentee} canEdit={perspective === "mentee"} />
       <AreasOfInterest user={mentee} canEdit={perspective === "mentee"} />
 
-      {/* TODO: mentee giving mentor feedback popup */}
-      {/* TODO: mentor giving mentee feedback popup */}
-
-      {/* TODO: mentor can also give feedback to mentee */}
       <div className="flex flex-col gap-5">
         <MentorProfile
+          mentorship={mentorship}
           mentor={mentor}
           perspective={perspective}
           setMentorReviewOpen={setMentorReviewOpen}

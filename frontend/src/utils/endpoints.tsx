@@ -18,6 +18,7 @@ export const SETTINGS_ENDPOINT = `${HOSTNAME}/api/v1/user/{ID}/`;
 export const FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/feedback/`;
 export const FULL_USER_ENDPOINT = `${HOSTNAME}/api/v1/user/{ID}/full/`;
 export const MENTORSHIP_ENDPOINT = `${HOSTNAME}/api/v1/mentorship/{ID}`;
+export const END_MENTORSHIP_ENDPOINT = `${HOSTNAME}/api/v1/mentorship/{ID}/end`;
 export const UPDATE_MEETING_ENDPOINT = `${HOSTNAME}/api/v1/meeting/{ID}/`;
 export const CREATE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/`;
 export const ACCEPT_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/accept/`;

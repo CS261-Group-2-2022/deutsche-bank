@@ -127,6 +127,7 @@ export default function MentoringUserProfile({
         <Tab.Panels>
           <Tab.Panel key="info" className="mt-8">
             <GeneralInfo
+              mentorship={mentorship}
               mentor={mentor}
               mentee={mentee}
               perspective={perspective}
