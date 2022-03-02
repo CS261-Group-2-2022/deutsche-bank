@@ -4,11 +4,12 @@ import useSWR from "swr";
 import { Dialog, Disclosure } from "@headlessui/react";
 import { ChevronUpIcon } from "@heroicons/react/solid";
 import {
-  CREATE_MENTEES_PLAN,
+  CREATE_USER_PLANS,
   getAuthToken,
   GroupSession,
   JoinSessionResponse,
   JoinSessionSuccess,
+  LIST_USER_PLANS,
   User,
 } from "../../utils/endpoints";
 import { useUser } from "../../utils/authentication";
@@ -20,6 +21,7 @@ import CapacityText from "../CapacityText";
 import { PlanOfAction } from "../../utils/endpoints";
 import { FormTextArea } from "../FormTextarea";
 import { FormInput } from "../FormInput";
+import { LoadingButton } from "../LoadingButton";
 
 /** Verifies whether a join response is succesful or not (and type guards the body) */
 const isJoinSuccess = (
@@ -44,6 +46,7 @@ export default function CreatePlanOfActionPopup({
   const [description, setDescription] = useState("");
   const [planName, setPlanName] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // When we want to start closing the modal, we want to let the animation
   // start hiding the modal BEFORE we clear the session. Once the animation
@@ -66,14 +69,22 @@ export default function CreatePlanOfActionPopup({
   const clearErrors = () => {
     setDescriptionError(undefined);
     setPlanNameError(undefined);
-    setPlanNameError(undefined);
     setDueDateError(undefined);
+    setError(undefined);
   };
 
   const createMenteesPlan = async () => {
-    const { user } = useUser();
+    setIsLoading(true);
+    clearErrors();
 
-    const res = await fetch(CREATE_MENTEES_PLAN, {
+    const date = Date.parse(dueDate);
+    if (date <= Date.now()) {
+      setDueDateError("The date you select cannot be in the past");
+      setIsLoading(false);
+      return;
+    }
+
+    const res = await fetch(CREATE_USER_PLANS, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -82,15 +93,24 @@ export default function CreatePlanOfActionPopup({
       body: JSON.stringify({
         name: planName,
         description,
-        completed: null,
+        completed: false,
         due_date: dueDate,
         user: menteeID,
       }),
     });
 
     if (res.ok) {
-      alert("Plan Created!");
+      initiateClose();
+      mutate(LIST_USER_PLANS);
+    } else {
+      const body = await res.json();
+      setPlanNameError(body.name?.join(" "));
+      setDescriptionError(body.description?.join(" "));
+      setDueDateError(body.due_date?.join(" "));
+      setError(body.non_field_errors?.join(" "));
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -117,33 +137,34 @@ export default function CreatePlanOfActionPopup({
         >
           <FormInput
             id={"planname"}
-            name={"Name of Plan of Action"}
-            type={"text"}
-            placeholder={"Enter the name of your Plan of Action"}
+            name="Title"
+            type="text"
+            placeholder={"Enter the title of your Plan of Action"}
             text={planName}
             onChange={setPlanName}
             error={planNameError}
+            required
           />
           <FormTextArea
             id="feedback"
-            name="Plan of Action Description"
+            name="Description"
             autoComplete="false"
-            placeholder="Enter a description of your plan of action"
+            placeholder="Enter a description of your plan of action, such as goals/objectives to accomplish and ways to do so"
             text={description}
             onChange={setDescription}
             error={descriptionError}
+            required
           />
-          <div className="grid grid-cols-2 gap-2 pt-2">
-            <FormInput
-              id={"dueDate"}
-              name={"Date the plan of action is due"}
-              type={"datetime-local"}
-              placeholder={""}
-              text={dueDate}
-              onChange={setDueDate}
-              error={dueDateError}
-            />
-          </div>
+          <FormInput
+            id={"dueDate"}
+            name={"Due Date"}
+            type={"datetime-local"}
+            placeholder=""
+            text={dueDate}
+            onChange={setDueDate}
+            error={dueDateError}
+            required
+          />
 
           {error && (
             <div className="block text-sm m-1 font-medium text-red-700">
@@ -152,12 +173,13 @@ export default function CreatePlanOfActionPopup({
           )}
 
           <div className="grid grid-cols-10 gap-2 pt-2">
-            <button
+            <LoadingButton
               type="submit"
               className="inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none"
+              isLoading={isLoading}
             >
               Create Plan of Action
-            </button>
+            </LoadingButton>
             <button
               type="button"
               className="inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"

@@ -33,8 +33,9 @@ export const CREATE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-reque
 export const ACCEPT_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/accept/`;
 export const DECLINE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/decline/`;
 export const CANCEL_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/cancel/`;
-export const GET_USERS_PLANS = `${HOSTNAME}/api/v1/user/{ID}/mentees/`;
-export const CREATE_MENTEES_PLAN = `${HOSTNAME}/api/v1/plan/`;
+export const LIST_USER_PLANS = `${HOSTNAME}/api/v1/user/{ID}/plans/`;
+export const CREATE_USER_PLANS = `${HOSTNAME}/api/v1/plan/`;
+export const UPCOMING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/events/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -255,11 +256,19 @@ export type MeetingRequest = {
 
 //Plan Of Action
 export type PlanOfAction = {
+  id: number;
+  user: number;
   name: string;
   description: string;
-  // user: User;
-  dueDate: string;
-  completed: string;
+  due_date: string;
+  creation_date: string;
+  completed: boolean;
 };
 
 export type PlanOfActionResponse = PlanOfAction[];
+
+// Upcoming Sessions
+export type UpcomingSessions = {
+  meetings: Meeting[];
+  sessions: GroupSession[];
+};
