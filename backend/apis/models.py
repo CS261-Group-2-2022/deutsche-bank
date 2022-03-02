@@ -84,6 +84,9 @@ class Mentorship(models.Model):
     def get_meetings(self) -> QuerySet[Meeting]:
         return self.mentorship_meetings.all()
 
+    def get_upcoming_meetings(self) -> QuerySet[Meeting]:
+        return self.get_meetings().filter(time__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
+
     def get_meeting_requests(self) -> QuerySet[MeetingRequest]:
         return self.mentorship_meeting_requests.all()
 
@@ -191,10 +194,10 @@ class User(AbstractBaseUser, Randomisable):
         Retrieves the set of all upcoming meetings which this user has
         :return: set of all meetings which this user has
         """
-        query = Meeting.objects.none() if self.mentorship is None else self.mentorship.get_meetings()
+        query = Meeting.objects.none() if self.mentorship is None else self.mentorship.get_upcoming_meetings()
         for mentorship in self.get_mentorships_where_user_is_mentor():
-            query = query.union(mentorship.get_meetings())
-        return query.filter(time__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).order_by('time')
+            query = query.union(mentorship.get_upcoming_meetings())
+        return query.order_by('time')
 
     def has_mentees(self) -> bool:
         return self.get_mentees().count() > 0
