@@ -192,7 +192,7 @@ class User(AbstractBaseUser, Randomisable):
         """
         query = Meeting.objects.none() if self.mentorship is None else self.mentorship.get_meetings()
         for mentorship in self.get_mentorships_where_user_is_mentor():
-            query.union(mentorship.get_meetings())
+            query = query.union(mentorship.get_meetings())
         return query.filter(time__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).order_by('time')
 
     def has_mentees(self) -> bool:
