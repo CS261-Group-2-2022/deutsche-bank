@@ -33,7 +33,7 @@ type ActionProps = {
 
 function Action({ actionText, buttonText = "View", onClick }: ActionProps) {
   return (
-    <div className="shadow rounded-2xl bg-white p-4">
+    <div className="shadow rounded-2xl bg-white px-4 py-2 border">
       <div className="flex-row gap-4 flex justify-center items-center">
         <div className="flex-shrink-0">
           <a href="#" className="block relative">
@@ -120,8 +120,10 @@ function MentoringInfo() {
             <ArrowRightIcon className="ml-2 h-5 w-5" />
           </Link>
         ) : (
-          <p className="text-m align-middle">
-            You currently do not have a mentor
+          <>
+            <p className="text-m align-middle grow">
+              You currently do not have a mentor
+            </p>
             <Link
               to="/mentoring/me"
               className="mt-2 py-2 px-4 flex justify-center items-center bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
@@ -131,7 +133,7 @@ function MentoringInfo() {
                 <ArrowRightIcon className="ml-2 h-5 w-5" />
               </span>
             </Link>
-          </p>
+          </>
         )}
       </div>
       <div className="flex flex-col rounded-2xl p-2 space-y-2">
@@ -160,8 +162,10 @@ function MentoringInfo() {
             </div>
           </Link>
         ) : (
-          <p className="grow text-m align-middle">
-            You are not currently mentoring anyone
+          <>
+            <p className="grow text-m align-middle">
+              You are not currently mentoring anyone
+            </p>
             <Link
               to="/mentoring/mentees"
               className="mt-2 py-2 px-4 flex justify-center items-center bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
@@ -171,7 +175,7 @@ function MentoringInfo() {
                 <ArrowRightIcon className="ml-2 h-5 w-5" />
               </span>
             </Link>
-          </p>
+          </>
         )}
       </div>
     </div>
