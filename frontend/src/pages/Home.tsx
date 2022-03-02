@@ -8,14 +8,20 @@ import { Link } from "react-router-dom";
 import useSWR from "swr";
 //import RoundedImage from "../components/RoundedImage";
 import Topbar from "../components/Topbar";
-import UpcomingSessions from "../components/UpcomingSessions";
+import UpcomingSession from "../components/UpcomingSessions";
+import UserAvatar from "../components/UserAvatar";
 import { useUser } from "../utils/authentication";
 import {
   CURRENT_MENTEES_ENDPOINT,
+  FULL_USER_ENDPOINT,
+  GroupSession,
   GroupSessionResponse,
-  LIST_USER_HOSTING_SESSIONS_ENDPOINT,
-  LIST_USER_JOINED_SESSIONS_ENDPOINT,
   LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
+  Meeting,
+  Mentorship,
+  MENTORSHIP_ENDPOINT,
+  UpcomingSessions,
+  UPCOMING_SESSIONS_ENDPOINT,
   UserFull,
 } from "../utils/endpoints";
 
@@ -79,15 +85,40 @@ function ActionRequiredBox() {
 
 function MentoringInfo() {
   const { user } = useUser();
+  const { data: mentorship } = useSWR<Mentorship>(
+    user && user.mentorship
+      ? MENTORSHIP_ENDPOINT.replace("{ID}", user.mentorship.toString())
+      : null
+  );
+  const { data: mentor } = useSWR<UserFull>(
+    mentorship
+      ? FULL_USER_ENDPOINT.replace("{ID}", mentorship.mentor.toString())
+      : null
+  );
   const { data: currentMentees } = useSWR<UserFull[]>(CURRENT_MENTEES_ENDPOINT);
 
   return (
     <div className="grid grid-cols-2 gap-5">
-      <div className="rounded-2xl p-2 space-y-2">
+      <div className="flex flex-col rounded-2xl p-2 space-y-2 grow">
         <h4 className="text-l sm:text-xl font-semibold">Your Mentor</h4>
-        {user?.mentorship ? (
-          // TODO: display something properly
-          "MENTORSHIP"
+        {mentor ? (
+          <Link
+            to="/mentoring/me"
+            className="mt-2 py-2 px-4 flex grow justify-between items-center border bg-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+          >
+            <div className="flex gap-2">
+              <UserAvatar user={mentor} />
+              <div className="flex flex-col text-left">
+                <h4 className="font-bold text-lg text-gray-900">
+                  {mentor.first_name} {mentor.last_name}
+                </h4>
+                <h6 className="font-medium text-sm text-gray-700">
+                  {mentor.business_area.name}
+                </h6>
+              </div>
+            </div>
+            <ArrowRightIcon className="ml-2 h-5 w-5" />
+          </Link>
         ) : (
           <p className="text-m align-middle">
             You currently do not have a mentor
@@ -103,12 +134,12 @@ function MentoringInfo() {
           </p>
         )}
       </div>
-      <div className="rounded-2xl p-2 space-y-2">
+      <div className="flex flex-col rounded-2xl p-2 space-y-2">
         <h4 className="text-l sm:text-xl font-semibold">Your Mentees</h4>
         {currentMentees && currentMentees.length > 0 ? (
           <Link
             to="/mentoring/mentees"
-            className="mt-2 py-2 px-4 flex flex-col justify-center items-center border bg-white text-gray-700 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+            className="mt-2 py-2 px-4 grow flex flex-col justify-center items-center border bg-white text-gray-700 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
           >
             <span className="flex flex-wrap justify-center -space-x-2 mr-2">
               {currentMentees.map((mentee) => (
@@ -129,7 +160,7 @@ function MentoringInfo() {
             </div>
           </Link>
         ) : (
-          <p className="text-m align-middle">
+          <p className="grow text-m align-middle">
             You are not currently mentoring anyone
             <Link
               to="/mentoring/mentees"
@@ -183,18 +214,25 @@ function GroupSessionsInfo() {
 }
 
 function UpcomingSessionsColumn() {
-  const { data: allJoinedSessions = [] } = useSWR<GroupSessionResponse>(
-    LIST_USER_JOINED_SESSIONS_ENDPOINT
-  );
-  const { data: allHostSessions = [] } = useSWR<GroupSessionResponse>(
-    LIST_USER_HOSTING_SESSIONS_ENDPOINT
-  );
+  const { data: upcomingSessions = { meetings: [], sessions: [] } } =
+    useSWR<UpcomingSessions>(UPCOMING_SESSIONS_ENDPOINT);
 
-  // TODO: include mentoring meetings
+  type MeetingFlagged = { isMeeting: true } & Meeting;
+  type SessionFlagged = { isMeeting: false } & GroupSession;
 
-  const allSessions = [...allJoinedSessions, ...allHostSessions]
-    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date))
-    .filter((c) => Date.parse(c.date) >= Date.now());
+  type AllSessions = (MeetingFlagged | SessionFlagged)[];
+  const allSessions: AllSessions = [
+    ...(upcomingSessions.meetings.map((x) =>
+      Object.assign({ isMeeting: true }, x)
+    ) as MeetingFlagged[]),
+    ...(upcomingSessions.sessions.map((x) =>
+      Object.assign({ isMeeting: false }, x)
+    ) as SessionFlagged[]),
+  ].sort(
+    (a, b) =>
+      Date.parse(a.isMeeting ? a.time : a.date) -
+      Date.parse(b.isMeeting ? b.time : b.date)
+  );
 
   return (
     <div className="flex flex-col rounded-2xl border-gray-100 p-2 text-center max-h-[90vh]">
@@ -207,7 +245,11 @@ function UpcomingSessionsColumn() {
           <div className="align-items-">You have no upcoming sessions</div>
         ) : (
           allSessions.map((session) => (
-            <UpcomingSessions key={session.id} session={session} />
+            <UpcomingSession
+              key={session.id}
+              isMeeting={session.isMeeting}
+              event={session}
+            />
           ))
         )}
       </div>
