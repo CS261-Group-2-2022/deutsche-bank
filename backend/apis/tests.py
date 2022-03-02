@@ -302,3 +302,75 @@ class UserModelTests(TestCase):
         self.assertTrue(meeting_count_before < meeting_count_after)
 
         # TODO Add endpoint test to make sure that both users can see their meetings in their upcoming list.
+      
+    def test_group_sessions(self):
+        #test to see if user can create and join group sessions
+        user1 = User.make_random()
+        user2 = User.make_random()
+        skills = list(Skill.objects.all())
+        exp = random.sample(skills, random.randrange(1,4))
+        exp2 = random.sample(skills, random.randrange(3,4))
+        exp3 = random.sample(skills, random.randrange(1,2))
+        user1.expertise.set(exp)
+        user2.expertise.set(exp2)
+        new_group_session = GroupSession.objects.create(name=lorem_random(50),
+                                        location=lorem_random(70),
+                                        description=lorem_random(500),
+                                        host=user1,
+                                        capacity=random.randrange(1, 150),
+                                        skills=exp,
+                                        date=time_start + random_delta())
+        
+        new_group_session2 = GroupSession.objects.create(name=lorem_random(50),
+                                        location=lorem_random(70),
+                                        description=lorem_random(500),
+                                        host=user2,
+                                        capacity=random.randrange(1, 150),
+                                        skills=exp3,
+                                        date=time_start + random_delta())
+        num_par = GroupSession.users.len()
+        new_group_session.users.set(list(user2))
+        new_count = GroupSession.users.len()
+        self.assertTrue(new_count > num_par)
+
+    def test_action_plans(self):
+        #test if user can make plans of action
+        user = User.make_random()
+        rating = None
+        if random.choice([True,False]):
+           rating = random.randrange(0,10)
+
+        feedback = None
+        if random.choice([True,False]):
+            feedback = lorem_random(500)
+
+        
+        mentor = User.make_random(mentor_intent=True)
+        mentee = User.make_random()
+
+        new_mentorship = Mentorship.objects.create(mentor=mentor,
+                                                mentee=mentee,
+                                                rating=rating,
+                                                feedback=feedback)
+        
+        creation_date = time_start + random_delta()
+        completion_date = None
+        if random.choice([True,False]):
+            completion_date = creation_date + random_delta()
+        action_plan_count = ActionPlan.objects.count()
+        new_action_plan = ActionPlan.objects.create(name=lorem_random(30),
+                                                    description=lorem_random(500),
+                                                    user=user,
+                                                    creation_date=creation_date,
+                                                    completion_date=completion_date)
+
+        #a new action plan object shouldn't be created if the user is
+        #not a mentee
+        self.assertFalse(ActionPlan.objects.count() > action_plan_count)
+        new_action_plan2 = ActionPlan.objects.create(name=lorem_random(30),
+                                                    description=lorem_random(500),
+                                                    user=mentee,
+                                                    creation_date=creation_date,
+                                                    completion_date=completion_date)
+        self.assertTrue(ActionPlan.objects.count() > action_plan_count)
+       
