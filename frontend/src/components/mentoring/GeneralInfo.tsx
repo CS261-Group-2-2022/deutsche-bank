@@ -63,7 +63,7 @@ const TerminateRelationshipPrompt = ({
           authorization: `Token ${getAuthToken()}`,
         },
         body: JSON.stringify({
-          current_password: password, // TODO: check password on backend?
+          password,
         }),
       }
     );
@@ -78,7 +78,7 @@ const TerminateRelationshipPrompt = ({
       const body = await res.json();
       setPasswordError(body.password?.join(" "));
       setError(
-        body.error ??
+        body.non_field_errors ??
           "An error occured when ending this pairing. Please try again"
       );
     }
