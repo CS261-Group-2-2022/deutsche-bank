@@ -370,6 +370,7 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
         if meeting_request.mentorship.mentor != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
 
+        meeting_request.delete()
         # TODO: Finish implementation
         return Response(status=status.HTTP_200_OK)
 
