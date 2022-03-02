@@ -6,6 +6,8 @@ import MentoringMeetings from "./Meetings";
 import { useEffect, useState } from "react";
 import GeneralInfo from "./GeneralInfo";
 import PlansOfAction from "./PlansOfAction";
+import UserAvatar from "../UserAvatar";
+import { getAreaFromId, useBusinessAreas } from "../../utils/business_area";
 
 type UserProfileProps = {
   mentee: User;
@@ -43,6 +45,8 @@ export default function MentoringUserProfile({
   mentorship,
   perspective,
 }: UserProfileProps) {
+  const { areas } = useBusinessAreas();
+
   const [tab, setTab] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -67,12 +71,34 @@ export default function MentoringUserProfile({
           <div className="col-span-2" />
         )}
 
-        <h1 className="text-xl font-bold text-center col-span-6">
-          {perspective === "mentee"
-            ? "Your Profile"
-            : `${mentee.first_name} ${mentee.last_name}'s Profile`}
-          {/* TODO: if mentor, show mentees image, business area and email address */}
-        </h1>
+        {perspective === "mentee" ? (
+          <h1 className="text-xl font-bold text-center col-span-6">
+            Your Profile
+          </h1>
+        ) : (
+          <div className="flex flex-col items-center px-3 py-1 col-span-6">
+            {/* Image */}
+            <UserAvatar user={mentee} size={16} />
+
+            <h3 className="text-gray-800 font-bold text-xl">
+              {mentee.first_name} {mentee.last_name}
+              {"'"}s Profile
+            </h3>
+            <span className="text-base font-normal text-gray-700">
+              (
+              <a
+                href={`mailto:${mentee.email}`}
+                className="hover:text-blue-600 transition-colors duration-75"
+              >
+                {mentee.email}
+              </a>
+              )
+            </span>
+            <h4 className="text-gray-500">
+              {getAreaFromId(mentee.business_area, areas)?.name ?? ""}
+            </h4>
+          </div>
+        )}
 
         <div className="col-span-2" />
       </div>

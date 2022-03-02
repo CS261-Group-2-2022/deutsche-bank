@@ -42,12 +42,12 @@ const RecommendationPanel = ({ mentor }: RecommendationPanelProps) => {
         }),
       });
 
-      const body = await res.json();
       if (res.ok) {
         // Revalidate the cache of the current users outgoing requests
         mutate(SUGGESTED_MENTORS_ENDPOINT);
         mutate(OUTGOING_REQUESTS_ENDPOINT);
       } else {
+        const body = await res.json();
         setError(
           body.error ??
             "An error occured when sending this request. Please try again."
@@ -132,12 +132,12 @@ const OutgoingRequestPanel = ({ request }: OutgoingRequestPanelProps) => {
       }
     );
 
-    const body = await res.json();
     if (res.ok) {
       // Revalidate the cache of the current users outgoing requests
       mutate(SUGGESTED_MENTORS_ENDPOINT);
       mutate(OUTGOING_REQUESTS_ENDPOINT);
     } else {
+      const body = await res.json();
       setError(
         body.error ??
           "An error occurred when cancelling this request. Please try again"
