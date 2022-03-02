@@ -375,6 +375,28 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
+class MentorFeedbackViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.UpdateModelMixin, GenericViewSet):
+    queryset = MentorFeedback.objects.all()
+    serializer_class = MentorFeedbackSerializer
+    permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to manage mentor feedback
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        mentorship: Mentorship = serializer.validated_data['mentorship']
+        if not mentorship or mentorship.mentor != request.user:
+            return Response({'error': 'You cannot give feedback to this mentorship'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset()).filter(mentorship__mentor__pk__exact=request.user.pk)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
 class ActionPlanViewSet(viewsets.ModelViewSet):
     queryset = ActionPlan.objects.all()
     serializer_class = ActionPlanSerializer

@@ -11,7 +11,17 @@ from .models import *
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        exclude = ['password']
+        exclude = ('password',)
+
+
+class UserSerializerFull(UserSerializer):
+    action_plans = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        depth = 1
+
+    def get_action_plans(self, obj: User):
+        return ActionPlanSerializer(obj.get_action_plans(), many=True).data
 
 
 class RegisterSerializer(ModelSerializer):
@@ -74,6 +84,50 @@ class PasswordLoginSerializer(LoginSerializer):
         return attrs
 
 
+class MentorshipSerializer(ModelSerializer):
+    meetings = serializers.SerializerMethodField()
+    meeting_requests = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Mentorship
+        exclude = []
+
+    def get_meetings(self, obj: Mentorship):
+        return MeetingSerializer(obj.get_meetings(), many=True).data
+
+    def get_meeting_requests(self, obj: Mentorship):
+        return MeetingRequestSerializer(obj.get_meeting_requests(), many=True).data
+
+
+class MentorRequestSerializer(ModelSerializer):
+    class Meta:
+        model = MentorRequest
+        exclude = []
+        extra_kwargs = {
+            'mentee': {'read_only': True}
+        }
+
+
+class MentorRequestMentorSerializer(MentorRequestSerializer):
+    mentor = UserSerializer()
+
+    class Meta(MentorRequestSerializer.Meta):
+        include = ['mentor']
+
+
+class MentorRequestMenteeSerializer(MentorRequestSerializer):
+    mentee = UserSerializer()
+
+    class Meta(MentorRequestSerializer.Meta):
+        include = ['mentee']
+
+
+class MentorFeedbackSerializer(ModelSerializer):
+    class Meta:
+        model = MentorFeedback
+        exclude = []
+
+
 class MeetingSerializer(ModelSerializer):
     class Meta:
         model = Meeting
@@ -86,6 +140,8 @@ class MeetingSerializer(ModelSerializer):
 
 
 class MeetingSerializerFull2(MeetingSerializer):
+    mentorship = MentorshipSerializer()
+
     class Meta(MeetingSerializer.Meta):
         depth = 2
 
@@ -136,54 +192,11 @@ class GroupSessionSerializer(ModelSerializer):
 
 
 class GroupSessionSerializerFull(GroupSessionSerializer):
+    host = UserSerializer()
+    users = UserSerializer(many=True)
+
     class Meta(GroupSessionSerializer.Meta):
         depth = 1
-
-
-class MentorshipSerializer(ModelSerializer):
-    meetings = serializers.SerializerMethodField()
-    meeting_requests = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Mentorship
-        exclude = []
-
-    def get_meetings(self, obj: Mentorship):
-        return MeetingSerializer(obj.get_meetings(), many=True).data
-
-    def get_meeting_requests(self, obj: Mentorship):
-        return MeetingRequestSerializer(obj.get_meeting_requests(), many=True).data
-
-
-class MentorRequestSerializer(ModelSerializer):
-    class Meta:
-        model = MentorRequest
-        exclude = []
-        extra_kwargs = {
-            'mentee': {'read_only': True}
-        }
-
-
-class MentorRequestMentorSerializer(MentorRequestSerializer):
-    class Meta(MentorRequestSerializer.Meta):
-        depth = 1
-        include = ['mentor']
-
-
-class MentorRequestMenteeSerializer(MentorRequestSerializer):
-    class Meta(MentorRequestSerializer.Meta):
-        depth = 1
-        include = ['mentee']
-
-
-class UserSerializerFull(UserSerializer):
-    action_plans = serializers.SerializerMethodField()
-
-    class Meta(UserSerializer.Meta):
-        depth = 1
-
-    def get_action_plans(self, obj: User):
-        return ActionPlanSerializer(obj.get_action_plans(), many=True).data
 
 
 class FeedbackSerializer(ModelSerializer):
