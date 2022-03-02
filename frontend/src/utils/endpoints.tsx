@@ -38,6 +38,7 @@ export const CREATE_USER_PLANS = `${HOSTNAME}/api/v1/plan/`;
 export const CHANGE_USER_PLANS = `${HOSTNAME}/api/v1/plan/{ID}/`;
 export const UPCOMING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/events/`;
 export const CREATE_MENTOR_FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-feedback/`;
+export const CHANGE_PASSWORD_ENDPOINT = `${HOSTNAME}/api/v1/auth/password/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
