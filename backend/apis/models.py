@@ -165,7 +165,7 @@ class User(AbstractBaseUser, Randomisable):
         """
         # skills__in=self.interests.all() TODO: Skill Matching/Ordering, Filter Out Sessions at Maximum Capacity
         return GroupSession.objects.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).exclude(
-            users__pk__contains=self.pk).exclude(host__pk__exact=self.pk)
+            users__pk__contains=self.pk).exclude(host__pk__exact=self.pk).order_by('date')
 
     def get_host_sessions(self) -> QuerySet[GroupSession]:
         """ Retrieves set of upcoming hosted group sessions for this user
