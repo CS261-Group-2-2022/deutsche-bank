@@ -223,6 +223,7 @@ class GroupSessionViewSet(viewsets.ModelViewSet):
 class MentorshipViewSet(viewsets.ModelViewSet):
     queryset = Mentorship.objects.all()
     serializer_class = MentorshipSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
     @action(detail=True, methods=['post'])
     def end(self, request, *args, **kwargs):  # Terminates a mentorship
