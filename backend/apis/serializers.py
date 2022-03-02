@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from collections import OrderedDict
 
 from django.contrib.auth import authenticate
 from rest_framework import serializers
@@ -46,7 +47,7 @@ class LoginSerializer(ModelSerializer):
             'password': {'write_only': True, 'style': {'input_type': 'password'}}, 'trim_whitespace': False
         }
 
-    def validate(self, attrs):
+    def validate(self, attrs: OrderedDict):
         email = attrs.get('email')
         password = attrs.get('password')
         user = authenticate(request=self.context.get('request'), username=email, password=password)
@@ -57,6 +58,15 @@ class LoginSerializer(ModelSerializer):
 
         attrs['user'] = user
         return attrs
+
+
+class PasswordLoginSerializer(LoginSerializer):
+    class Meta(LoginSerializer.Meta):
+        fields = 'password'
+
+    def validate(self, attrs: OrderedDict):
+        attrs['email'] = self.context.get('request').user.email
+        return super().validate(attrs)
 
 
 class MeetingSerializer(ModelSerializer):
