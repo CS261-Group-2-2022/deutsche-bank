@@ -87,6 +87,7 @@ class PasswordLoginSerializer(LoginSerializer):
 class MentorshipSerializer(ModelSerializer):
     meetings = serializers.SerializerMethodField()
     meeting_requests = serializers.SerializerMethodField()
+    mentor_feedback = serializers.SerializerMethodField()  # Feedback given by the mentor to the mentee
 
     class Meta:
         model = Mentorship
@@ -97,6 +98,14 @@ class MentorshipSerializer(ModelSerializer):
 
     def get_meeting_requests(self, obj: Mentorship):
         return MeetingRequestSerializer(obj.get_meeting_requests(), many=True).data
+
+    def get_mentor_feedback(self, obj: Mentorship):
+        return MentorFeedbackSerializer(obj.get_mentor_feedback(), many=True).data
+
+
+class MentorshipSerializerFull(MentorshipSerializer):
+    mentor = UserSerializer()
+    mentee = UserSerializer()
 
 
 class MentorRequestSerializer(ModelSerializer):
@@ -126,6 +135,9 @@ class MentorFeedbackSerializer(ModelSerializer):
     class Meta:
         model = MentorFeedback
         exclude = []
+        extra_kwargs = {
+            'time': {'read_only': True}
+        }
 
 
 class MeetingSerializer(ModelSerializer):
@@ -140,7 +152,7 @@ class MeetingSerializer(ModelSerializer):
 
 
 class MeetingSerializerFull2(MeetingSerializer):
-    mentorship = MentorshipSerializer()
+    mentorship = MentorshipSerializerFull()
 
     class Meta(MeetingSerializer.Meta):
         depth = 2

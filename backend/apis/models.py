@@ -90,6 +90,9 @@ class Mentorship(models.Model):
     def get_meeting_requests(self) -> QuerySet[MeetingRequest]:
         return self.mentorship_meeting_requests.all()
 
+    def get_mentor_feedback(self):
+        return self.mentorship_feedback.all()
+
 
 class MentorRequest(models.Model):
     """ Mentorship request from a mentee to a mentor
@@ -98,7 +101,16 @@ class MentorRequest(models.Model):
     mentor: User = models.ForeignKey('User', related_name='request_mentor', on_delete=models.CASCADE)
 
 
-# TODO: Remove PermissionsMixin if it is not required
+class MentorFeedback(models.Model):
+    """
+    Feedback given by the mentor to the mentee
+    """
+    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE, related_name='mentorship_feedback')
+    positives: str = models.CharField(max_length=1000)
+    improvements: str = models.CharField(max_length=1000)
+    time: datetime = models.DateTimeField(auto_now_add=True)
+
+
 class User(AbstractBaseUser, Randomisable):
     """ Database model that describes a single User.
     """
@@ -322,12 +334,6 @@ class MeetingRequest(models.Model):
     description: str = models.CharField(max_length=100)
     location: str = models.CharField(max_length=100, null=True)
     time: datetime = models.DateTimeField()  # time of meeting
-
-
-class MentorFeedback(models.Model):
-    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE, related_name='mentorship_feedback')
-    positives: str = models.CharField(max_length=1000)
-    improvements: str = models.CharField(max_length=1000)
 
 
 class ActionPlan(models.Model):
