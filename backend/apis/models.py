@@ -135,34 +135,34 @@ class User(AbstractBaseUser, Randomisable):
         """ Retrieves the list of mentees for this user.
         :return the set of users who have this user as their mentor.
         """
-        return User.objects.all().filter(mentorship__mentor__pk__exact=self.pk).exclude(pk__exact=self.pk)
+        return User.objects.filter(mentorship__mentor__pk__exact=self.pk).exclude(pk__exact=self.pk)
 
     def find_group_sessions(self) -> QuerySet[List[GroupSession]]:
         """ Retrieves set of suggested group sessions for this user
         :return: set of suggested group sessions for this user
         """
         # skills__in=self.interests.all() TODO: Skill Matching/Ordering, Filter Out Sessions at Maximum Capacity
-        return GroupSession.objects.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).exclude(
+        return GroupSession.objects.filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).exclude(
             users__pk__contains=self.pk)
 
     def get_host_sessions(self) -> QuerySet[List[GroupSession]]:
         """ Retrieves set of hosted group sessions for this user
         :return: set of hosted group sessions for this user
         """
-        return self.session_host.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
+        return self.session_host.filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
     def get_sessions(self):
         """  Retrieves set of group sessions this user is in
         :return: set of group sessions this user is in
         """
-        return GroupSession.objects.all().filter(users__pk__contains=self.pk,
-                                                 date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
+        return GroupSession.objects.filter(users__pk__contains=self.pk,
+                                           date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
     def has_mentees(self) -> bool:
         return self.get_mentees().count() > 0
 
     def get_mentorships_where_user_is_mentor(self) -> QuerySet[List[Type[User]]]:
-        return Mentorship.objects.all().filter(mentor__pk__exact=self.pk)
+        return Mentorship.objects.filter(mentor__pk__exact=self.pk)
 
     def get_mentor_rating_average(self) -> float:
         ret = self.get_mentorships_where_user_is_mentor().aggregate(Avg('rating'))['rating__avg']
@@ -185,8 +185,8 @@ class User(AbstractBaseUser, Randomisable):
     def make_distinct_email_from(cls, first_name, last_name):
         email_domain = "deutschebank"
         email = ''
-        number_of_people_with_same_name = cls.objects.all().filter(first_name=first_name,
-                                                                   last_name=last_name).count()
+        number_of_people_with_same_name = cls.objects.filter(first_name=first_name,
+                                                             last_name=last_name).count()
         if number_of_people_with_same_name > 0:
             email = f'{first_name}.{last_name}.{number_of_people_with_same_name}@{email_domain}.com'
         else:
