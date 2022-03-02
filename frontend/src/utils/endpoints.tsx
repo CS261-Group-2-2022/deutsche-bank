@@ -37,6 +37,7 @@ export const LIST_USER_PLANS = `${HOSTNAME}/api/v1/user/{ID}/plans/`;
 export const CREATE_USER_PLANS = `${HOSTNAME}/api/v1/plan/`;
 export const CHANGE_USER_PLANS = `${HOSTNAME}/api/v1/plan/{ID}/`;
 export const UPCOMING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/events/`;
+export const CREATE_MENTOR_FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-feedback/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -226,6 +227,7 @@ export type Mentorship = {
   id: number;
   meetings: Meeting[];
   meeting_requests: MeetingRequest[];
+  mentor_feedback: MentorFeedback[];
   rating?: number;
   feedback?: string;
   mentee: number;
@@ -236,6 +238,14 @@ export type MentorshipRequest = {
   id: number;
   mentor: User;
   mentee: User;
+};
+
+export type MentorFeedback = {
+  id: number;
+  mentorship: number;
+  time: string;
+  positives: string;
+  improvements: string;
 };
 
 // Meeting

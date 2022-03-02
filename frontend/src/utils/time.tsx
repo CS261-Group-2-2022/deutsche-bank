@@ -6,7 +6,7 @@ import { DateTime } from "luxon";
  * @param time An ISO string representing the time
  * @param refreshRate The time in ms between refreshing
  */
-export const useRelativeTime = (time: string, refreshRate = 1000) => {
+export const useRelativeTime = (time: string, refreshRate = 60000) => {
   const relativeTime = DateTime.fromISO(time);
   const [timeFromNow, setTimeFromNow] = useState(relativeTime.toRelative());
 
