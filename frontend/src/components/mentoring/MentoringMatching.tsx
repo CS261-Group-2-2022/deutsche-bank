@@ -67,9 +67,9 @@ const RecommendationPanel = ({ mentor }: RecommendationPanelProps) => {
         <>
           <p className="text-sm">
             {mentor.expertise.length > 0 ? (
-              <>
+              <div className="flex flex-wrap gap-1">
                 Expert in:
-                <span className="flex flex-wrap gap-1 pl-1">
+                <span>
                   {mentor.expertise.map((expertise) => (
                     <SessionTopicLabel
                       key={expertise}
@@ -77,7 +77,7 @@ const RecommendationPanel = ({ mentor }: RecommendationPanelProps) => {
                     />
                   ))}
                 </span>
-              </>
+              </div>
             ) : (
               "No expertise"
             )}
@@ -154,9 +154,9 @@ const OutgoingRequestPanel = ({ request }: OutgoingRequestPanelProps) => {
         <>
           <p className="text-sm">
             {mentor.expertise.length > 0 ? (
-              <>
+              <div className="flex flex-wrap gap-1">
                 Expert in:
-                <span className="space-x-1 pl-1">
+                <span>
                   {mentor.expertise.map((expertise) => (
                     <SessionTopicLabel
                       key={expertise}
@@ -164,7 +164,7 @@ const OutgoingRequestPanel = ({ request }: OutgoingRequestPanelProps) => {
                     />
                   ))}
                 </span>
-              </>
+              </div>
             ) : (
               "No expertise"
             )}
