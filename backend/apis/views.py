@@ -226,7 +226,7 @@ class MentorshipViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def end(self, request, *args, **kwargs):  # Terminates a mentorship
-        serializer = PasswordLoginSerializer(data=request.data, kwargs={'context': self.get_serializer_context})
+        serializer = PasswordLoginSerializer(data=request.data, kwargs={'context': self.get_serializer_context()})
         serializer.is_valid(raise_exception=True)  # Check user password
 
         mentorship: Mentorship = self.get_object()
