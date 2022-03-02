@@ -67,15 +67,12 @@ export default function PlanOfActionPopup({
         </span>{" "}
       </Dialog.Title>
       <div className="flex flex-row gap-2">
-        Due in:{" "}
-        <DateText
-          date={planOfAction?.dueDate.toString() ?? "1111-11-11T11:11:11Z"}
-        />
+        Due in: <DateText date={planOfAction?.due_date.toString() ?? ""} />
         {planOfAction?.completed ? (
           <>
             <span>Completed: </span>
             <DateText
-              date={planOfAction?.dueDate.toString() ?? "1111-11-11T11:11:11Z"}
+              date={planOfAction?.due_date.toString() ?? ""} // TODO: completed date?
             />
           </>
         ) : (
@@ -96,7 +93,8 @@ export default function PlanOfActionPopup({
       <div className="grid grid-cols-1 gap-2">
         <button
           type="button"
-          className={`inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 bg-grey-100`}
+          className={`inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 
+          text-blue-900 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-500`}
           onClick={initiateClose}
         >
           Close

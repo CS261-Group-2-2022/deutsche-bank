@@ -6,7 +6,6 @@ import {
   FULL_USER_ENDPOINT,
   getAuthToken,
   PROFILE_ENDPOINT,
-  SETTINGS_ENDPOINT,
   Skill,
 } from "../utils/endpoints";
 import { useUser } from "../utils/authentication";
@@ -110,7 +109,6 @@ export default function Settings() {
     }
 
     // TODO: verify with current password
-    // TODO: no authorization token passed?
 
     const res = await fetch(PROFILE_ENDPOINT, {
       method: "PATCH",

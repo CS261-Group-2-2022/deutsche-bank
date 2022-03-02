@@ -9,8 +9,9 @@ import {
   JoinSessionSuccess,
   JOIN_SESSION_ENDPOINT,
   LEAVE_SESSION_ENDPOINT,
-  LIST_GROUP_SESSIONS_ENDPOINT,
+  LIST_All_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
+  LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
   User,
 } from "../utils/endpoints";
 import { useUser } from "../utils/authentication";
@@ -106,7 +107,8 @@ export default function SessionInfoPopup({
 
       if (isJoinSuccess(res, body)) {
         // Update the list of available group sessions
-        mutate(LIST_GROUP_SESSIONS_ENDPOINT);
+        mutate(LIST_All_GROUP_SESSIONS_ENDPOINT);
+        mutate(LIST_USER_SUGGESTED_SESSIONS_ENDPOINT);
         mutate(LIST_USER_JOINED_SESSIONS_ENDPOINT);
       } else {
         setError(body.error ?? "An error occurred");
@@ -135,7 +137,8 @@ export default function SessionInfoPopup({
 
       if (isJoinSuccess(res, body)) {
         // Update the list of available group sessions
-        mutate(LIST_GROUP_SESSIONS_ENDPOINT);
+        mutate(LIST_All_GROUP_SESSIONS_ENDPOINT);
+        mutate(LIST_USER_SUGGESTED_SESSIONS_ENDPOINT);
         mutate(LIST_USER_JOINED_SESSIONS_ENDPOINT);
       } else {
         setError(body.error ?? "An error occurred");

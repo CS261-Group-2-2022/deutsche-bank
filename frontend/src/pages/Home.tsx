@@ -9,11 +9,14 @@ import useSWR from "swr";
 //import RoundedImage from "../components/RoundedImage";
 import Topbar from "../components/Topbar";
 import UpcomingSessions from "../components/UpcomingSessions";
+import { useUser } from "../utils/authentication";
 import {
+  CURRENT_MENTEES_ENDPOINT,
   GroupSessionResponse,
-  LIST_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
+  LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
+  UserFull,
 } from "../utils/endpoints";
 
 type ActionProps = {
@@ -75,64 +78,81 @@ function ActionRequiredBox() {
 }
 
 function MentoringInfo() {
+  const { user } = useUser();
+  const { data: currentMentees } = useSWR<UserFull[]>(CURRENT_MENTEES_ENDPOINT);
+
   return (
     <div className="grid grid-cols-2 gap-5">
       <div className="rounded-2xl p-2 space-y-2">
         <h4 className="text-l sm:text-xl font-semibold">Your Mentor</h4>
-        <p className="text-m align-middle">
-          You currently do not have a mentor
-          <Link
-            to="/mentoring/me"
-            className="mt-2 py-2 px-4 flex justify-center items-center  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
-          >
-            Find me a mentor
-            <span>
-              <ArrowRightIcon className="ml-2 h-5 w-5" />
-            </span>
-          </Link>
-        </p>
+        {user?.mentorship ? (
+          // TODO: display something properly
+          "MENTORSHIP"
+        ) : (
+          <p className="text-m align-middle">
+            You currently do not have a mentor
+            <Link
+              to="/mentoring/me"
+              className="mt-2 py-2 px-4 flex justify-center items-center bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
+            >
+              Find me a mentor
+              <span>
+                <ArrowRightIcon className="ml-2 h-5 w-5" />
+              </span>
+            </Link>
+          </p>
+        )}
       </div>
       <div className="rounded-2xl p-2 space-y-2">
         <h4 className="text-l sm:text-xl font-semibold">Your Mentees</h4>
-        <p className="text-m align-middle">
-          You are not currently mentoring anyone
+        {currentMentees && currentMentees.length > 0 ? (
           <Link
             to="/mentoring/mentees"
-            className="mt-2 py-2 px-4 flex justify-center items-center  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
+            className="mt-2 py-2 px-4 flex flex-col justify-center items-center border bg-white text-gray-700 w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
           >
-            Start mentoring
-            <span>
-              <ArrowRightIcon className="ml-2 h-5 w-5" />
+            <span className="flex flex-wrap justify-center -space-x-2 mr-2">
+              {currentMentees.map((mentee) => (
+                <img
+                  key={mentee.id}
+                  className="inline-block h-10 w-10 rounded-full object-cover ring-2 ring-white"
+                  src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
+                  alt={mentee.first_name}
+                />
+              ))}
             </span>
+            <div className="flex items-center">
+              You have {currentMentees.length} mentee
+              {currentMentees.length == 1 ? "" : "s"}
+              <span>
+                <ArrowRightIcon className="ml-2 h-5 w-5" />
+              </span>
+            </div>
           </Link>
-        </p>
+        ) : (
+          <p className="text-m align-middle">
+            You are not currently mentoring anyone
+            <Link
+              to="/mentoring/mentees"
+              className="mt-2 py-2 px-4 flex justify-center items-center bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
+            >
+              Start mentoring
+              <span>
+                <ArrowRightIcon className="ml-2 h-5 w-5" />
+              </span>
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
 function GroupSessionsInfo() {
-  const { data: allSessions = [] } = useSWR<GroupSessionResponse>(
-    LIST_GROUP_SESSIONS_ENDPOINT
-  );
-  const { data: joinedSessions } = useSWR<GroupSessionResponse>(
-    LIST_USER_JOINED_SESSIONS_ENDPOINT
-  );
-  const { data: hostingSessions } = useSWR<GroupSessionResponse>(
-    LIST_USER_HOSTING_SESSIONS_ENDPOINT
+  const { data: recommendedSessions = [] } = useSWR<GroupSessionResponse>(
+    LIST_USER_SUGGESTED_SESSIONS_ENDPOINT
   );
 
-  const numAvailableSessions = allSessions
-    // TODO: Only show sessions in the future
-    // .filter((session) => Date.parse(session.date) >= Date.now())
-    // Filter out sessions you are hosting or have already joined
-    .filter(
-      (session) =>
-        !joinedSessions?.find(
-          (otherSession) => session.id == otherSession.id
-        ) &&
-        !hostingSessions?.find((otherSession) => session.id == otherSession.id)
-    ).length;
+  const numAvailableSessions = recommendedSessions.length;
 
   return (
     <div className="bg-gray-50rounded-2xl p-2 space-y-2">
@@ -169,6 +189,8 @@ function UpcomingSessionsColumn() {
   const { data: allHostSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_USER_HOSTING_SESSIONS_ENDPOINT
   );
+
+  // TODO: include mentoring meetings
 
   const allSessions = [...allJoinedSessions, ...allHostSessions]
     .sort((a, b) => Date.parse(a.date) - Date.parse(b.date))

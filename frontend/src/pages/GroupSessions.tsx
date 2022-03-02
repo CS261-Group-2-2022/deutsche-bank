@@ -5,7 +5,7 @@ import { ChevronUpIcon, PlusIcon } from "@heroicons/react/solid";
 import {
   GroupSession,
   GroupSessionResponse,
-  LIST_GROUP_SESSIONS_ENDPOINT,
+  LIST_All_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
@@ -119,7 +119,7 @@ function HideableSessionsInfo({
 export default function GroupSessions() {
   // Pull in session data from backend
   const { data: allSessions = [], isValidating } = useSWR<GroupSessionResponse>(
-    LIST_GROUP_SESSIONS_ENDPOINT
+    LIST_All_GROUP_SESSIONS_ENDPOINT
   );
   const { data: joinedSessions } = useSWR<GroupSessionResponse>(
     LIST_USER_JOINED_SESSIONS_ENDPOINT

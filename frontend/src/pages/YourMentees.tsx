@@ -18,7 +18,6 @@ import {
   INCOMING_REQUESTS_ENDPOINT,
   MentorshipRequest,
   PROFILE_ENDPOINT,
-  User,
   UserFull,
 } from "../utils/endpoints";
 import { getSkillFromId, useSkills } from "../utils/skills";
@@ -46,14 +45,12 @@ const PendingUserPanel = ({ request }: PendingUserPanelProps) => {
         },
       });
 
-      const body = await res.json();
-
       if (res.ok) {
-        // TODO: Revalidate the caches for current mentees
-        // mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
+        // Revalidate the caches for current mentees
         mutate(CURRENT_MENTEES_ENDPOINT);
         mutate(INCOMING_REQUESTS_ENDPOINT);
       } else {
+        const body = await res.json();
         setError(body.error?.join(" ") ?? error);
       }
 
@@ -140,8 +137,7 @@ const PendingRequests = ({ requests }: PendingRequestsProps) => {
   }, [user]);
 
   const toggleAccepting = async (enabled: boolean) => {
-    // setIsLoading(true);
-    // setError(undefined);
+    // TODO: display loading/error indication?
 
     const res = await fetch(PROFILE_ENDPOINT, {
       method: "PATCH",
@@ -154,15 +150,11 @@ const PendingRequests = ({ requests }: PendingRequestsProps) => {
       }),
     });
 
-    const body = await res.json();
+    // const body = await res.json();
     if (res.ok) {
       // Revalidate the cache of the current users data
       mutate(PROFILE_ENDPOINT);
-    } else {
-      // setError(body.error?.join(" "));
     }
-
-    // setIsLoading(false);
   };
 
   return (

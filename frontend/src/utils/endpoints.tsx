@@ -7,7 +7,8 @@ export const LOGIN_ENDPOINT = `${HOSTNAME}/api/v1/auth/login/`;
 export const SIGNUP_ENDPOINT = `${HOSTNAME}/api/v1/auth/register/`;
 export const PROFILE_ENDPOINT = `${HOSTNAME}/api/v1/auth/profile/`;
 export const BUSINESS_AREAS_ENDPOINT = `${HOSTNAME}/api/v1/area/`;
-export const LIST_GROUP_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/`;
+export const LIST_All_GROUP_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/`;
+export const LIST_USER_SUGGESTED_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/find/`;
 export const LIST_USER_JOINED_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/user`;
 export const LIST_USER_HOSTING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/host`;
 export const CREATE_GROUP_SESSION_ENDPOINT = `${HOSTNAME}/api/v1/session/`;
@@ -32,8 +33,9 @@ export const CREATE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-reque
 export const ACCEPT_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/accept/`;
 export const DECLINE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/decline/`;
 export const CANCEL_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/cancel/`;
-export const GET_USERS_PLANS = `${HOSTNAME}/api/v1/user/{ID}/mentees/`;
-export const CREATE_MENTEES_PLAN = `${HOSTNAME}/api/v1/plan/`;
+export const LIST_USER_PLANS = `${HOSTNAME}/api/v1/user/{ID}/plans/`;
+export const CREATE_USER_PLANS = `${HOSTNAME}/api/v1/plan/`;
+export const UPCOMING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/events/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -80,9 +82,7 @@ export type User = {
   mentorship?: number;
   interests: number[];
   expertise: number[];
-
-  // TODO: backend
-  bio?: string;
+  interests_description?: string;
 };
 
 export type UserFull = {
@@ -97,6 +97,7 @@ export type UserFull = {
   is_email_verified: boolean;
   mentor_intent: boolean;
   interests: Skill[];
+  interests_description?: string;
 };
 
 /** Drops down a UserFull data type to just a User, for simplicity */
@@ -114,9 +115,7 @@ export const userFullToUser = (user: UserFull): User => {
       mentorship: user.mentorship?.id,
       interests: user.interests.map((skill) => skill.id),
       expertise: user.expertise.map((skill) => skill.id),
-
-      // TODO: bio
-      bio: "",
+      interests_description: user.interests_description,
     }
   );
 };
@@ -243,8 +242,6 @@ export type Meeting = {
   mentorship: number;
   mentee_notes?: string;
   mentor_notes?: string;
-
-  // TODO: backend?
   location: string;
   description: string;
 };
@@ -259,11 +256,19 @@ export type MeetingRequest = {
 
 //Plan Of Action
 export type PlanOfAction = {
+  id: number;
+  user: number;
   name: string;
   description: string;
-  // user: User;
-  dueDate: string;
-  completed: string;
+  due_date: string;
+  creation_date: string;
+  completed: boolean;
 };
 
 export type PlanOfActionResponse = PlanOfAction[];
+
+// Upcoming Sessions
+export type UpcomingSessions = {
+  meetings: Meeting[];
+  sessions: GroupSession[];
+};

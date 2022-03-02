@@ -35,11 +35,13 @@ export default function GeneralInfo({
 
       <div className="grid grid-cols-2 gap-5 mt-5">
         <PlansOfActionColumn
+          mentee={mentee}
           is_completed_goals={false}
           setOpenedPlanOfAction={setOpenedPlanOfAction}
           setCreatePlanOfActionOpen={setCreatePlanOfActionOpen}
         />
         <PlansOfActionColumn
+          mentee={mentee}
           is_completed_goals={true}
           setOpenedPlanOfAction={setOpenedPlanOfAction}
           setCreatePlanOfActionOpen={setCreatePlanOfActionOpen}

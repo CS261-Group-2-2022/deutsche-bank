@@ -5,10 +5,10 @@ import {
   FULL_USER_ENDPOINT,
   getAuthToken,
   PROFILE_ENDPOINT,
-  SETTINGS_ENDPOINT,
   User,
 } from "../../utils/endpoints";
 import { FormTextArea } from "../FormTextarea";
+import { LoadingButton } from "../LoadingButton";
 
 type InterestsDescriptionProps = {
   title?: string;
@@ -23,28 +23,25 @@ export default function InterestsDescription({
   user,
   canEdit,
 }: InterestsDescriptionProps) {
-  const [bio, setBio] = useState(user.bio ?? "");
+  const [bio, setBio] = useState(user.interests_description ?? "");
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
   const updateInterestsDescription = async () => {
+    setIsLoading(true);
     setError(undefined);
 
-    const res = await fetch(
-      SETTINGS_ENDPOINT.replace("{ID}", user.id.toString()),
-      {
-        method: "PATCH",
-        headers: {
-          "content-type": "application/json",
-          authorization: `Token ${getAuthToken()}`,
-        },
-        body: JSON.stringify({
-          bio, // TODO: backend?
-        }),
-      }
-    );
-
-    const body = await res.json();
+    const res = await fetch(PROFILE_ENDPOINT, {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        interests_description: bio,
+      }),
+    });
 
     if (res.ok) {
       setIsEditing(false);
@@ -52,12 +49,14 @@ export default function InterestsDescription({
       mutate(PROFILE_ENDPOINT);
       mutate(FULL_USER_ENDPOINT.replace("{ID}", user.id.toString()));
     } else {
-      // TODO: error from backend
+      const body = await res.json();
       setError(
-        body.bio?.join(" ") ??
+        body.interests_description?.join(" ") ??
           "An error occured when updating your interests description. Please try again."
       );
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -66,12 +65,13 @@ export default function InterestsDescription({
         <h3 className="flex text-xl font-bold gap-2">
           {title}
           {canEdit && (
-            <button
+            <LoadingButton
               className={`ml-2 px-4 flex justify-center items-center text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg ${
                 isEditing
                   ? " bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200"
                   : " bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200"
               }`}
+              isLoading={isLoading}
               onClick={() =>
                 isEditing ? updateInterestsDescription() : setIsEditing(true)
               }
@@ -84,7 +84,7 @@ export default function InterestsDescription({
                   Edit
                 </>
               )}
-            </button>
+            </LoadingButton>
           )}
         </h3>
         {subHeading && <h5 className="text-sm text-gray-600">{subHeading}</h5>}
