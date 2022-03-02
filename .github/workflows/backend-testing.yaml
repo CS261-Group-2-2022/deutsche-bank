@@ -1,0 +1,46 @@
+name: Run Backend Tests
+
+
+on: # Specify when we should run this task
+  push:
+    # Option 1) On any push to any branch
+    branches:
+      - '**' # This matches all branches, including ones with slashes in them.
+
+    # Option 2) On any push to main
+    #branches:
+    #  - main
+
+  pull_request: # On any pull request to main
+    branches:
+      - main
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out changes
+        uses: actions/checkout@v2
+
+      - name: Install Python3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install requirements
+        run: |
+          pip install -r backend/requirements.txt
+
+      # TODO: Do we need to run migrations?
+
+      - name: Run coverage report
+        run: |
+          cd backend
+          bash branch-coverage.sh
+          bash print-coverage.sh
+
+      - name: Run tests
+        run: |
+          cd backend
+          bash run-tests.sh

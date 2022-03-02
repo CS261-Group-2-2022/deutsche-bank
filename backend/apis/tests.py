@@ -261,7 +261,7 @@ class UserModelTests(TestCase):
         user2.mentorship = new_mentorship
         user2.save()
 
-        users_with_user1_as_mentor = User.objects.all().filter(mentorship__mentor__pk__exact=user1.pk)
+        users_with_user1_as_mentor = User.objects.filter(mentorship__mentor__pk__exact=user1.pk)
 
         ## Check that only 1 user has user1 as mentor
         self.assertEqual(len(users_with_user1_as_mentor), 1)

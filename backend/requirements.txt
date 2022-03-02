@@ -9,3 +9,4 @@ numpy
 yake
 pyyaml
 uritemplate
+coverage

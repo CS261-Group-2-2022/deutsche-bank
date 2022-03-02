@@ -39,7 +39,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def matching(self, request, *args, **kwargs):
         user: User = request.user
         all_users: List[User] = list(User.objects.all())
-        users_who_want_to_mentor: List[User] = list(User.objects.all().filter(mentor_intent=True))
+        users_who_want_to_mentor: List[User] = list(User.objects.filter(mentor_intent=True))
         all_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         all_requests: List[MentorRequest] = list(MentorRequest.objects.all())
