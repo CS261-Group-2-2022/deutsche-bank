@@ -101,6 +101,7 @@ class User(AbstractBaseUser, Randomisable):
     """
     first_name: str = models.CharField(max_length=100)
     last_name: str = models.CharField(max_length=100)
+    image_link: str = models.CharField(null=True, max_length=100)
 
     business_area: BusinessArea = models.ForeignKey('BusinessArea', null=True, on_delete=models.SET_NULL)
 
