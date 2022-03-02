@@ -133,7 +133,7 @@ class EventsView(APIView):
 
         return Response({
             'meetings': MeetingSerializer(user.get_meetings(), many=True).data,
-            'sessions': GroupSessionSerializer(user.get_all_sessions(), many=True).data
+            'sessions': GroupSessionSerializerFull(user.get_all_sessions(), many=True).data
         })
 
 
