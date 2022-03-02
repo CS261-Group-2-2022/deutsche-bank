@@ -1,35 +1,15 @@
 import { useEffect, useState } from "react";
 import { mutate } from "swr";
-import useSWR from "swr";
-import { Dialog, Disclosure } from "@headlessui/react";
-import { ChevronUpIcon } from "@heroicons/react/solid";
+import { Dialog } from "@headlessui/react";
 import {
   CREATE_USER_PLANS,
   getAuthToken,
-  GroupSession,
-  JoinSessionResponse,
-  JoinSessionSuccess,
   LIST_USER_PLANS,
-  User,
 } from "../../utils/endpoints";
-import { useUser } from "../../utils/authentication";
-import SessionTopicLabel from "../SessionTopicLabel";
-import LocationText from "../LocationText";
-import DateText from "../DateText";
 import Popup from "../Popup";
-import CapacityText from "../CapacityText";
-import { PlanOfAction } from "../../utils/endpoints";
 import { FormTextArea } from "../FormTextarea";
 import { FormInput } from "../FormInput";
 import { LoadingButton } from "../LoadingButton";
-
-/** Verifies whether a join response is succesful or not (and type guards the body) */
-const isJoinSuccess = (
-  res: Response,
-  body: JoinSessionResponse
-): body is JoinSessionSuccess => {
-  return res.ok;
-};
 
 type CreatePlanOfActionPopupProps = {
   isOpen: boolean;
@@ -101,7 +81,7 @@ export default function CreatePlanOfActionPopup({
 
     if (res.ok) {
       initiateClose();
-      mutate(LIST_USER_PLANS);
+      mutate(LIST_USER_PLANS.replace("{ID}", menteeID.toString()));
     } else {
       const body = await res.json();
       setPlanNameError(body.name?.join(" "));

@@ -211,9 +211,6 @@ export default function MentoringMatchingPage({ user }: MatchingPageProps) {
     revalidateOnFocus: false,
   });
 
-  console.log(requests);
-  console.log(recommendations);
-
   return (
     <div className="mx-5">
       {/* Title */}

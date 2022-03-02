@@ -3,6 +3,7 @@ import {
   END_MENTORSHIP_ENDPOINT,
   FULL_USER_ENDPOINT,
   getAuthToken,
+  MentorFeedback,
   Mentorship,
   MENTORSHIP_ENDPOINT,
   PROFILE_ENDPOINT,
@@ -276,24 +277,11 @@ const MentorProfile = ({
 };
 
 type FeedbackDropdownProps = {
-  feedback: {
-    time: string;
-    going_well?: string;
-    improvement?: string;
-  };
+  feedback: MentorFeedback;
 };
 
 const FeedbackDropdown = ({ feedback }: FeedbackDropdownProps) => {
-  // const [isEditingNotes, setIsEditingNotes] = useState(false);
-  // const [menteeNotes, setMenteeNotes] = useState(meeting.mentee_notes ?? "");
-  // const [mentorNotes, setMentorNotes] = useState(meeting.mentor_notes ?? "");
-  // const isMentor = perspective === "mentor";
-
   const datetime = DateTime.fromISO(feedback.time);
-  // const notesNotRecorded =
-  // (isMentor && mentorNotes === "") || (!isMentor && menteeNotes === "");
-
-  // TODO: connect updating to backend
 
   return (
     <Disclosure>
@@ -316,9 +304,9 @@ const FeedbackDropdown = ({ feedback }: FeedbackDropdownProps) => {
                   What{"'"}s going well
                 </h5>
                 <p className="text-sm text-gray-800">
-                  {!feedback.going_well || feedback.going_well === ""
+                  {!feedback.positives || feedback.positives === ""
                     ? "N/A"
-                    : feedback.going_well}
+                    : feedback.positives}
                 </p>
               </div>
               <div>
@@ -327,9 +315,9 @@ const FeedbackDropdown = ({ feedback }: FeedbackDropdownProps) => {
                 </h5>
 
                 <p className="text-sm text-gray-800">
-                  {!feedback.improvement || feedback.improvement === ""
+                  {!feedback.improvements || feedback.improvements === ""
                     ? "N/A"
-                    : feedback.improvement}
+                    : feedback.improvements}
                 </p>
               </div>
             </div>
@@ -341,26 +329,26 @@ const FeedbackDropdown = ({ feedback }: FeedbackDropdownProps) => {
 };
 
 type MenteeFeedbackProps = {
+  mentorship: Mentorship;
+  feedback?: MentorFeedback[];
   perspective: "mentor" | "mentee";
 };
 
-const MenteeFeedback = ({ perspective }: MenteeFeedbackProps) => {
+const MenteeFeedback = ({
+  mentorship,
+  feedback,
+  perspective,
+}: MenteeFeedbackProps) => {
   const [createOpen, setCreateOpen] = useState(false);
 
-  // TODO: get from backend
-
-  const feedback = [
-    // { time: new Date(Date.now()).toISOString() },
-    // { time: new Date(Date.now()).toISOString() },
-    // { time: new Date(Date.now()).toISOString() },
-    // { time: new Date(Date.now()).toISOString() },
-    // { time: new Date(Date.now()).toISOString() },
-    { time: new Date(Date.now()).toISOString() },
-  ];
+  const sortedFeedback = feedback
+    ? feedback.sort((a, b) => Date.parse(b.time) - Date.parse(a.time))
+    : [];
 
   return (
     <div className="w-full">
       <FeedbackReportPopup
+        mentorship={mentorship}
         isOpen={createOpen}
         closeModal={() => setCreateOpen(false)}
       />
@@ -386,8 +374,8 @@ const MenteeFeedback = ({ perspective }: MenteeFeedbackProps) => {
       </div>
 
       <div className="flex flex-col gap-1 mt-1">
-        {feedback.length > 0
-          ? feedback.map((feedback) => (
+        {sortedFeedback && sortedFeedback.length > 0
+          ? sortedFeedback.map((feedback) => (
               <FeedbackDropdown key={feedback.time} feedback={feedback} />
             ))
           : "No feedback has been provided yet"}
@@ -469,7 +457,11 @@ export default function GeneralInfo({
           perspective={perspective}
           setMentorReviewOpen={setMentorReviewOpen}
         />
-        <MenteeFeedback perspective={perspective} />
+        <MenteeFeedback
+          mentorship={mentorship}
+          perspective={perspective}
+          feedback={mentorship.mentor_feedback}
+        />
       </div>
     </div>
   );

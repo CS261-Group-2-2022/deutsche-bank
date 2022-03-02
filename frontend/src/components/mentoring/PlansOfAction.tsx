@@ -1,5 +1,12 @@
-import { useState } from "react";
-import { PlanOfAction, User, UserFull } from "../../utils/endpoints";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
+import {
+  LIST_USER_PLANS,
+  PlanOfAction,
+  PlanOfActionResponse,
+  User,
+  UserFull,
+} from "../../utils/endpoints";
 import CreatePlanOfActionPopup from "./CreatePlanOfActionPopup";
 import PlanOfActionPopup from "./PlanOfActionPopup";
 import PlansOfActionColumn from "./PlansOfActionColumn";
@@ -20,6 +27,19 @@ export default function GeneralInfo({
   >();
   const [createPlanOfActionOpen, setCreatePlanOfActionOpen] = useState(false);
 
+  const { data: plansOfActionData = [] } = useSWR<PlanOfActionResponse>(
+    LIST_USER_PLANS.replace("{ID}", mentee.id.toString())
+  );
+
+  // When data updates, we should update the object stored in opened so it uses new information
+  useEffect(() => {
+    if (openedPlanOfAction) {
+      setOpenedPlanOfAction(
+        plansOfActionData.find((plan) => plan.id === openedPlanOfAction.id)
+      );
+    }
+  }, [plansOfActionData]);
+
   return (
     <div>
       <PlanOfActionPopup
@@ -36,12 +56,14 @@ export default function GeneralInfo({
       <div className="grid grid-cols-2 gap-5 mt-5">
         <PlansOfActionColumn
           mentee={mentee}
+          plansOfActionData={plansOfActionData}
           is_completed_goals={false}
           setOpenedPlanOfAction={setOpenedPlanOfAction}
           setCreatePlanOfActionOpen={setCreatePlanOfActionOpen}
         />
         <PlansOfActionColumn
           mentee={mentee}
+          plansOfActionData={plansOfActionData}
           is_completed_goals={true}
           setOpenedPlanOfAction={setOpenedPlanOfAction}
           setCreatePlanOfActionOpen={setCreatePlanOfActionOpen}

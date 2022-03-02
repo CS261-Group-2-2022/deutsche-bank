@@ -15,6 +15,7 @@ import PlanOfActionInfo from "./PlanOfActionInfo";
 type PlansOfActionColumnProps = {
   mentee: User;
   is_completed_goals: boolean;
+  plansOfActionData: PlanOfAction[];
   setOpenedPlanOfAction: (plan: PlanOfAction) => unknown;
   setCreatePlanOfActionOpen: (open: boolean) => unknown;
 };
@@ -22,13 +23,10 @@ type PlansOfActionColumnProps = {
 export default function PlansOfActionColumn({
   mentee,
   is_completed_goals,
+  plansOfActionData,
   setOpenedPlanOfAction,
   setCreatePlanOfActionOpen,
 }: PlansOfActionColumnProps) {
-  const { data: plansOfActionData = [] } = useSWR<PlanOfActionResponse>(
-    LIST_USER_PLANS.replace("{ID}", mentee.id.toString())
-  );
-
   const filteredPlans = plansOfActionData
     .filter((plan) => (is_completed_goals ? plan.completed : !plan.completed))
     .sort((a, b) => Date.parse(a.due_date) - Date.parse(b.due_date));

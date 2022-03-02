@@ -4,10 +4,13 @@ import useSWR from "swr";
 import { Dialog, Disclosure } from "@headlessui/react";
 import { ChevronUpIcon, StarIcon } from "@heroicons/react/solid";
 import {
+  CREATE_MENTOR_FEEDBACK_ENDPOINT,
   getAuthToken,
   GroupSession,
   JoinSessionResponse,
   JoinSessionSuccess,
+  Mentorship,
+  MENTORSHIP_ENDPOINT,
   User,
 } from "../../utils/endpoints";
 import { useUser } from "../../utils/authentication";
@@ -18,27 +21,23 @@ import Popup from "../Popup";
 import CapacityText from "../CapacityText";
 import { PlanOfAction } from "../../utils/endpoints";
 import { FormTextArea } from "../FormTextarea";
-
-/** Verifies whether a join response is succesful or not (and type guards the body) */
-const isJoinSuccess = (
-  res: Response,
-  body: JoinSessionResponse
-): body is JoinSessionSuccess => {
-  return res.ok;
-};
+import { LoadingButton } from "../LoadingButton";
 
 type FeedbackReportPopup = {
+  mentorship: Mentorship;
   isOpen: boolean;
   closeModal: () => unknown;
 };
 
 export default function FeedbackReportPopup({
+  mentorship,
   isOpen,
   closeModal,
 }: FeedbackReportPopup) {
   const [isClosing, setIsClosing] = useState(false);
   const [goingWell, setGoingWell] = useState("");
   const [improvements, setImprovements] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // When we want to start closing the modal, we want to let the animation
   // start hiding the modal BEFORE we clear the session. Once the animation
@@ -60,6 +59,39 @@ export default function FeedbackReportPopup({
   const clearErrors = () => {
     setGoingWellError(undefined);
     setImprovementsError(undefined);
+    setError(undefined);
+  };
+
+  const sendFeedback = async () => {
+    setIsLoading(true);
+    clearErrors();
+
+    const res = await fetch(CREATE_MENTOR_FEEDBACK_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        mentorship: mentorship.id,
+        positives: goingWell,
+        improvements: improvements,
+      }),
+    });
+
+    const body = await res.json();
+    if (res.ok) {
+      initiateClose();
+
+      // Revalidate the cache of all meetings
+      mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
+    } else {
+      setGoingWellError(body.positives?.join(" "));
+      setImprovementsError(body.improvements?.join(" "));
+      setError(body.non_field_errors?.join(" "));
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -81,7 +113,7 @@ export default function FeedbackReportPopup({
           className="space-y-1"
           onSubmit={(e) => {
             e.preventDefault();
-            // createSessionRequest();
+            sendFeedback();
           }}
         >
           <FormTextArea
@@ -113,12 +145,13 @@ export default function FeedbackReportPopup({
           )}
 
           <div className="grid grid-cols-10 gap-2 pt-2">
-            <button
+            <LoadingButton
               type="submit"
               className="inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none"
+              isLoading={isLoading}
             >
               Submit Feedback
-            </button>
+            </LoadingButton>
             <button
               type="button"
               className="inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
