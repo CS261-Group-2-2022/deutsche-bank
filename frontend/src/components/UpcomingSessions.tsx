@@ -7,15 +7,16 @@ import UserAvatar from "./UserAvatar";
 
 const MeetingCard = ({ meeting }: { meeting: ExtendedMeeting }) => {
   const { user } = useUser();
-  const otherUser =
-    meeting.mentorship.mentee.id === user?.id
-      ? meeting.mentorship.mentor
-      : meeting.mentorship.mentee;
+  const iAmMentee = meeting.mentorship.mentee.id === user?.id;
+
+  const otherUser = iAmMentee
+    ? meeting.mentorship.mentor
+    : meeting.mentorship.mentee;
 
   return (
     <Link
       className="bg-gray-100 rounded-xl border-gray-300 border p-2 text-center"
-      to="/mentoring/me?tab=meetings"
+      to={`/mentoring/${iAmMentee ? "me" : otherUser.id}?tab=meetings`}
     >
       <div className="flex items-center space-x-4">
         <UserAvatar user={user} size={14} />
