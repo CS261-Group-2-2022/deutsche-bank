@@ -129,7 +129,7 @@ class User(AbstractBaseUser, Randomisable):
     interests: QuerySet[Skill] = models.ManyToManyField(Skill, related_name='user_interests', blank=True)
     expertise: QuerySet[Skill] = models.ManyToManyField(Skill, related_name='user_expertise', blank=True)
 
-    interests_description: str = models.CharField(max_length=500, default="")
+    interests_description: str = models.CharField(max_length=500, default="", blank=True)
 
     objects = UserManager()
 
