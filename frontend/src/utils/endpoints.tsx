@@ -35,6 +35,7 @@ export const DECLINE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-requ
 export const CANCEL_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/cancel/`;
 export const LIST_USER_PLANS = `${HOSTNAME}/api/v1/user/{ID}/plans/`;
 export const CREATE_USER_PLANS = `${HOSTNAME}/api/v1/plan/`;
+export const CHANGE_USER_PLANS = `${HOSTNAME}/api/v1/plan/{ID}/`;
 export const UPCOMING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/events/`;
 
 /** Retrieves a stored session token */
@@ -83,6 +84,7 @@ export type User = {
   interests: number[];
   expertise: number[];
   interests_description?: string;
+  image_link?: "";
 };
 
 export type UserFull = {
@@ -98,6 +100,7 @@ export type UserFull = {
   mentor_intent: boolean;
   interests: Skill[];
   interests_description?: string;
+  image_link?: "";
 };
 
 /** Drops down a UserFull data type to just a User, for simplicity */
@@ -254,6 +257,21 @@ export type MeetingRequest = {
   mentorship: number;
 };
 
+// Meeting version sent through GET /events/
+export type ExtendedMeeting = {
+  isMeeting: true;
+  id: number;
+  time: string;
+  mentorship: {
+    mentor: User;
+    mentee: User;
+  };
+  mentee_notes?: string;
+  mentor_notes?: string;
+  location: string;
+  description: string;
+};
+
 //Plan Of Action
 export type PlanOfAction = {
   id: number;
@@ -263,12 +281,13 @@ export type PlanOfAction = {
   due_date: string;
   creation_date: string;
   completed: boolean;
+  completion_date: string;
 };
 
 export type PlanOfActionResponse = PlanOfAction[];
 
 // Upcoming Sessions
 export type UpcomingSessions = {
-  meetings: Meeting[];
+  meetings: ExtendedMeeting[];
   sessions: GroupSession[];
 };

@@ -13,11 +13,11 @@ import UserAvatar from "../components/UserAvatar";
 import { useUser } from "../utils/authentication";
 import {
   CURRENT_MENTEES_ENDPOINT,
+  ExtendedMeeting,
   FULL_USER_ENDPOINT,
   GroupSession,
   GroupSessionResponse,
   LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
-  Meeting,
   Mentorship,
   MENTORSHIP_ENDPOINT,
   UpcomingSessions,
@@ -221,7 +221,7 @@ function UpcomingSessionsColumn() {
   const { data: upcomingSessions = { meetings: [], sessions: [] } } =
     useSWR<UpcomingSessions>(UPCOMING_SESSIONS_ENDPOINT);
 
-  type MeetingFlagged = { isMeeting: true } & Meeting;
+  type MeetingFlagged = { isMeeting: true } & ExtendedMeeting;
   type SessionFlagged = { isMeeting: false } & GroupSession;
 
   type AllSessions = (MeetingFlagged | SessionFlagged)[];
@@ -250,7 +250,7 @@ function UpcomingSessionsColumn() {
         ) : (
           allSessions.map((session) => (
             <UpcomingSession
-              key={session.id}
+              key={(session.isMeeting ? "MEETING-" : "") + session.id}
               isMeeting={session.isMeeting}
               event={session}
             />

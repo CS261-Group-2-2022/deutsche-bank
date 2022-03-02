@@ -1,35 +1,16 @@
 import { Link } from "react-router-dom";
-import useSWR from "swr";
 import { useUser } from "../utils/authentication";
-import {
-  FULL_USER_ENDPOINT,
-  GroupSession,
-  Meeting,
-  Mentorship,
-  MENTORSHIP_ENDPOINT,
-  UserFull,
-} from "../utils/endpoints";
+import { ExtendedMeeting, GroupSession } from "../utils/endpoints";
 import DateTextProps from "./DateText";
 import LocationText from "./LocationText";
 import UserAvatar from "./UserAvatar";
 
-const MeetingCard = ({ meeting }: { meeting: Meeting }) => {
+const MeetingCard = ({ meeting }: { meeting: ExtendedMeeting }) => {
   const { user } = useUser();
-
-  // TODO: can the backend just serlialize all this stuff so we dont need to do more requests?
-  const { data: mentorship } = useSWR<Mentorship>(
-    MENTORSHIP_ENDPOINT.replace("{ID}", meeting.mentorship.toString())
-  );
-  const { data: otherUser } = useSWR<UserFull>(
-    mentorship
-      ? FULL_USER_ENDPOINT.replace(
-          "{ID}",
-          mentorship.mentee === user?.id
-            ? mentorship.mentor.toString()
-            : mentorship.mentee.toString()
-        )
-      : null
-  );
+  const otherUser =
+    meeting.mentorship.mentee.id === user?.id
+      ? meeting.mentorship.mentor
+      : meeting.mentorship.mentee;
 
   return (
     <Link
@@ -80,13 +61,13 @@ const GroupSessionCard = ({ session }: { session: GroupSession }) => {
 
 type UpcomingSessionProps = {
   isMeeting: boolean;
-  event: Meeting | GroupSession;
+  event: ExtendedMeeting | GroupSession;
 };
 
 const eventIsMeeting = (
   isMeeting: boolean,
-  event: Meeting | GroupSession
-): event is Meeting => isMeeting;
+  event: ExtendedMeeting | GroupSession
+): event is ExtendedMeeting => isMeeting;
 
 export default function UpcomingSession({
   isMeeting,
