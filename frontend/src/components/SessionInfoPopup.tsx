@@ -91,7 +91,7 @@ export default function SessionInfoPopup({
   const [error, setError] = useState<string | undefined>(undefined);
 
   const joinSession = async () => {
-    setIsLoading(false);
+    setIsLoading(true);
     setError(undefined);
 
     try {

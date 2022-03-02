@@ -17,6 +17,7 @@ import { FormTextArea } from "./FormTextarea";
 import FormMultiSelect from "./FormMultiSelect";
 import { useUser } from "../utils/authentication";
 import { Link } from "react-router-dom";
+import { LoadingButton } from "./LoadingButton";
 
 /** Verifies whether a create response is succesful or not (and type guards the body) */
 const isCreateSuccess = (
@@ -38,6 +39,7 @@ export default function CreateSessionPopup({
   const { user } = useUser();
   const { skills } = useSkills();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [sessionTitle, setSessionTitle] = useState("");
   const [location, setLocation] = useState("");
   const [virtualLink, setVirtualLink] = useState("");
@@ -78,8 +80,12 @@ export default function CreateSessionPopup({
   };
 
   const createSessionRequest = async () => {
+    setIsLoading(true);
+    clearErrors();
+
     if (!assignedSkills || assignedSkills.length == 0) {
       setSkillsError("You must select atleast one topic");
+      setIsLoading(false);
       return;
     }
 
@@ -101,7 +107,6 @@ export default function CreateSessionPopup({
     });
 
     // Clear any existing errors
-    clearErrors();
     const body: CreateSessionResponse = await res.json();
 
     if (isCreateSuccess(res, body)) {
@@ -121,6 +126,8 @@ export default function CreateSessionPopup({
       setOverallError(body.non_field_errors?.join(" "));
       setSkillsError(body.skills?.join(" "));
     }
+
+    setIsLoading(false);
   };
 
   const [isClosing, setIsClosing] = useState(false);
@@ -258,12 +265,13 @@ export default function CreateSessionPopup({
             </div>
           )}
           <div className="grid grid-cols-10 gap-2 pt-2">
-            <button
+            <LoadingButton
               type="submit"
               className="inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none"
+              isLoading={isLoading}
             >
               Create Session
-            </button>
+            </LoadingButton>
             <button
               type="button"
               className="inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
