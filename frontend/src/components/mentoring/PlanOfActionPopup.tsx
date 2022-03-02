@@ -4,10 +4,13 @@ import useSWR from "swr";
 import { Dialog, Disclosure } from "@headlessui/react";
 import { ChevronUpIcon } from "@heroicons/react/solid";
 import {
+  CHANGE_USER_PLANS,
+  CREATE_USER_PLANS,
   getAuthToken,
   GroupSession,
   JoinSessionResponse,
   JoinSessionSuccess,
+  LIST_USER_PLANS,
   User,
 } from "../../utils/endpoints";
 import { useUser } from "../../utils/authentication";
@@ -48,6 +51,52 @@ export default function PlanOfActionPopup({
     setIsClosing(true);
   };
 
+  const completePlanOfAction = async () => {
+    const res = await fetch(
+      CHANGE_USER_PLANS.replace("{ID}", planOfAction?.id.toString() ?? "-1"),
+      {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
+        },
+        body: JSON.stringify({
+          completed: true,
+          completion_date: new Date().toISOString(),
+        }),
+      }
+    );
+
+    if (res.ok) {
+      mutate(
+        LIST_USER_PLANS.replace("{ID}", planOfAction?.user.toString() ?? "-1")
+      );
+    }
+  };
+
+  const uncompletePlanOfAction = async () => {
+    const res = await fetch(
+      CHANGE_USER_PLANS.replace("{ID}", planOfAction?.id.toString() ?? "-1"),
+      {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
+        },
+        body: JSON.stringify({
+          completed: false,
+          completion_date: null,
+        }),
+      }
+    );
+
+    if (res.ok) {
+      mutate(
+        LIST_USER_PLANS.replace("{ID}", planOfAction?.user.toString() ?? "-1")
+      );
+    }
+  };
+
   useEffect(() => {
     setIsClosing(false);
   }, [isOpen]);
@@ -71,9 +120,7 @@ export default function PlanOfActionPopup({
         {planOfAction?.completed ? (
           <>
             <span>Completed: </span>
-            <DateText
-              date={planOfAction?.due_date.toString() ?? ""} // TODO: completed date?
-            />
+            <DateText date={planOfAction?.completion_date?.toString() ?? ""} />
           </>
         ) : (
           <></>
@@ -90,16 +137,47 @@ export default function PlanOfActionPopup({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-2">
-        <button
-          type="button"
-          className={`inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 
+      {planOfAction?.completed ? (
+        <div className="grid grid-cols-4 gap-2">
+          <button
+            type="button"
+            className={
+              "col-span-3 bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white font-semibold rounded-md"
+            }
+            onClick={uncompletePlanOfAction}
+          >
+            Mark as incomplete
+          </button>
+          <button
+            type="button"
+            className={`inline-flex justify-center col-span-1 px-4 py-2 text-sm font-medium border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 
           text-blue-900 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-500`}
-          onClick={initiateClose}
-        >
-          Close
-        </button>
-      </div>
+            onClick={initiateClose}
+          >
+            Close
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-4 gap-2">
+          <button
+            type="button"
+            className={
+              "col-span-3 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white font-semibold rounded-md"
+            }
+            onClick={completePlanOfAction}
+          >
+            Mark as complete
+          </button>
+          <button
+            type="button"
+            className={`inline-flex justify-center col-span-1 px-4 py-2 text-sm font-medium border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 
+          text-blue-900 bg-blue-100 hover:bg-blue-200 focus-visible:ring-blue-500`}
+            onClick={initiateClose}
+          >
+            Close
+          </button>
+        </div>
+      )}
     </Popup>
   );
 }
