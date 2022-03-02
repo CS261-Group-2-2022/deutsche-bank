@@ -62,7 +62,7 @@ class LoginSerializer(ModelSerializer):
 
 class PasswordLoginSerializer(LoginSerializer):
     class Meta(LoginSerializer.Meta):
-        fields = 'password'
+        fields = ['password']
 
     def validate(self, attrs: OrderedDict):
         attrs['email'] = self.context.get('request').user.email
