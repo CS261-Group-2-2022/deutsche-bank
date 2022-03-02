@@ -1,4 +1,7 @@
+from enum import unique, Enum, auto
+
 from django.contrib.auth.base_user import BaseUserManager
+from django.db.models import Manager
 
 
 class UserManager(BaseUserManager):
@@ -15,3 +18,84 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
+
+
+@unique
+class NotificationType(Enum):
+    BUSINESS_AREA_CONFLICT = auto()
+    MEETING_REQUEST_RECEIVED = auto()
+    MEETING_NOTES_MENTOR = auto()
+    MEETING_NOTES_MENTEE = auto()
+    MENTORSHIP_REQUEST_RECEIVED = auto()
+    GROUP_SESSION_PROMPT = auto()
+
+    MENTORSHIP_REQUEST_ACCEPTED = auto()
+    MENTORSHIP_REQUEST_DECLINED = auto()
+    MEETING_REQUEST_ACCEPTED = auto()
+    MEETING_REQUEST_DECLINED = auto()
+
+
+class NotificationManager(Manager):
+    def business_area_conflict(self, mentorship):
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+        self.create(type=NotificationType.BUSINESS_AREA_CONFLICT,
+                    user=mentee,
+                    title=f'Your business area is the same as {mentor.get_full_name()}',
+                    action={})
+
+    def meeting_request_received(self, mentorship):
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+        self.create(type=NotificationType.MEETING_REQUEST_RECEIVED,
+                    user=mentor,
+                    title=f'Received a meeting request from {mentee.get_full_name()}',
+                    action={})
+
+    def meeting_notes_mentor(self, meeting):
+        mentorship = meeting.mentorship
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+        self.create(type=NotificationType.MEETING_NOTES_MENTOR,
+                    user=mentee,
+                    title=f"Don't forget to add meeting notes for your meeting with {mentor.get_full_name()}",
+                    action={'meeting': meeting.pk})
+
+    def meeting_notes_mentee(self, meeting):
+        mentorship = meeting.mentorship
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+        self.create(type=NotificationType.MEETING_NOTES_MENTEE,
+                    user=mentor,
+                    title=f"Don't forget to add meeting notes for your meeting with {mentee.get_full_name()}",
+                    action={'mentee': mentee.pk, 'meeting': meeting.pk})
+
+    def mentorship_request_received(self, mentor_request):
+        mentee = mentor_request.mentee
+        mentor = mentor_request.mentor
+        self.create(type=NotificationType.MENTORSHIP_REQUEST_RECEIVED,
+                    user=mentor,
+                    title=f'You received a mentor request from {mentee.get_full_name()}',
+                    action={'request': mentor_request.pk})
+
+    def mentorship_request_accepted(self, mentor_request):
+        mentee = mentor_request.mentee
+        mentor = mentor_request.mentor
+        self.create(type=NotificationType.MENTORSHIP_REQUEST_ACCEPTED,
+                    user=mentee,
+                    title=f'{mentor.get_full_name()} accepted your request to mentor you')
+
+    def mentorship_request_declined(self, mentor_request):
+        mentee = mentor_request.mentee
+        mentor = mentor_request.mentor
+        self.create(type=NotificationType.MENTORSHIP_REQUEST_DECLINED,
+                    user=mentee,
+                    title=f'{mentor.get_full_name()} declined your request to mentor you')
+
+    def meeting_request_accepted(self, meeting_request):
+        mentorship = meeting_request.mentorship
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+        self.create(type=NotificationType.MEETING_REQUEST_ACCEPTED,
+                    user=mentee,
+                    title=f'{mentor.get_full_name()} accepted your meeting request')

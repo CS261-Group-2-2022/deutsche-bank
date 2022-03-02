@@ -441,3 +441,19 @@ class SkillViewSet(viewsets.ModelViewSet):
 class FeedbackViewSet(viewsets.ModelViewSet):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+
+
+class NotificationViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    @action(detail=False, methods=['get'])
+    def poll(self, request, *args, **kwargs):  # Polls the authenticated users notifications
+        user: User = request.user
+        return Response(NotificationSerializer(user.poll_notifications(), many=True))
+
+    @action(detail=False, methods=['get'])
+    def actions(self, request, *args, **kwargs):
+        user: User = request.user
+        return Response(NotificationSerializer(user.get_actions(), many=True))

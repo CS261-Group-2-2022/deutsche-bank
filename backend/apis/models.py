@@ -11,11 +11,12 @@ from django.db.models import QuerySet
 from django.db.models import Avg
 
 from .dummy_data_dataset import dataset
+from .managers import *
 
-from .managers import UserManager
 
 """ This file contains the database models and some associated utilities.
 """
+
 
 class Randomisable:
     @classmethod
@@ -24,9 +25,9 @@ class Randomisable:
 
     @classmethod
     def choose_list_at_random(cls,
-                              minimum_number = 1,
-                              maximum_number = None,
-                              map_with = None) -> List[Type[cls]]:
+                              minimum_number=1,
+                              maximum_number=None,
+                              map_with=None) -> List[Type[cls]]:
         pool = []
         if map_with == None:
             pool = list(cls.objects.all())
@@ -50,6 +51,7 @@ class Randomisable:
     def make_random(cls) -> Type[cls]:
         raise NotImplementedError()
 
+
 class Skill(models.Model, Randomisable):
     """ Database model that holds all the 'kinds' of expertise users may have.
 
@@ -71,7 +73,9 @@ class BusinessArea(models.Model, Randomisable):
 
 
 from dataclasses import dataclass
-@dataclass(init=False)
+
+
+# @dataclass(init=False)
 class Mentorship(models.Model):
     """ Mentorship between mentor and mentee
     """
@@ -178,7 +182,7 @@ class User(AbstractBaseUser, Randomisable):
         :return: set of upcoming group sessions this user is in
         """
         return GroupSession.objects.filter(users__pk__contains=self.pk,
-                                                 date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
+                                           date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
     def get_all_sessions(self) -> QuerySet[GroupSession]:
         """  Retrieves set of all upcoming group sessions this user is in or is hosting
@@ -224,6 +228,15 @@ class User(AbstractBaseUser, Randomisable):
         else:
             return ret
 
+    def poll_notifications(self) -> QuerySet[Notification]:
+        queryset = self.user_notifications.filter(seen__exact=False)
+        queryset.update(seen_exact=False)
+        queryset.filter(action__isnull=True).delete()
+        return queryset
+
+    def get_actions(self):
+        return self.user_notifications.filter(action__isnull=False)
+
     @classmethod
     def choose_random(cls) -> Type[User]:
         return random.choice(cls.objects.all())
@@ -249,9 +262,9 @@ class User(AbstractBaseUser, Randomisable):
 
     @classmethod
     def make_random(cls,
-                    skills_pool : List[Skill] = None,
-                    business_area_pool : List[BusinessArea] = None,
-                    dataset = dataset,
+                    skills_pool: List[Skill] = None,
+                    business_area_pool: List[BusinessArea] = None,
+                    dataset=dataset,
                     **kwargs_for_user_constructor) -> Type[User]:
         if skills_pool == None:
             skills_pool = list(Skill.objects.all())
@@ -263,10 +276,10 @@ class User(AbstractBaseUser, Randomisable):
             if business_area_pool == None:
                 business_area_pool = list(BusinessArea.objects.all())
 
-            business_area=random.choice(business_area_pool)
+            business_area = random.choice(business_area_pool)
 
-        first_name=random.choice(dataset["first_names"])
-        last_name=random.choice(dataset["last_names"])
+        first_name = random.choice(dataset["first_names"])
+        last_name = random.choice(dataset["last_names"])
 
         email_domain = "deutschebank.com"
 
@@ -274,13 +287,13 @@ class User(AbstractBaseUser, Randomisable):
         if 'interests' in kwargs_for_user_constructor:
             interests = kwargs_for_user_constructor.pop('interests')
         else:
-            interests = random.sample(skills_pool, random.randrange(1,7))
+            interests = random.sample(skills_pool, random.randrange(1, 7))
 
         expertise = []
         if 'expertise' in kwargs_for_user_constructor:
             expertise = kwargs_for_user_constructor.pop('expertise')
         else:
-            expertise = random.sample(skills_pool, random.randrange(1,7))
+            expertise = random.sample(skills_pool, random.randrange(1, 7))
 
         mentor_intent = False
         if 'mentor_intent' in kwargs_for_user_constructor:
@@ -288,11 +301,9 @@ class User(AbstractBaseUser, Randomisable):
         else:
             mentor_intent = random.choice([False, True])
 
-
         password = 'nunya'
         if 'password' in kwargs_for_user_constructor:
             password = kwargs_for_user_constructor.pop('password')
-
 
         email = None
         if 'email' in kwargs_for_user_constructor:
@@ -347,14 +358,6 @@ class ActionPlan(models.Model):
     completed: bool = models.BooleanField(default=False)  # whether the action plan is completed
 
 
-class Notification(models.Model):
-    user: User = models.ForeignKey(User, on_delete=models.CASCADE)
-    name: str = models.CharField(max_length=100)
-    description: str = models.CharField(max_length=1000)
-    date: datetime = models.DateTimeField(auto_now_add=True)
-    actioned: bool = models.BooleanField()  # user has acted on notification
-
-
 class GroupSession(models.Model):
     name: str = models.CharField(max_length=100)
     location: str = models.CharField(max_length=100)
@@ -372,3 +375,14 @@ class GroupSession(models.Model):
 class Feedback(models.Model):
     date: datetime = models.DateTimeField()
     feedback: str = models.CharField(max_length=1000)
+
+
+class Notification(models.Model):
+    user: User = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_notifications')
+    title: str = models.CharField(max_length=100)
+    date: datetime = models.DateTimeField(auto_now_add=True)
+    seen: bool = models.BooleanField(default=False)
+    type: int = models.IntegerField()
+    action = models.JSONField(null=True, blank=True)
+
+    objects = NotificationManager
