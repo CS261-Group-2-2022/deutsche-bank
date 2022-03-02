@@ -328,11 +328,12 @@ class MentorFeedback(models.Model):
 
 class ActionPlan(models.Model):
     name: str = models.CharField(max_length=100)
-    description: str = models.CharField(max_length=1000)
+    description: str = models.CharField(max_length=1000, blank=True)
     user: User = models.ForeignKey(User, on_delete=models.CASCADE,
                                    related_name="user_action_plans")  # if the user is deleted action plans
     creation_date: datetime = models.DateTimeField(auto_now_add=True)  # creation date of action plan
     due_date: datetime = models.DateTimeField(null=True)  # due date of action plan
+    completion_date: datetime = models.DateTimeField(null=True)
     completed: bool = models.BooleanField(default=False)  # whether the action plan is completed
 
 
