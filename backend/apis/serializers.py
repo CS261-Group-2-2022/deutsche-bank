@@ -65,8 +65,13 @@ class PasswordLoginSerializer(LoginSerializer):
         fields = ['password']
 
     def validate(self, attrs: OrderedDict):
-        attrs['email'] = self.context.get('request').user.email
-        return super().validate(attrs)
+        user: User = self.context.get('request').user
+
+        password: str = attrs.get('password')
+        if not authenticate(request=self.context.get('request'), username=user.email, password=password):
+            raise serializers.ValidationError('This password is not correct', code='authorization')
+
+        return attrs
 
 
 class MeetingSerializer(ModelSerializer):
