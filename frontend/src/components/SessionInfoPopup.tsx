@@ -110,7 +110,7 @@ export default function SessionInfoPopup({
 
       if (isJoinSuccess(res, body)) {
         // Update the list of available group sessions
-        mutate(LIST_All_GROUP_SESSIONS_ENDPOINT);
+        mutate(LIST_USER_SUGGESTED_SESSIONS_ENDPOINT);
         mutate(LIST_USER_SUGGESTED_SESSIONS_ENDPOINT);
         mutate(LIST_USER_JOINED_SESSIONS_ENDPOINT);
       } else {

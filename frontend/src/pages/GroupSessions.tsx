@@ -8,6 +8,7 @@ import {
   LIST_All_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
+  LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 import Topbar from "../components/Topbar";
 import SessionInfoPopup from "../components/SessionInfoPopup";
@@ -118,16 +119,21 @@ function HideableSessionsInfo({
 
 export default function GroupSessions() {
   // Pull in session data from backend
-  const { data: allSessionsData, isValidating } = useSWR<GroupSessionResponse>(
-    LIST_All_GROUP_SESSIONS_ENDPOINT
-  );
-  const allSessions = allSessionsData ?? [];
-  const { data: joinedSessions } = useSWR<GroupSessionResponse>(
+  const { data: recommendedSessionsData, isValidating } =
+    useSWR<GroupSessionResponse>(LIST_USER_SUGGESTED_SESSIONS_ENDPOINT);
+  const recommendedSessions = recommendedSessionsData ?? [];
+  const { data: joinedSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_USER_JOINED_SESSIONS_ENDPOINT
   );
-  const { data: hostingSessions } = useSWR<GroupSessionResponse>(
+  const { data: hostingSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_USER_HOSTING_SESSIONS_ENDPOINT
   );
+
+  const allSessions = [
+    ...recommendedSessions,
+    ...joinedSessions,
+    ...hostingSessions,
+  ];
 
   // Current search parameters
   const [searchParams, setSearchParams] = useSearchParams();
@@ -194,21 +200,9 @@ export default function GroupSessions() {
     );
   };
 
-  const filteredSessions = allSessions
-    // Only show sessions in the future
-    .filter((session) => Date.parse(session.date) >= Date.now())
-    // Filter out sessions you are hosting or have already joined
-    .filter(
-      (session) =>
-        !joinedSessions?.find(
-          (otherSession) => session.id == otherSession.id
-        ) &&
-        !hostingSessions?.find((otherSession) => session.id == otherSession.id)
-    )
+  const filteredSessions = recommendedSessions
     // Filter by the user searchbar input
-    .filter(sessionFilter)
-    // Sort by the closest start date
-    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+    .filter(sessionFilter);
 
   return (
     <>
@@ -258,7 +252,7 @@ export default function GroupSessions() {
             />
           ))}
 
-          {!allSessionsData && isValidating ? (
+          {!recommendedSessionsData && isValidating ? (
             <div className="flex justify-center">
               <svg
                 className="animate-spin -ml-1 mr-3 h-20 w-20 text-gray-600"

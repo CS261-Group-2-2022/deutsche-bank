@@ -9,6 +9,7 @@ import {
   Skill,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
   LIST_All_GROUP_SESSIONS_ENDPOINT,
+  LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 import { useSkills } from "../utils/skills";
 import Popup from "./Popup";
@@ -114,7 +115,7 @@ export default function CreateSessionPopup({
       initiateClose();
 
       // Update the list of available group sessions
-      mutate(LIST_All_GROUP_SESSIONS_ENDPOINT);
+      mutate(LIST_USER_SUGGESTED_SESSIONS_ENDPOINT);
       mutate(LIST_USER_HOSTING_SESSIONS_ENDPOINT);
     } else {
       setSessionTitleError(body.name?.join(" "));
