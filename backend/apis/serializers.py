@@ -85,6 +85,11 @@ class MeetingSerializer(ModelSerializer):
         }
 
 
+class MeetingSerializerFull2(MeetingSerializer):
+    class Meta(MeetingSerializer.Meta):
+        depth = 2
+
+
 class MeetingRequestSerializer(ModelSerializer):
     class Meta:
         model = MeetingRequest

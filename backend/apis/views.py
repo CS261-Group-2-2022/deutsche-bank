@@ -132,7 +132,7 @@ class EventsView(APIView):
         user: User = request.user
 
         return Response({
-            'meetings': MeetingSerializer(user.get_meetings(), many=True).data,
+            'meetings': MeetingSerializerFull2(user.get_meetings(), many=True).data,
             'sessions': GroupSessionSerializerFull(user.get_all_sessions(), many=True).data
         })
 
