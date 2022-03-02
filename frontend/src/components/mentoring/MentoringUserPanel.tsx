@@ -1,10 +1,14 @@
 import { getAreaFromId, useBusinessAreas } from "../../utils/business_area";
-import { User } from "../../utils/endpoints";
+import { User, UserFull } from "../../utils/endpoints";
 
 type UserPanelProps = {
-  user: User;
+  user: User | UserFull;
   extra_information?: React.ReactNode;
   actions?: React.ReactNode;
+};
+
+const isUserFull = (user: User | UserFull): user is UserFull => {
+  return typeof user.business_area !== "number";
 };
 
 export const UserPanel = ({
@@ -36,7 +40,9 @@ export const UserPanel = ({
             </span>
           </h3>
           <h4 className="text-gray-500">
-            {getAreaFromId(user.business_area, areas)?.name ?? ""}
+            {isUserFull(user)
+              ? user.business_area.name
+              : getAreaFromId(user.business_area, areas)?.name ?? ""}
           </h4>
 
           {extra_information}

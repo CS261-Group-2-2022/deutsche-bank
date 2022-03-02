@@ -1,6 +1,11 @@
 import SessionTopicLabel from "../SessionTopicLabel";
 import {
+  END_MENTORSHIP_ENDPOINT,
   FULL_USER_ENDPOINT,
+  getAuthToken,
+  MentorFeedback,
+  Mentorship,
+  MENTORSHIP_ENDPOINT,
   PROFILE_ENDPOINT,
   SETTINGS_ENDPOINT,
   Skill,
@@ -25,69 +30,62 @@ import { mutate } from "swr";
 import AreasOfInterest from "./AreasOfInterest";
 import { DateTime } from "luxon";
 import FeedbackReportPopup from "./FeedbackReportPopup";
-
-type PersonalBioProps = {
-  mentee: User;
-  perspective: "mentor" | "mentee";
-};
-
-const PersonalBio = ({ mentee, perspective }: PersonalBioProps) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [bio, setBio] = useState(mentee.bio ?? "");
-  const canEdit = perspective === "mentee";
-
-  // TODO: connect update to backend
-  return (
-    <div className="space-y-1">
-      <h3 className="flex text-xl font-bold gap-2">
-        Personal Bio
-        {canEdit && (
-          <button
-            className="ml-2 px-4 flex justify-center items-center  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
-            onClick={() => setIsEditing((current) => !current)}
-          >
-            {isEditing ? (
-              <>Save</>
-            ) : (
-              <>
-                <PencilIcon className="w-5 h-5 mr-1" />
-                Edit
-              </>
-            )}
-          </button>
-        )}
-      </h3>
-
-      {canEdit && isEditing ? (
-        <FormTextArea
-          id="notes"
-          name=""
-          placeholder="Enter a description about yourself. This will be used to advise your mentoring pairings."
-          text={bio}
-          onChange={setBio}
-        />
-      ) : (
-        <p className="text-gray-800">
-          {bio === "" ? "No personal bio set" : bio}
-        </p>
-      )}
-    </div>
-  );
-};
+import InterestsDescription from "./InterestsDescription";
+import { LoadingButton } from "../LoadingButton";
 
 type TerminateRelationshipPromptProps = {
+  mentorship: Mentorship;
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const TerminateRelationshipPrompt = ({
+  mentorship,
   open,
   setOpen,
 }: TerminateRelationshipPromptProps) => {
   const cancelButtonRef = useRef(null);
 
-  // TODO: connect to backend
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+  const [passwordError, setPasswordError] = useState<string | undefined>();
+
+  const terminateRelationship = async () => {
+    setIsLoading(true);
+    setError(undefined);
+
+    const res = await fetch(
+      END_MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()),
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
+        },
+        body: JSON.stringify({
+          password,
+        }),
+      }
+    );
+
+    if (res.ok) {
+      setOpen(false);
+
+      // Revalidate the cache of profiles and mentorships
+      mutate(PROFILE_ENDPOINT);
+      mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
+    } else {
+      const body = await res.json();
+      setPasswordError(body.password?.join(" "));
+      setError(
+        body.non_field_errors ??
+          "An error occured when ending this pairing. Please try again"
+      );
+    }
+
+    setIsLoading(false);
+  };
 
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -156,20 +154,28 @@ const TerminateRelationshipPrompt = ({
                       text={password}
                       onChange={setPassword}
                       required
+                      error={passwordError}
                     />
                   </div>
                 </div>
+                {error && (
+                  <div className="block text-sm m-1 font-medium text-red-700">
+                    {error}
+                  </div>
+                )}
               </div>
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
+                <LoadingButton
                   type="button"
                   className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm ${
                     password === "" ? "opacity-25 cursor-not-allowed" : ""
                   }`}
-                  onClick={() => setOpen(false)}
+                  disabled={password === ""}
+                  isLoading={isLoading}
+                  onClick={() => terminateRelationship()}
                 >
                   Terminate
-                </button>
+                </LoadingButton>
                 <button
                   type="button"
                   className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
@@ -188,12 +194,14 @@ const TerminateRelationshipPrompt = ({
 };
 
 type MentorProfileProps = {
+  mentorship: Mentorship;
   mentor: UserFull;
   perspective: "mentor" | "mentee";
   setMentorReviewOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const MentorProfile = ({
+  mentorship,
   mentor,
   perspective,
   setMentorReviewOpen,
@@ -203,6 +211,7 @@ const MentorProfile = ({
   return (
     <div className="w-full max-h-min border rounded-2xl border-gray-300 p-2">
       <TerminateRelationshipPrompt
+        mentorship={mentorship}
         open={terminatePromptOpen}
         setOpen={setTerminatePromptOpen}
       />
@@ -245,7 +254,6 @@ const MentorProfile = ({
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          {/* TODO connect up to backend */}
           {perspective === "mentee" && (
             <button
               className="ml-2 px-4 py-2 flex items-center bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500 focus:ring-offset-yellow-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
@@ -269,24 +277,11 @@ const MentorProfile = ({
 };
 
 type FeedbackDropdownProps = {
-  feedback: {
-    time: string;
-    going_well?: string;
-    improvement?: string;
-  };
+  feedback: MentorFeedback;
 };
 
 const FeedbackDropdown = ({ feedback }: FeedbackDropdownProps) => {
-  // const [isEditingNotes, setIsEditingNotes] = useState(false);
-  // const [menteeNotes, setMenteeNotes] = useState(meeting.mentee_notes ?? "");
-  // const [mentorNotes, setMentorNotes] = useState(meeting.mentor_notes ?? "");
-  // const isMentor = perspective === "mentor";
-
   const datetime = DateTime.fromISO(feedback.time);
-  // const notesNotRecorded =
-  // (isMentor && mentorNotes === "") || (!isMentor && menteeNotes === "");
-
-  // TODO: connect updating to backend
 
   return (
     <Disclosure>
@@ -309,9 +304,9 @@ const FeedbackDropdown = ({ feedback }: FeedbackDropdownProps) => {
                   What{"'"}s going well
                 </h5>
                 <p className="text-sm text-gray-800">
-                  {!feedback.going_well || feedback.going_well === ""
+                  {!feedback.positives || feedback.positives === ""
                     ? "N/A"
-                    : feedback.going_well}
+                    : feedback.positives}
                 </p>
               </div>
               <div>
@@ -320,9 +315,9 @@ const FeedbackDropdown = ({ feedback }: FeedbackDropdownProps) => {
                 </h5>
 
                 <p className="text-sm text-gray-800">
-                  {!feedback.improvement || feedback.improvement === ""
+                  {!feedback.improvements || feedback.improvements === ""
                     ? "N/A"
-                    : feedback.improvement}
+                    : feedback.improvements}
                 </p>
               </div>
             </div>
@@ -334,24 +329,26 @@ const FeedbackDropdown = ({ feedback }: FeedbackDropdownProps) => {
 };
 
 type MenteeFeedbackProps = {
+  mentorship: Mentorship;
+  feedback?: MentorFeedback[];
   perspective: "mentor" | "mentee";
 };
 
-const MenteeFeedback = ({ perspective }: MenteeFeedbackProps) => {
+const MenteeFeedback = ({
+  mentorship,
+  feedback,
+  perspective,
+}: MenteeFeedbackProps) => {
   const [createOpen, setCreateOpen] = useState(false);
 
-  const feedback = [
-    // { time: new Date(Date.now()).toISOString() },
-    // { time: new Date(Date.now()).toISOString() },
-    // { time: new Date(Date.now()).toISOString() },
-    // { time: new Date(Date.now()).toISOString() },
-    // { time: new Date(Date.now()).toISOString() },
-    { time: new Date(Date.now()).toISOString() },
-  ];
+  const sortedFeedback = feedback
+    ? feedback.sort((a, b) => Date.parse(b.time) - Date.parse(a.time))
+    : [];
 
   return (
     <div className="w-full">
       <FeedbackReportPopup
+        mentorship={mentorship}
         isOpen={createOpen}
         closeModal={() => setCreateOpen(false)}
       />
@@ -377,8 +374,8 @@ const MenteeFeedback = ({ perspective }: MenteeFeedbackProps) => {
       </div>
 
       <div className="flex flex-col gap-1 mt-1">
-        {feedback.length > 0
-          ? feedback.map((feedback) => (
+        {sortedFeedback && sortedFeedback.length > 0
+          ? sortedFeedback.map((feedback) => (
               <FeedbackDropdown key={feedback.time} feedback={feedback} />
             ))
           : "No feedback has been provided yet"}
@@ -423,6 +420,7 @@ const BusinessAreaConflictWarning = ({
 };
 
 type GeneralInfoProps = {
+  mentorship: Mentorship;
   mentee: User;
   mentor: UserFull;
   perspective: "mentor" | "mentee";
@@ -431,6 +429,7 @@ type GeneralInfoProps = {
 export default function GeneralInfo({
   mentor,
   mentee,
+  mentorship,
   perspective,
 }: GeneralInfoProps) {
   const [mentorReviewOpen, setMentorReviewOpen] = useState(false);
@@ -439,6 +438,7 @@ export default function GeneralInfo({
   return (
     <div className="mx-5 space-y-5">
       <MentorReviewPopup
+        mentorship={mentorship}
         isOpen={mentorReviewOpen}
         closeModal={() => setMentorReviewOpen(false)}
       />
@@ -447,20 +447,21 @@ export default function GeneralInfo({
         <BusinessAreaConflictWarning perspective={perspective} />
       )}
 
-      <PersonalBio mentee={mentee} perspective={perspective} />
+      <InterestsDescription user={mentee} canEdit={perspective === "mentee"} />
       <AreasOfInterest user={mentee} canEdit={perspective === "mentee"} />
 
-      {/* TODO: mentee giving mentor feedback popup */}
-      {/* TODO: mentor giving mentee feedback popup */}
-
-      {/* TODO: mentor can also give feedback to mentee */}
       <div className="flex flex-col gap-5">
         <MentorProfile
+          mentorship={mentorship}
           mentor={mentor}
           perspective={perspective}
           setMentorReviewOpen={setMentorReviewOpen}
         />
-        <MenteeFeedback perspective={perspective} />
+        <MenteeFeedback
+          mentorship={mentorship}
+          perspective={perspective}
+          feedback={mentorship.mentor_feedback}
+        />
       </div>
     </div>
   );

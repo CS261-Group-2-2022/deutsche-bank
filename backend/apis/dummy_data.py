@@ -107,11 +107,13 @@ def create_dummy_meetings():
         global time_start
         time = time_start + random_delta()
 
-        notes = lorem_random(max_length=Meeting._meta.get_field('notes').max_length)
+        mentor_notes = lorem_random(max_length=Meeting._meta.get_field('mentee_notes').max_length)
+        mentee_notes = lorem_random(max_length=Meeting._meta.get_field('mentor_notes').max_length)
 
         new_meeting = Meeting.objects.create(mentorship=mentorship,
                                              time=time,
-                                             notes=notes)
+                                             mentor_notes=mentor_notes,
+                                             mentee_notes=mentee_notes)
 
     for m in mentorships:
         n_of_meetings = random.randrange(0, 3)
@@ -129,9 +131,9 @@ def create_dummy_action_plans():
 
     def new(mentorship):
         creation_date = time_start + random_delta()
-        completion_date = None
+        due_date = None
         if random.choice([True,False]):
-            completion_date = creation_date + random_delta()
+            due_date = creation_date + random_delta()
 
         name = lorem_random(max_length=ActionPlan._meta.get_field('name').max_length)
         description = lorem_random(max_length=ActionPlan._meta.get_field('description').max_length)
@@ -140,7 +142,7 @@ def create_dummy_action_plans():
                                                     description = description,
                                                     user = mentorship.mentee,
                                                     creation_date = creation_date,
-                                                    completion_date = completion_date)
+                                                    due_date = due_date)
 
     for m in mentorships:
         action_plan_count = random.randrange(0, 4)

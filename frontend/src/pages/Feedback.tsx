@@ -1,54 +1,41 @@
 import Topbar from "../components/Topbar";
-import { FormInput } from "../components/FormInput";
 import { FormTextArea } from "../components/FormTextarea";
 import { useState } from "react";
-import { FEEDBACK_ENDPOINT, RegisterBody, RegisterSuccess, setAuthToken, SETTINGS_ENDPOINT, SIGNUP_ENDPOINT } from "../utils/endpoints";
-import { useUser } from "../utils/authentication";
+import { FEEDBACK_ENDPOINT } from "../utils/endpoints";
+import { LoadingButton } from "../components/LoadingButton";
 
 export default function Feedback() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [password, setPassword] = useState("");
-  const [retypedPasssword, setRetypedPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState("");
-  // const [businessArea, setBusinessArea] = useState("");
-
-  const [firstNameError, setFirstNameError] = useState<string | undefined>();
-  const [lastNameError, setLastNameError] = useState<string | undefined>();
-  const [emailError, setEmailError] = useState<string | undefined>();
-  const [passwordError, setPasswordError] = useState<string | undefined>();
-  const [retypedPasswordError, setRetypedPasswordError] = useState<
-    string | undefined
-  >();
   const [feedbackError, setFeedbackError] = useState<string | undefined>();
-  // const [businessAreaError, setBusinessAreaError] = useState<
-  //   string | undefined
-  // >();
-
-  const { user } = useUser();
-
-  const clearErrors = () => {
-    setFeedbackError(undefined)
-  };
 
   const sendFeedbackRequest = async () => {
-    // Check password and retyped password are equivalent
+    setIsLoading(true);
+    setFeedbackError(undefined);
 
-    const res = await fetch(FEEDBACK_ENDPOINT, { // TODO feedback endpoint
+    const res = await fetch(FEEDBACK_ENDPOINT, {
       method: "POST",
       headers: {
         "content-type": "application/json",
       },
       body: JSON.stringify({
         feedback: feedback,
-        date: new Date().toISOString()
-    })});
+        date: new Date().toISOString(),
+      }),
+    });
 
-    clearErrors();
     if (res.ok) {
-        alert("Feedback Submitted");
-    };
-    
+      alert("Feedback Submitted");
+    } else {
+      const body = await res.json();
+      setFeedbackError(
+        body.feedback?.join(" ") ??
+          body.error ??
+          "An error occurred when submitting your website feedback. Please try again."
+      );
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -62,33 +49,38 @@ export default function Feedback() {
             </h2>
           </div>
 
-          <form className="mt-8 space-y-3" action="#" method="POST" onSubmit={(e) => {
-            console.log("Submiting feedback...")
+          <form
+            className="mt-8 space-y-3"
+            action="#"
+            method="POST"
+            onSubmit={(e) => {
               e.preventDefault();
               sendFeedbackRequest();
-            }}>
+            }}
+          >
             <input type="hidden" name="remember" defaultValue="true" />
             <div className="rounded-md shadow-sm space-y-3">
               <div className="grid grid-cols-1 gap-3">
-            <FormTextArea
-                id="feedback"
-                name="Website Feedback"
-                autoComplete="false"
-                placeholder="Enter feedback for the website"
-                text={feedback}
-                onChange={setFeedback}
-                error={feedbackError}
-            />
-            </div>
+                <FormTextArea
+                  id="feedback"
+                  name="Website Feedback"
+                  autoComplete="false"
+                  placeholder="Enter any feedback you have about the website and the mentoring system"
+                  text={feedback}
+                  onChange={setFeedback}
+                  error={feedbackError}
+                />
+              </div>
 
-            <div>
-              <button
-                type="submit"
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Submit Feedback
-              </button>
-            </div>
+              <div>
+                <LoadingButton
+                  type="submit"
+                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  isLoading={isLoading}
+                >
+                  Submit Feedback
+                </LoadingButton>
+              </div>
             </div>
           </form>
         </div>
