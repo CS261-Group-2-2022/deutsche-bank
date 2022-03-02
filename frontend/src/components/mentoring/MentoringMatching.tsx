@@ -224,7 +224,7 @@ export default function MentoringMatchingPage({ user }: MatchingPageProps) {
 
       <div className="border rounded-lg p-2 mt-2">
         <AreasOfInterest
-          subHeading="Your areas of interest will help inform your matches to find the best mentor for you."
+          subHeading="Your areas of interest are required to find expert mentors in common."
           user={user}
           canEdit
         />

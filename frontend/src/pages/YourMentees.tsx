@@ -255,7 +255,7 @@ export default function YourMentees() {
 
         <div className="border rounded-lg p-2 my-2">
           <AreasOfExpertise
-            subHeading="Your areas of expertise will help inform your matches to find the most compatible mentees."
+            subHeading="Your areas of expertise are required to find the most compatible mentees."
             user={user}
             canEdit
           />
