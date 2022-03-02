@@ -54,7 +54,8 @@ class LoginSerializer(ModelSerializer):
         fields = ('email', 'password', 'token')
         extra_kwargs = {
             'email': {'write_only': True, 'validators': []},
-            'password': {'write_only': True, 'style': {'input_type': 'password'}}, 'trim_whitespace': False
+            'password': {'write_only': True, 'style': {'input_type': 'password'}},
+            'trim_whitespace': False
         }
 
     def validate(self, attrs: OrderedDict):
@@ -82,6 +83,18 @@ class PasswordLoginSerializer(LoginSerializer):
             raise serializers.ValidationError('This password is not correct', code='authorization')
 
         return attrs
+
+
+class ChangePasswordSerializer(PasswordLoginSerializer):
+    new_password = serializers.CharField(max_length=255)
+
+    class Meta(PasswordLoginSerializer.Meta):
+        fields = ('password', 'new_password')
+        extra_kwargs = {
+            'password': {'write_only': True, 'style': {'input_type': 'password'}},
+            'new_password': {'write_only': True, 'style': {'input_type': 'password'}},
+            'trim_whitespace': False
+        }
 
 
 class MentorshipSerializer(ModelSerializer):

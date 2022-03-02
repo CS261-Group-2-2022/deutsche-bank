@@ -116,7 +116,7 @@ class User(AbstractBaseUser, Randomisable):
     """
     first_name: str = models.CharField(max_length=100)
     last_name: str = models.CharField(max_length=100)
-    image_link: str = models.CharField(null=True, max_length=100)
+    image_link: str = models.CharField(null=True, blank=True, max_length=100)
 
     business_area: BusinessArea = models.ForeignKey('BusinessArea', null=True, on_delete=models.SET_NULL)
 
@@ -357,10 +357,10 @@ class Notification(models.Model):
 
 class GroupSession(models.Model):
     name: str = models.CharField(max_length=100)
-    location: str = models.CharField(null=True, max_length=100)
-    virtual_link: str = models.CharField(null=True, max_length=100)
-    image_link: str = models.CharField(null=True, max_length=100)
-    description: str = models.CharField(null=True, max_length=2000)
+    location: str = models.CharField(max_length=100)
+    virtual_link: str = models.CharField(null=True, blank=True, max_length=100)
+    image_link: str = models.CharField(null=True, blank=True, max_length=100)
+    description: str = models.CharField(null=True, blank=True, max_length=2000)
     host: User = models.ForeignKey(User, related_name='session_host',
                                    on_delete=models.CASCADE)  # if host is deleted, delete session
     capacity: int = models.IntegerField(null=True)

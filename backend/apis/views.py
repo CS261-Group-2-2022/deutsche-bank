@@ -159,6 +159,19 @@ class CurrentUserView(APIView):
         return Response(serializer.data)
 
 
+class ChangePasswordView(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to get user
+    serializer_class = ChangePasswordSerializer
+
+    def post(self, request, *args, **kwargs):
+        user: User = request.user
+        serializer = self.get_serializer(data=request.data)  # Deserialize request data
+        serializer.is_valid(raise_exception=True)  # Validate request data
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        return Response(status=status.HTTP_200_OK)
+
+
 class GroupSessionViewSet(viewsets.ModelViewSet):
     queryset = GroupSession.objects.all()
     serializer_class = GroupSessionSerializer
