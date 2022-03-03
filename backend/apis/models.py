@@ -19,8 +19,12 @@ from .managers import UserManager
 
 class Randomisable:
     @classmethod
-    def choose_random(cls) -> Type[cls]:
-        return random.choice(cls.objects.all())
+    def choose_random(cls, map_with=None) -> Type[cls]:
+        pool = cls.objects.all()
+        if map_with is not None:
+            pool = map_with(pool)
+
+        return random.choice(pool)
 
     @classmethod
     def choose_list_at_random(cls,
@@ -72,7 +76,7 @@ class BusinessArea(models.Model, Randomisable):
 
 from dataclasses import dataclass
 @dataclass(init=False)
-class Mentorship(models.Model):
+class Mentorship(models.Model, Randomisable):
     """ Mentorship between mentor and mentee
     """
 
@@ -223,15 +227,6 @@ class User(AbstractBaseUser, Randomisable):
             return 4
         else:
             return ret
-
-    @classmethod
-    def choose_random(cls) -> Type[User]:
-        return random.choice(cls.objects.all())
-
-    @classmethod
-    def choose_list_at_random(cls) -> List[Type[User]]:
-        return random.sample(list(cls.objects.all()),
-                             random.randint(1, cls.objects.all().count()))
 
     # TODO Add to a mixin type thing.
     @classmethod
