@@ -8,11 +8,31 @@ import numpy as np
 from django.test import TestCase
 from .dummy_data import create_dummy_data
 from .models import *
-from .matching_algorithm import sort_by_score, NoPossibleMentorsError, matching_algorithm
+from .matching_algorithm import *
 
+class InterestAndExpertiseOverlapUnitTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_dummy_data(quiet=True)
+
+    def test_unit_interest_and_expertise_overlap_false_case(self):
+        user_interests = Skill.choose_list_at_random()
+
+        def exclude_user_interests(q):
+            return q.exclude(pk__in=[skill.pk for skill in user_interests])
+        mentor_expertise = Skill.choose_list_at_random(map_with=exclude_user_interests)
+
+        self.assertFalse(interests_and_expertise_overlap(set(user_interests), mentor_expertise))
+
+    def test_unit_interest_and_expertise_overlap_true_case(self):
+        user_interests = Skill.choose_list_at_random()
+
+        mentor_expertise = Skill.choose_list_at_random()
+        mentor_expertise.append(random.choice(user_interests))
+
+        self.assertTrue(interests_and_expertise_overlap(set(user_interests), mentor_expertise))
 
 class MatchingAlgorithmTestCase(TestCase):
-
     @classmethod
     def setUpTestData(cls):
         create_dummy_data(quiet=True)

@@ -23,6 +23,9 @@ def sort_by_score(mentors: List[User], scores: np.matrix) -> List[User]:
     ret.reverse()
     return ret
 
+def interests_and_expertise_overlap(user_interests, mentor_expertise):
+    return not user_interests.isdisjoint(set(mentor_expertise))
+
 def matching_algorithm(user_looking_for_mentor: User,
 
                        all_users: List[User],
@@ -62,8 +65,6 @@ def matching_algorithm(user_looking_for_mentor: User,
 
     # Criteria based on interest & expertise overlap
     user_interests = set(user_looking_for_mentor.interests.all())
-    def interests_and_expertise_overlap(mentor: User):
-        return not user_interests.isdisjoint(mentor.expertise.all())
 
     def count_overlapping_skills(mentor: User):
         return len(set(user_interests).intersection(mentor.expertise.all()))
@@ -78,7 +79,7 @@ def matching_algorithm(user_looking_for_mentor: User,
 
     def is_valid_mentor_option(mentor: User):
         return has_compatible_business_areas(mentor) and \
-               interests_and_expertise_overlap(mentor) and \
+               interests_and_expertise_overlap(user_interests, mentor.expertise.all()) and \
                has_not_had_relationship_before(mentor) and \
                is_not_already_offered(mentor)
 
