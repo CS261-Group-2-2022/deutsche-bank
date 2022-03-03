@@ -9,6 +9,7 @@ from rest_framework import viewsets, generics, permissions, status, mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import DestroyModelMixin, ListModelMixin, UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 from rest_framework.views import APIView
@@ -351,8 +352,8 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
             return Response({'error': 'You do not have a mentor'}, status=status.HTTP_400_BAD_REQUEST)
         serializer.is_valid(raise_exception=True)
         serializer.validated_data['mentorship'] = request.user.mentorship
-        meeting_request = self.perform_create(serializer)
-        Notification.objects.meeting_request_received(meeting_request)
+        self.perform_create(serializer)
+        Notification.objects.meeting_request_received(serializer.instance)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -447,15 +448,20 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     serializer_class = FeedbackSerializer
 
 
-class NotificationViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class NotificationViewSet(DestroyModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet):
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
-    @action(detail=False, methods=['get'])
-    def poll(self, request, *args, **kwargs):  # Polls the authenticated users notifications
+    def list(self, request, *args, **kwargs):
         user: User = request.user
-        return Response(NotificationSerializer(user.poll_notifications(), many=True).data)
+        return Response(NotificationSerializer(user.get_notifications(), many=True).data)
+
+    def update(self, request, *args, **kwargs):
+        notification: Notification = self.get_object()
+        if notification.user != request.user:
+            return Response({'error': 'You cannot update this notification'}, status=status.HTTP_400_BAD_REQUEST)
+        return super().update(request, *args, **kwargs)
 
     @action(detail=False, methods=['get'])
     def actions(self, request, *args, **kwargs):

@@ -228,14 +228,11 @@ class User(AbstractBaseUser, Randomisable):
         else:
             return ret
 
-    def poll_notifications(self) -> QuerySet[Notification]:
-        queryset = self.user_notifications.filter(seen__exact=False)
-        queryset.update(seen_exact=False)
-        queryset.filter(action__isnull=True).delete()
-        return queryset
+    def get_notifications(self):
+        return self.user_notifications.all()
 
     def get_actions(self):
-        return self.user_notifications.filter(action__isnull=False)
+        return self.get_notifications().filter(action__isnull=False)
 
     @classmethod
     def choose_random(cls) -> Type[User]:
