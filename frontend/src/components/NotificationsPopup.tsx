@@ -100,7 +100,7 @@ const NotificationPanel = ({ notification }: NotificationPanelProps) => {
         <div className="flex items-center gap-2">
           {isImportant && (
             <div className="flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-red-400 opacity-75"></span>
+              {/* TODO: PULSE? <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-red-400 opacity-75"></span> */}
               <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
             </div>
           )}
@@ -169,13 +169,16 @@ export default function NotificationsPopup() {
         {({ open }) => (
           <>
             <Popover.Button
-              className={
+              className={`${
                 open
                   ? "text-gray-900"
                   : importantNotifications
-                  ? "text-red-600 hover:text-red-700"
-                  : "text-gray-600 hover:text-gray-700"
-              }
+                  ? `text-red-600 hover:text-red-700 ${
+                      !open ? "animate-bounce" : ""
+                    }`
+                  : "text-gray-600 hover:text-gray-500"
+              } flex items-center transition-colors duration-100`}
+              title="Notifications"
             >
               <BellIcon className={"aspect-square w-5"} aria-hidden="true" />
             </Popover.Button>
