@@ -451,9 +451,9 @@ class NotificationViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
     @action(detail=False, methods=['get'])
     def poll(self, request, *args, **kwargs):  # Polls the authenticated users notifications
         user: User = request.user
-        return Response(NotificationSerializer(user.poll_notifications(), many=True))
+        return Response(NotificationSerializer(user.poll_notifications(), many=True).data)
 
     @action(detail=False, methods=['get'])
     def actions(self, request, *args, **kwargs):
         user: User = request.user
-        return Response(NotificationSerializer(user.get_actions(), many=True))
+        return Response(NotificationSerializer(user.get_actions(), many=True).data)
