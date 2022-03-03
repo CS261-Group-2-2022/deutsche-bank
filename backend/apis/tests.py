@@ -411,7 +411,7 @@ class ActionPlanTestCase(TestCase):
         self.assertEqual(response.status_code, 400, msg=show_res(response))
 
         ## Check that the response contains a suitable message
-        self.assertIn('mentee', response.data.error)
+        self.assertIn('mentee', response.data['error'])
 
         ## Check that the action plan hasn't been created
         number_of_action_plans_of_user = ActionPlan.objects.all().filter(user=user).count()
