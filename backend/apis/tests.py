@@ -12,6 +12,9 @@ from .models import *
 from .dummy_data import *
 from .dummy_data_dataset import dataset
 
+def show_res(response):
+    return f'{str(response)}: {response.status_code} | {response.status_text}' + '\n' + f'{response.data=}'
+
 class UserModelTests(TestCase):
     register_url = str(settings.REGISTER_URL)
 
@@ -372,7 +375,7 @@ class UserModelTests(TestCase):
         view = GroupSessionViewSet.as_view({'post': 'create'})
         response = view(request)
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
         self.assertNotEqual(response.status_code, 200)
 
 class ActionPlanTestCase(TestCase):
@@ -401,8 +404,8 @@ class ActionPlanTestCase(TestCase):
         response = view(request)
 
         ## Check that the request fails
-        self.assertNotEqual(response.status_code, 200, msg=f'{response=}')
-        self.assertEqual(response.status_code, 403, msg=f'{response=}')
+        self.assertNotEqual(response.status_code, 200, msg=show_res(response))
+        self.assertEqual(response.status_code, 403, msg=show_res(response))
 
         ## Check that the response contains a suitable message
         self.assertIn('not', response.data)
@@ -439,15 +442,15 @@ class ActionPlanTestCase(TestCase):
         response = view(request)
 
         ## Check that the request succeeds
-        self.assertEqual(response.status_code, 201, msg=f'{response=}')
+        self.assertEqual(response.status_code, 201, msg=show_res(response))
 
         ## Check that the response contains the created data
-        self.assertIn('id', response.data, msg=f'{response.data=}')
-        self.assertIn('user', response.data, msg=f'{response.data=}')
-        self.assertIn('name', response.data, msg=f'{response.data=}')
-        self.assertIn('description', response.data, msg=f'{response.data=}')
-        self.assertIn('creation_date', response.data, msg=f'{response.data=}')
-        self.assertIn('completion_date', response.data, msg=f'{response.data=}')
+        self.assertIn('id', response.data, msg=show_res(response))
+        self.assertIn('user', response.data, msg=show_res(response))
+        self.assertIn('name', response.data, msg=show_res(response))
+        self.assertIn('description', response.data, msg=show_res(response))
+        self.assertIn('creation_date', response.data, msg=show_res(response))
+        self.assertIn('completion_date', response.data, msg=show_res(response))
 
         ## Check that the action plan has actually been created
         number_of_action_plans_after = ActionPlan.objects.all().filter(user=mentee).count()
