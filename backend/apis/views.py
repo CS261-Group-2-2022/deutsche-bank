@@ -436,7 +436,8 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def list(self, request, *args, **kwargs):
-        return Response(ActionPlanSerializer(request.user.get_action_plans(), many=True), status=status.HTTP_200_OK)
+        return Response(ActionPlanSerializer(request.user.get_action_plans(), many=True).data,
+                        status=status.HTTP_200_OK)
 
 
 class BusinessAreaViewSet(viewsets.ModelViewSet):
