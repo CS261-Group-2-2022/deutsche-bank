@@ -8,9 +8,53 @@ import {
   getAuthToken,
   Mentorship,
   MENTORSHIP_ENDPOINT,
+  UpcomingSessions,
+  UPCOMING_SESSIONS_ENDPOINT,
 } from "../../utils/endpoints";
-import { mutate } from "swr";
+import useSWR, { mutate } from "swr";
 import { LoadingButton } from "../LoadingButton";
+import { ExclamationIcon } from "@heroicons/react/solid";
+import { DateTime } from "luxon";
+
+type ConflictingSession = {
+  id: string;
+  name: string;
+};
+
+type TimingConflictsWarningProps = {
+  sessions: ConflictingSession[];
+};
+
+const TimingConflictsWarning = ({ sessions }: TimingConflictsWarningProps) => {
+  return (
+    <div className="w-full bg-red-200 rounded-lg p-2 border border-red-400 mt-2">
+      <div className="sm:flex sm:items-start">
+        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-200 sm:mx-0 sm:h-10 sm:w-10">
+          <ExclamationIcon
+            className="h-6 w-6 text-red-700"
+            aria-hidden="true"
+          />
+        </div>
+        <div className="ml-3 text-left">
+          <h3 className="text-base leading-6 font-medium text-red-800">
+            Session Conflict
+          </h3>
+          <div className="">
+            <p className="text-sm text-red-700">
+              You already have the following session(s) scheduled on this day,
+              please ensure that there are no conflicts:
+              <ul>
+                {sessions.map((session) => (
+                  <li key={session.id}>• {session.name}</li>
+                ))}
+              </ul>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 type CreateSessionPopupProps = {
   mentorship: Mentorship;
@@ -23,11 +67,18 @@ export default function RequestMeetingPopup({
   isOpen,
   closeModal,
 }: CreateSessionPopupProps) {
+  const { data: upcomingEvents } = useSWR<UpcomingSessions>(
+    UPCOMING_SESSIONS_ENDPOINT
+  );
+
   const [datetime, setDatetime] = useState("");
   const [meetingLocation, setMeetingLocation] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const [conflictingSessions, setConflictingSessions] = useState<
+    ConflictingSession[] | undefined
+  >();
   const [datetimeError, setDatetimeError] = useState<string | undefined>();
   const [meetingLocationError, setMeetingLocationError] = useState<
     string | undefined
@@ -36,6 +87,40 @@ export default function RequestMeetingPopup({
     string | undefined
   >();
   const [overallError, setOverallError] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (upcomingEvents && datetime && datetime !== "") {
+      const selectedDay = DateTime.fromISO(datetime).startOf("day");
+
+      console.log(datetime, selectedDay);
+      setConflictingSessions([
+        ...upcomingEvents.meetings
+          .filter((meeting) =>
+            DateTime.fromISO(meeting.time).startOf("day").equals(selectedDay)
+          )
+          .map((meeting) => {
+            return {
+              id: `MEETING-${meeting.id}`,
+              name: `Meeting with ${meeting.mentorship.mentor.first_name} ${
+                meeting.mentorship.mentor.last_name
+              } at ${DateTime.fromISO(meeting.time).toFormat("t")}`,
+            };
+          }),
+        ...upcomingEvents.sessions
+          .filter((session) =>
+            DateTime.fromISO(session.date).startOf("day").equals(selectedDay)
+          )
+          .map((session) => {
+            return {
+              id: session.id.toString(),
+              name: `${session.name} at ${DateTime.fromISO(
+                session.date
+              ).toFormat("t")}`,
+            };
+          }),
+      ]);
+    }
+  }, [upcomingEvents, datetime]);
 
   const clearErrors = () => {
     setDatetimeError(undefined);
@@ -113,7 +198,9 @@ export default function RequestMeetingPopup({
       </Dialog.Title>
 
       <div className="min-h-full items-center justify-center space-y-3 w-full">
-        {/* TODO: show conflict warning if upcoming sessions conflict */}
+        {conflictingSessions && conflictingSessions.length > 0 && (
+          <TimingConflictsWarning sessions={conflictingSessions} />
+        )}
         <form
           className="space-y-1"
           onSubmit={(e) => {
