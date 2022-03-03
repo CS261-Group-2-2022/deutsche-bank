@@ -22,17 +22,19 @@ class UserManager(BaseUserManager):
 
 @unique
 class NotificationType(Enum):
-    BUSINESS_AREA_CONFLICT = auto()
-    MEETING_REQUEST_RECEIVED = auto()
-    MEETING_NOTES_MENTOR = auto()
-    MEETING_NOTES_MENTEE = auto()
-    MENTORSHIP_REQUEST_RECEIVED = auto()
-    GROUP_SESSION_PROMPT = auto()
+    BUSINESS_AREA_CONFLICT_MENTEE = 1
+    MEETING_REQUEST_RECEIVED = 2
+    MEETING_NOTES_MENTOR = 3
+    MEETING_NOTES_MENTEE = 4
+    MENTORSHIP_REQUEST_RECEIVED = 5
+    GROUP_SESSION_PROMPT = 6
 
-    MENTORSHIP_REQUEST_ACCEPTED = auto()
-    MENTORSHIP_REQUEST_DECLINED = auto()
-    MEETING_REQUEST_ACCEPTED = auto()
-    MEETING_REQUEST_DECLINED = auto()
+    MENTORSHIP_REQUEST_ACCEPTED = 7
+    MENTORSHIP_REQUEST_DECLINED = 8
+    MEETING_REQUEST_ACCEPTED = 9
+    MEETING_REQUEST_DECLINED = 10
+
+    BUSINESS_AREA_CONFLICT_MENTOR = 11
 
 
 class NotificationManager(models.Manager):
@@ -41,13 +43,21 @@ class NotificationManager(models.Manager):
         notification.save(using=self._db)
         return notification
 
-    def business_area_conflict(self, mentorship):  # TODO: Send notification
+    def business_area_conflict_mentee(self, mentorship):  # TODO: Send notification
         mentee = mentorship.mentee
         mentor = mentorship.mentor
-        self.create(NotificationType.BUSINESS_AREA_CONFLICT,
+        self.create(NotificationType.BUSINESS_AREA_CONFLICT_MENTEE,
                     user=mentee,
                     title=f'Your business area is the same as {mentor.get_full_name()}',
-                    action={})
+                    action={'mentor': mentor.pk})
+
+    def business_area_conflict_mentor(self, mentorship):  # TODO: Send notification
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+        self.create(NotificationType.BUSINESS_AREA_CONFLICT_MENTOR,
+                    user=mentor,
+                    title=f'Your business area is the same as {mentee.get_full_name()}',
+                    action={'mentee': mentee.pk})
 
     def meeting_request_received(self, meeting_request):
         mentorship = meeting_request.mentorship
