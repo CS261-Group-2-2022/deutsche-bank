@@ -270,7 +270,7 @@ class UserModelTests(TestCase):
         user2.mentorship = new_mentorship
         user2.save()
 
-        users_with_user1_as_mentor = User.objects.all().filter(mentorship__mentor__pk__exact=user1.pk)
+        users_with_user1_as_mentor = User.objects.filter(mentorship__mentor__pk__exact=user1.pk)
 
         ## Check that only 1 user has user1 as mentor
         self.assertEqual(len(users_with_user1_as_mentor), 1)
@@ -304,9 +304,12 @@ class UserModelTests(TestCase):
                                                    rating=rating,
                                                    feedback=feedback)
         meeting_count_before = Meeting.objects.count()
-        new_meeting = Meeting.objects.create(mentorship = new_mentorship,
-                                             time = time_start + random_delta(),
-                                             notes = lorem_random())
+        mentee_notes_len = Meeting._meta.get_field('mentee_notes').max_length
+        mentor_notes_len = Meeting._meta.get_field('mentor_notes').max_length
+        new_meeting = Meeting.objects.create(mentorship=new_mentorship,
+                                             time=time_start + random_delta(),
+                                             mentee_notes=lorem_random(max_length=mentee_notes_len),
+                                             mentor_notes= lorem_random(max_length=mentor_notes_len))
         meeting_count_after = Meeting.objects.count()
         self.assertTrue(meeting_count_before < meeting_count_after)
 

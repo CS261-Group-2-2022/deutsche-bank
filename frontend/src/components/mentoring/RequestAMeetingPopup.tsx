@@ -1,21 +1,32 @@
 import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
-import Popup from "./Popup";
-import { FormInput } from "./FormInput";
-import { FormTextArea } from "./FormTextarea";
+import Popup from "../Popup";
+import { FormInput } from "../FormInput";
+import { FormTextArea } from "../FormTextarea";
+import {
+  CREATE_MEETING_REQUEST_ENDPOINT,
+  getAuthToken,
+  Mentorship,
+  MENTORSHIP_ENDPOINT,
+} from "../../utils/endpoints";
+import { mutate } from "swr";
+import { LoadingButton } from "../LoadingButton";
 
 type CreateSessionPopupProps = {
+  mentorship: Mentorship;
   isOpen: boolean;
   closeModal: () => unknown;
 };
 
 export default function RequestMeetingPopup({
+  mentorship,
   isOpen,
   closeModal,
 }: CreateSessionPopupProps) {
   const [datetime, setDatetime] = useState("");
   const [meetingLocation, setMeetingLocation] = useState("");
   const [description, setDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [datetimeError, setDatetimeError] = useState<string | undefined>();
   const [meetingLocationError, setMeetingLocationError] = useState<
@@ -28,49 +39,50 @@ export default function RequestMeetingPopup({
 
   const clearErrors = () => {
     setDatetimeError(undefined);
+    setMeetingLocationError(undefined);
+    setDescriptionError(undefined);
     setOverallError(undefined);
   };
 
   const sendMeetingRequest = async () => {
+    setIsLoading(true);
+    clearErrors();
+
     const date = Date.parse(datetime);
     if (date <= Date.now()) {
       setDatetimeError("The time you select cannot be in the past");
+      setIsLoading(false);
       return;
     }
 
-    // const res = await fetch(CREATE_GROUP_SESSION_ENDPOINT, {
-    //   method: "POST",
-    //   headers: {
-    //     "content-type": "application/json",
-    //     authorization: `Token ${getAuthToken()}`,
-    //   },
-    //   body: JSON.stringify({
-    //     name: sessionTitle,
-    //     location,
-    //     description,
-    //     capacity,
-    //     date: datetime,
-    //     skills: assignedSkills.map((skill) => skill.id), // TODO: only use permitted skills? (ones they are expert in)
-    //     virtual_link: virtualLink,
-    //   }),
-    // });
+    const res = await fetch(CREATE_MEETING_REQUEST_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        mentorship: mentorship.id,
+        time: datetime,
+        location: meetingLocation,
+        description,
+      }),
+    });
 
-    // // Clear any existing errors
-    clearErrors();
-    // const body: CreateSessionResponse = await res.json();
+    const body = await res.json();
+    if (res.ok) {
+      initiateClose();
 
-    // if (
-    //   isResponseSuccess<CreateSessionSuccess, CreateSessionResponse>(res, body)
-    // ) {
-    //   // Close the modal
-    //   initiateClose();
+      // Revalidate the cache of all meetings
+      mutate(MENTORSHIP_ENDPOINT.replace("{ID}", mentorship.id.toString()));
+    } else {
+      setDatetimeError(body.time?.join(" "));
+      setMeetingLocationError(body.location?.join(" "));
+      setDescriptionError(body.description?.join(" "));
+      setOverallError(body.non_field_errors?.join(" "));
+    }
 
-    //   // TODO: mutate upcoming sesssions
-    // } else {
-    //   // TODO: get server output
-    //   setDatetimeError(body.date?.join(" "));
-    //   setOverallError(body.non_field_errors?.join(" "));
-    // }
+    setIsLoading(false);
   };
 
   const [isClosing, setIsClosing] = useState(false);
@@ -146,12 +158,14 @@ export default function RequestMeetingPopup({
             </div>
           )}
           <div className="grid grid-cols-10 gap-2 pt-2">
-            <button
+            <LoadingButton
               type="submit"
               className="inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none"
+              onClick={() => sendMeetingRequest()}
+              isLoading={isLoading}
             >
               Submit Request
-            </button>
+            </LoadingButton>
             <button
               type="button"
               className="inline-flex justify-center col-span-2 px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"

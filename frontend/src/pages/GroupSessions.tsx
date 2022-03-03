@@ -5,9 +5,9 @@ import { ChevronUpIcon, PlusIcon } from "@heroicons/react/solid";
 import {
   GroupSession,
   GroupSessionResponse,
-  LIST_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
+  LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 import Topbar from "../components/Topbar";
 import SessionInfoPopup from "../components/SessionInfoPopup";
@@ -118,15 +118,20 @@ function HideableSessionsInfo({
 
 export default function GroupSessions() {
   // Pull in session data from backend
-  const { data: allSessions = [], isValidating } = useSWR<GroupSessionResponse>(
-    LIST_GROUP_SESSIONS_ENDPOINT
-  );
-  const { data: joinedSessions } = useSWR<GroupSessionResponse>(
+  const { data: recommendedSessionsData, isValidating } =
+    useSWR<GroupSessionResponse>(LIST_USER_SUGGESTED_SESSIONS_ENDPOINT);
+  const recommendedSessions = recommendedSessionsData ?? [];
+  const { data: joinedSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_USER_JOINED_SESSIONS_ENDPOINT
   );
-  const { data: hostingSessions } = useSWR<GroupSessionResponse>(
+  const { data: hostingSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_USER_HOSTING_SESSIONS_ENDPOINT
   );
+
+  const findSession = (id: number) =>
+    hostingSessions.find((session) => session.id === id) ??
+    joinedSessions.find((session) => session.id === id) ??
+    recommendedSessions.find((session) => session.id === id);
 
   // Current search parameters
   const [searchParams, setSearchParams] = useSearchParams();
@@ -143,11 +148,9 @@ export default function GroupSessions() {
   // When data updates, we should update the object stored in selected session so it uses new information
   useEffect(() => {
     if (selectedSession) {
-      setSelectedSession(
-        allSessions.find((session) => session.id == selectedSession.id)
-      );
+      setSelectedSession(findSession(selectedSession.id));
     }
-  }, [allSessions]);
+  }, [hostingSessions, joinedSessions, recommendedSessions]);
 
   // Read the search parameters to set the selected session
   useEffect(() => {
@@ -161,7 +164,7 @@ export default function GroupSessions() {
       const selectedId = Number(selectedIdText);
       // Ignore if the session is already correct
       if (selectedSession && selectedSession.id === selectedId) return;
-      const session = allSessions.find((session) => session.id == selectedId);
+      const session = findSession(selectedId);
 
       // Check if the session with the ID actually exists. If it doesn't, then
       // just clear the ID
@@ -193,21 +196,9 @@ export default function GroupSessions() {
     );
   };
 
-  const filteredSessions = allSessions
-    // Only show sessions in the future
-    .filter((session) => Date.parse(session.date) >= Date.now())
-    // Filter out sessions you are hosting or have already joined
-    .filter(
-      (session) =>
-        !joinedSessions?.find(
-          (otherSession) => session.id == otherSession.id
-        ) &&
-        !hostingSessions?.find((otherSession) => session.id == otherSession.id)
-    )
+  const filteredSessions = recommendedSessions
     // Filter by the user searchbar input
-    .filter(sessionFilter)
-    // Sort by the closest start date
-    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+    .filter(sessionFilter);
 
   return (
     <>
@@ -257,12 +248,37 @@ export default function GroupSessions() {
             />
           ))}
 
-          {filteredSessions.length === 0 && (
-            <h1 className="font-bold text-xl text-gray-700 mt-10 text-center">
-              There are no sessions available
-              {isFiltering && " which match your search filter"}. Maybe create a
-              new one?
-            </h1>
+          {!recommendedSessionsData && isValidating ? (
+            <div className="flex justify-center">
+              <svg
+                className="animate-spin -ml-1 mr-3 h-20 w-20 text-gray-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            </div>
+          ) : (
+            filteredSessions.length === 0 && (
+              <h1 className="font-bold text-xl text-gray-700 mt-10 text-center">
+                There are no sessions available
+                {isFiltering && " which match your search filter"}. Maybe create
+                a new one?
+              </h1>
+            )
           )}
         </div>
       </div>

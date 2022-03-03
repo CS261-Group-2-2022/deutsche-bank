@@ -76,25 +76,47 @@ class Mentorship(models.Model, Randomisable):
     """ Mentorship between mentor and mentee
     """
 
-    mentee: User = models.ForeignKey('User', related_name='relationship_mentee', on_delete=models.CASCADE)
-    mentor: User = models.ForeignKey('User', related_name='relationship_mentor', on_delete=models.CASCADE)
+    mentee: User = models.ForeignKey('User', related_name='mentorship_mentee', on_delete=models.CASCADE)
+    mentor: User = models.ForeignKey('User', related_name='mentorship_mentor', on_delete=models.CASCADE)
     rating: int = models.SmallIntegerField(null=True)
     feedback: str = models.CharField(null=True, max_length=1000)
 
+    def get_meetings(self) -> QuerySet[Meeting]:
+        return self.mentorship_meetings.all()
 
-class Request(models.Model):
+    def get_upcoming_meetings(self) -> QuerySet[Meeting]:
+        return self.get_meetings().filter(time__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
+
+    def get_meeting_requests(self) -> QuerySet[MeetingRequest]:
+        return self.mentorship_meeting_requests.all()
+
+    def get_mentor_feedback(self):
+        return self.mentorship_feedback.all()
+
+
+class MentorRequest(models.Model):
     """ Mentorship request from a mentee to a mentor
     """
     mentee: User = models.ForeignKey('User', related_name='request_mentee', on_delete=models.CASCADE)
     mentor: User = models.ForeignKey('User', related_name='request_mentor', on_delete=models.CASCADE)
 
 
-# TODO: Remove PermissionsMixin if it is not required
+class MentorFeedback(models.Model):
+    """
+    Feedback given by the mentor to the mentee
+    """
+    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE, related_name='mentorship_feedback')
+    positives: str = models.CharField(max_length=1000)
+    improvements: str = models.CharField(max_length=1000)
+    time: datetime = models.DateTimeField(auto_now_add=True)
+
+
 class User(AbstractBaseUser, Randomisable):
     """ Database model that describes a single User.
     """
     first_name: str = models.CharField(max_length=100)
     last_name: str = models.CharField(max_length=100)
+    image_link: str = models.CharField(null=True, blank=True, max_length=100)
 
     business_area: BusinessArea = models.ForeignKey('BusinessArea', null=True, on_delete=models.SET_NULL)
 
@@ -104,10 +126,10 @@ class User(AbstractBaseUser, Randomisable):
     mentorship: Mentorship = models.OneToOneField(Mentorship, null=True, on_delete=models.SET_NULL)
     mentor_intent: bool = models.BooleanField(default=False)  # whether a user wishes to become a mentor
 
-    interests: List[Skill] = models.ManyToManyField(Skill, related_name='user_interests', blank=True)
-    expertise: List[Skill] = models.ManyToManyField(Skill, related_name='user_expertise', blank=True)
+    interests: QuerySet[Skill] = models.ManyToManyField(Skill, related_name='user_interests', blank=True)
+    expertise: QuerySet[Skill] = models.ManyToManyField(Skill, related_name='user_expertise', blank=True)
 
-    interests_description: str = models.CharField(max_length=500, default="")
+    interests_description: str = models.CharField(max_length=500, default="", blank=True)
 
     objects = UserManager()
 
@@ -118,62 +140,89 @@ class User(AbstractBaseUser, Randomisable):
         verbose_name = 'user'
         verbose_name_plural = 'users'
 
-    def get_full_name(self):
+    def get_full_name(self) -> str:
         """
         Returns the first_name plus the last_name, with a space in between.
         """
         full_name = '%s %s' % (self.first_name, self.last_name)
         return full_name.strip()
 
-    def get_short_name(self):
+    def get_short_name(self) -> str:
         """
         Returns the short name for the user.
         """
         return self.first_name
 
-    def get_mentees(self) -> QuerySet[List[Type[User]]]:
+    def get_mentees(self) -> QuerySet[User]:
         """ Retrieves the list of mentees for this user.
         :return the set of users who have this user as their mentor.
         """
-        return User.objects.all().filter(mentorship__mentor__pk__exact=self.pk).exclude(pk__exact=self.pk)
+        return User.objects.filter(mentorship__mentor__pk__exact=self.pk)
 
-    def find_group_sessions(self) -> QuerySet[List[GroupSession]]:
-        """ Retrieves set of suggested group sessions for this user
+    def find_group_sessions(self) -> QuerySet[GroupSession]:
+        """ Retrieves set of suggested upcoming group sessions for this user
         :return: set of suggested group sessions for this user
         """
         # skills__in=self.interests.all() TODO: Skill Matching/Ordering, Filter Out Sessions at Maximum Capacity
-        return GroupSession.objects.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).exclude(
-            users__pk__contains=self.pk)
+        return GroupSession.objects.filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO)).exclude(
+            users__pk__contains=self.pk).exclude(host__pk__exact=self.pk).order_by('date')
 
-    def get_host_sessions(self) -> QuerySet[List[GroupSession]]:
-        """ Retrieves set of hosted group sessions for this user
-        :return: set of hosted group sessions for this user
+    def get_host_sessions(self) -> QuerySet[GroupSession]:
+        """ Retrieves set of upcoming hosted group sessions for this user
+        :return: set of upcoming hosted group sessions for this user
         """
-        return self.session_host.all().filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
+        return self.session_host.filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
-    def get_sessions(self):
-        """  Retrieves set of group sessions this user is in
-        :return: set of group sessions this user is in
+    def get_sessions(self) -> QuerySet[GroupSession]:
+        """  Retrieves set of upcoming group sessions this user is in
+        :return: set of upcoming group sessions this user is in
         """
-        return GroupSession.objects.all().filter(users__pk__contains=self.pk,
+        return GroupSession.objects.filter(users__pk__contains=self.pk,
                                                  date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
+
+    def get_all_sessions(self) -> QuerySet[GroupSession]:
+        """  Retrieves set of all upcoming group sessions this user is in or is hosting
+        :return: set of all upcoming group sessions this user is in or is hosting
+        """
+        return self.get_host_sessions().union(self.get_sessions()).order_by('date')
+
+    def get_action_plans(self) -> QuerySet[ActionPlan]:
+        return self.user_action_plans.all()
+
+    def get_outgoing_mentor_requests(self) -> QuerySet[MentorRequest]:
+        """ Retrieves set of mentor requests which this user has sent to mentors
+        :return: set of mentor requests which this user has sent to mentors
+        """
+        return self.request_mentee.all()
+
+    def get_incoming_mentor_requests(self) -> QuerySet[MentorRequest]:
+        """ Retrieves set of mentor requests which this user has been sent by potential mentees
+        :return: Retrieves set of mentor requests which this user has been sent by potential mentees
+        """
+        return self.request_mentor.all()
+
+    def get_meetings(self) -> QuerySet[Meeting]:
+        """
+        Retrieves the set of all upcoming meetings which this user has
+        :return: set of all meetings which this user has
+        """
+        query = Meeting.objects.none() if self.mentorship is None else self.mentorship.get_upcoming_meetings()
+        for mentorship in self.get_mentorships_where_user_is_mentor():
+            query = query.union(mentorship.get_upcoming_meetings())
+        return query.order_by('time')
 
     def has_mentees(self) -> bool:
         return self.get_mentees().count() > 0
 
     def get_mentorships_where_user_is_mentor(self) -> QuerySet[List[Type[User]]]:
-        return Mentorship.objects.all().filter(mentor__pk__exact=self.pk)
-
+        return Mentorship.objects.filter(mentor__pk__exact=self.pk)
 
     def get_mentor_rating_average(self) -> float:
         ret = self.get_mentorships_where_user_is_mentor().aggregate(Avg('rating'))['rating__avg']
-        if ret == None:
+        if ret is None:
             return 4
         else:
             return ret
-
-    def get_action_plans(self) -> QuerySet[List[Type[ActionPlan]]]:
-        return ActionPlan.objects.all().filter(user=self)
 
     @classmethod
     def choose_random(cls) -> Type[User]:
@@ -189,8 +238,8 @@ class User(AbstractBaseUser, Randomisable):
     def make_distinct_email_from(cls, first_name, last_name):
         email_domain = "deutschebank"
         email = ''
-        number_of_people_with_same_name = cls.objects.all().filter(first_name=first_name,
-                                                                   last_name=last_name).count()
+        number_of_people_with_same_name = cls.objects.filter(first_name=first_name,
+                                                             last_name=last_name).count()
         if number_of_people_with_same_name > 0:
             email = f'{first_name}.{last_name}.{number_of_people_with_same_name}@{email_domain}.com'
         else:
@@ -269,40 +318,55 @@ class User(AbstractBaseUser, Randomisable):
 
         return u
 
+
 class Meeting(models.Model):
-    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE)
+    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE, related_name='mentorship_meetings')
+    description: str = models.CharField(max_length=100)
+    location: str = models.CharField(max_length=100, null=True)
     time: datetime = models.DateTimeField()  # time of meeting
-    notes: str = models.CharField(max_length=1000)
+    mentee_notes: str = models.CharField(max_length=1000, null=True)
+    mentor_notes: str = models.CharField(max_length=1000, null=True)
+
+
+class MeetingRequest(models.Model):
+    mentorship: Mentorship = models.ForeignKey(Mentorship, on_delete=models.CASCADE,
+                                               related_name='mentorship_meeting_requests')
+    description: str = models.CharField(max_length=100)
+    location: str = models.CharField(max_length=100, null=True)
+    time: datetime = models.DateTimeField()  # time of meeting
 
 
 class ActionPlan(models.Model):
     name: str = models.CharField(max_length=100)
-    description: str = models.CharField(max_length=1000)
-    user: User = models.ForeignKey(User, on_delete=models.CASCADE)  # if the user is deleted action plans
+    description: str = models.CharField(max_length=1000, blank=True)
+    user: User = models.ForeignKey(User, on_delete=models.CASCADE,
+                                   related_name="user_action_plans")  # if the user is deleted action plans
     creation_date: datetime = models.DateTimeField(auto_now_add=True)  # creation date of action plan
-    completion_date: datetime = models.DateTimeField(null=True)  # completion date of action plan
+    due_date: datetime = models.DateTimeField(null=True)  # due date of action plan
+    completion_date: datetime = models.DateTimeField(null=True)
+    completed: bool = models.BooleanField(default=False)  # whether the action plan is completed
 
 
 class Notification(models.Model):
     user: User = models.ForeignKey(User, on_delete=models.CASCADE)
     name: str = models.CharField(max_length=100)
     description: str = models.CharField(max_length=1000)
-    date: datetime = models.DateTimeField()
+    date: datetime = models.DateTimeField(auto_now_add=True)
     actioned: bool = models.BooleanField()  # user has acted on notification
 
 
 class GroupSession(models.Model):
     name: str = models.CharField(max_length=100)
-    location: str = models.CharField(null=True, max_length=100, blank=True)
-    virtual_link: str = models.CharField(null=True, max_length=100, blank=True)
-    image_link: str = models.CharField(null=True, max_length=100, blank=True)
-    description: str = models.CharField(null=True, max_length=2000, blank=True)
+    location: str = models.CharField(max_length=100)
+    virtual_link: str = models.CharField(null=True, blank=True, max_length=100)
+    image_link: str = models.CharField(null=True, blank=True, max_length=100)
+    description: str = models.CharField(null=True, blank=True, max_length=2000)
     host: User = models.ForeignKey(User, related_name='session_host',
                                    on_delete=models.CASCADE)  # if host is deleted, delete session
     capacity: int = models.IntegerField(null=True)
-    skills: List[Skill] = models.ManyToManyField(Skill)
+    skills: QuerySet[Skill] = models.ManyToManyField(Skill)
     date: datetime = models.DateTimeField()
-    users: List[User] = models.ManyToManyField(User, default=[], blank=True)
+    users: QuerySet[User] = models.ManyToManyField(User, default=[], blank=True)
 
 
 class Feedback(models.Model):

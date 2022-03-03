@@ -1,70 +1,47 @@
 import { PencilIcon } from "@heroicons/react/solid";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { mutate } from "swr";
 import {
   FULL_USER_ENDPOINT,
   getAuthToken,
   PROFILE_ENDPOINT,
-  SETTINGS_ENDPOINT,
-  Skill,
   User,
 } from "../../utils/endpoints";
-import { useSkills, getSkillFromId } from "../../utils/skills";
-import SessionTopicLabel from "../SessionTopicLabel";
-import SkillsFuzzyList from "../SkillsFuzzyList";
+import { FormTextArea } from "../FormTextarea";
+import { LoadingButton } from "../LoadingButton";
 
-type AreasOfInterestProps = {
+type InterestsDescriptionProps = {
   title?: string;
   subHeading?: string;
   user: User;
   canEdit: boolean;
 };
 
-const isSkill = (skill: Skill | undefined): skill is Skill => {
-  return skill !== undefined;
-};
-
-export default function AreasOfInterest({
-  title = "Areas of Interest",
+export default function InterestsDescription({
+  title = "Interests Description",
   subHeading,
   user,
   canEdit,
-}: AreasOfInterestProps) {
-  const { skills } = useSkills();
-
-  const [interests, setInterests] = useState<readonly Skill[]>(
-    user.interests
-      .map((id) => getSkillFromId(id, skills))
-      .filter<Skill>(isSkill)
-  );
-
-  useEffect(() => {
-    setInterests(
-      user.interests
-        .map((id) => getSkillFromId(id, skills))
-        .filter<Skill>(isSkill)
-    );
-  }, [skills, user]);
-
+}: InterestsDescriptionProps) {
+  const [bio, setBio] = useState(user.interests_description ?? "");
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
-  const updateAreasOfInterest = async () => {
+  const updateInterestsDescription = async () => {
+    setIsLoading(true);
     setError(undefined);
 
-    const res = await fetch(
-      SETTINGS_ENDPOINT.replace("{ID}", user.id.toString()),
-      {
-        method: "PATCH",
-        headers: {
-          "content-type": "application/json",
-          authorization: `Token ${getAuthToken()}`,
-        },
-        body: JSON.stringify({ interests: interests.map((x) => x.id) }),
-      }
-    );
-
-    const body = await res.json();
+    const res = await fetch(PROFILE_ENDPOINT, {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        interests_description: bio,
+      }),
+    });
 
     if (res.ok) {
       setIsEditing(false);
@@ -72,11 +49,14 @@ export default function AreasOfInterest({
       mutate(PROFILE_ENDPOINT);
       mutate(FULL_USER_ENDPOINT.replace("{ID}", user.id.toString()));
     } else {
+      const body = await res.json();
       setError(
-        body.interests?.join(" ") ??
-          "An error occured when updating your interests. Please try again."
+        body.interests_description?.join(" ") ??
+          "An error occured when updating your interests description. Please try again."
       );
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -85,14 +65,15 @@ export default function AreasOfInterest({
         <h3 className="flex text-xl font-bold gap-2">
           {title}
           {canEdit && (
-            <button
+            <LoadingButton
               className={`ml-2 px-4 flex justify-center items-center text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg ${
                 isEditing
                   ? " bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200"
                   : " bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200"
               }`}
+              isLoading={isLoading}
               onClick={() =>
-                isEditing ? updateAreasOfInterest() : setIsEditing(true)
+                isEditing ? updateInterestsDescription() : setIsEditing(true)
               }
             >
               {isEditing ? (
@@ -103,10 +84,9 @@ export default function AreasOfInterest({
                   Edit
                 </>
               )}
-            </button>
+            </LoadingButton>
           )}
         </h3>
-
         {subHeading && <h5 className="text-sm text-gray-600">{subHeading}</h5>}
       </div>
 
@@ -117,19 +97,18 @@ export default function AreasOfInterest({
               {error}
             </div>
           )}
-          <SkillsFuzzyList skills={interests} setSkills={setInterests} />
+          <FormTextArea
+            id="notes"
+            name=""
+            placeholder="Enter a description about your interests. This will be used to advise your mentoring pairings."
+            text={bio}
+            onChange={setBio}
+          />
         </>
       ) : (
-        <div className="flex flex-wrap gap-1 text-gray-800">
-          {interests.length > 0
-            ? interests.map(
-                (interest) =>
-                  interest && (
-                    <SessionTopicLabel key={interest.id} name={interest.name} />
-                  )
-              )
-            : "No current interests"}
-        </div>
+        <p className="text-gray-800">
+          {bio === "" ? "No interests description set" : bio}
+        </p>
       )}
     </div>
   );

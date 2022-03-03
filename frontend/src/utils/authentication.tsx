@@ -1,12 +1,6 @@
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext } from "react";
 import useSWR from "swr";
-import {
-  clearAuthToken,
-  getAuthToken,
-  ProfileSuccess,
-  PROFILE_ENDPOINT,
-  User,
-} from "./endpoints";
+import { ProfileSuccess, PROFILE_ENDPOINT, User } from "./endpoints";
 
 type UserContext = {
   user?: User;
