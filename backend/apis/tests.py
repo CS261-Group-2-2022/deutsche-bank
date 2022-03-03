@@ -417,11 +417,43 @@ class ActionPlanTestCase(TestCase):
         number_of_action_plans_of_user = ActionPlan.objects.all().filter(user=user).count()
         self.assertEqual(number_of_action_plans_of_user, 0)
 
-    def test_that_users_who_arent_mentors_cant_create_action_plans_for_anyone(self):
-        def filter_out_mentors(q):
-            return q.filter(mentorship_mentor=None)
+    def test_that_mentors_who_arent_mentees_cant_create_action_plans_for_themselves(self):
+        def mentor_isnt_a_mentee(q):
+            return q.filter(mentor__mentorship=None)
 
-        non_mentor = User.choose_random(map_with=filter_out_mentors)
+        mentor = Mentorship.choose_random(map_with=mentor_isnt_a_mentee).mentor
+
+        if mentor is None:
+            return # No such mentor, that's okay
+        assert(mentor.mentorship is None)
+
+        ## Try to create an action plan for the user themselves
+        body = {
+            "name": lorem_random(max_length=100),
+            "description": lorem_random(max_length=1000),
+        }
+
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/plan/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentor)
+
+        view = ActionPlanViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        # Check that the request fails
+        self.assertNotEqual(response.status_code, 200, msg=show_res(response))
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+
+        # Check that an appropriate error message is delivered
+        self.assertIn("must be a mentee", response.data['error'], msg=show_res(response))
+
+    def test_that_users_who_arent_mentors_or_mentees_cant_create_action_plans_for_anyone(self):
+        def filter_out_mentors_and_mentees(q):
+            return q.filter(mentorship_mentor=None).filter(mentorship=None)
+
+        non_mentor = User.choose_random(map_with=filter_out_mentors_and_mentees)
         assert(non_mentor.get_mentees().count() == 0)
 
         ## Try to create an action plan for the user themselves
@@ -505,7 +537,7 @@ class ActionPlanTestCase(TestCase):
         ## Check that the response contains a suitable message
         self.assertIn('is not your mentee', response.data['error'])
 
-    def test_mentees_can_create_action_plans(self):
+    def test_mentees_can_create_action_plans_for_themselves(self):
         # Pick a random mentorship
         mentorship = Mentorship.choose_random()
 
