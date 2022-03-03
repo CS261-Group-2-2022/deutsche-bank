@@ -36,7 +36,7 @@ class NotificationType(Enum):
 
 
 class NotificationManager(Manager):
-    def business_area_conflict(self, mentorship):
+    def business_area_conflict(self, mentorship):  # TODO: Send notification
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(type=NotificationType.BUSINESS_AREA_CONFLICT,
@@ -44,7 +44,8 @@ class NotificationManager(Manager):
                     title=f'Your business area is the same as {mentor.get_full_name()}',
                     action={})
 
-    def meeting_request_received(self, mentorship):
+    def meeting_request_received(self, meeting_request):
+        mentorship = meeting_request.mentorship
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(type=NotificationType.MEETING_REQUEST_RECEIVED,
@@ -52,7 +53,7 @@ class NotificationManager(Manager):
                     title=f'Received a meeting request from {mentee.get_full_name()}',
                     action={})
 
-    def meeting_notes_mentor(self, meeting):
+    def meeting_notes_mentor(self, meeting):  # TODO: Send notification
         mentorship = meeting.mentorship
         mentee = mentorship.mentee
         mentor = mentorship.mentor
@@ -61,7 +62,7 @@ class NotificationManager(Manager):
                     title=f'Notes have not been recorded for your meeting with {mentor.get_full_name()} on {meeting.time.strftime("%d/%m")}',
                     action={'meeting': meeting.pk})
 
-    def meeting_notes_mentee(self, meeting):
+    def meeting_notes_mentee(self, meeting):  # TODO: Send notification
         mentorship = meeting.mentorship
         mentee = mentorship.mentee
         mentor = mentorship.mentor
@@ -97,5 +98,13 @@ class NotificationManager(Manager):
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(type=NotificationType.MEETING_REQUEST_ACCEPTED,
+                    user=mentee,
+                    title=f'{mentor.get_full_name()} accepted your meeting request')
+
+    def meeting_request_declined(self, meeting_request):
+        mentorship = meeting_request.mentorship
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+        self.create(type=NotificationType.MEETING_REQUEST_DECLINED,
                     user=mentee,
                     title=f'{mentor.get_full_name()} accepted your meeting request')
