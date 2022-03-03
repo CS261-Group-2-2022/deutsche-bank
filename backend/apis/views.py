@@ -205,6 +205,19 @@ class MeetingViewSet(viewsets.ModelViewSet):
 class ActionPlanViewSet(viewsets.ModelViewSet):
     queryset = ActionPlan.objects.all()
     serializer_class = ActionPlanSerializer
+    permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to manage action plans
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if 'user' not in serializer.validated_data:
+            serializer.validated_data['user'] = request.user
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def list(self, request, *args, **kwargs):
+        return Response(ActionPlanSerializer(request.user.get_action_plans(), many=True), status=status.HTTP_200_OK)
 
 
 class BusinessAreaViewSet(viewsets.ModelViewSet):
