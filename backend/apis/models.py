@@ -39,12 +39,15 @@ class Randomisable:
 
         count = len(pool)
 
+        if count == 0:
+            return []
+
         if maximum_number is not None:
             maximum_number = min(count, maximum_number)
         else:
             maximum_number = count
 
-        how_many_to_choose = 1
+        how_many_to_choose = minimum_number
         if minimum_number < maximum_number:
             how_many_to_choose = random.randint(minimum_number, maximum_number)
 
