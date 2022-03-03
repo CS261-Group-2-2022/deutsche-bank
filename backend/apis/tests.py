@@ -376,44 +376,27 @@ class UserModelTests(TestCase):
         self.assertNotEqual(response.status_code, 200)
 
     def test_action_plans(self):
-        return # TODO Fix this test
+        # TODO Fix this test
         #test if user can make plans of action
         user = User.make_random()
-        rating = None
-        if random.choice([True,False]):
-           rating = random.randrange(0,10)
+        user.save()
+        start_time = time_start + random_delta()
 
-        feedback = None
-        if random.choice([True,False]):
-            feedback = lorem_random(500)
+        body = {
+            "name": lorem_random(max_length=100),
+            "description": lorem_random(max_length=1000),
+            "creation_date": str(time_start + random_delta()),
+            "completion_date": str(start_time + random_delta())
+            }
 
+        factory =APIRequestFactory()
+        request = factory.post('/api/v1/plan/', json.dumps(body), follow=True,
+                               content_type= 'application/json')
+        force_authenticate(request, user=user)
+        view = ActionPlanViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        self.assertEqual(response.status_code, 400)
+        #self.assertNotEqual(response.status_code, 200)
         
-        mentor = User.make_random(mentor_intent=True)
-        mentee = User.make_random()
-
-        new_mentorship = Mentorship.objects.create(mentor=mentor,
-                                                mentee=mentee,
-                                                rating=rating,
-                                                feedback=feedback)
-        
-        creation_date = time_start + random_delta()
-        completion_date = None
-        if random.choice([True,False]):
-            completion_date = creation_date + random_delta()
-        action_plan_count = ActionPlan.objects.count()
-        new_action_plan = ActionPlan.objects.create(name=lorem_random(30),
-                                                    description=lorem_random(500),
-                                                    user=user,
-                                                    creation_date=creation_date,
-                                                    completion_date=completion_date)
-
-        #a new action plan object shouldn't be created if the user is
-        #not a mentee
-        self.assertFalse(ActionPlan.objects.count() > action_plan_count)
-        new_action_plan2 = ActionPlan.objects.create(name=lorem_random(30),
-                                                    description=lorem_random(500),
-                                                    user=mentee,
-                                                    creation_date=creation_date,
-                                                    completion_date=completion_date)
-        self.assertTrue(ActionPlan.objects.count() > action_plan_count)
        
