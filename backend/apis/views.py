@@ -205,6 +205,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
 class ActionPlanViewSet(viewsets.ModelViewSet):
     queryset = ActionPlan.objects.all()
     serializer_class = ActionPlanSerializer
+    permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to manage action plans
 
     def create(self, request, *args, **kwargs):
         if request.user.mentorship is not None:
@@ -221,6 +222,9 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
         else:
             # The user isn't a mentee. This means they shouldn't be permitted to create one.
             return Response("You're not a mentee, so you cannot create Action Plans.", status=status.HTTP_403_FORBIDDEN)
+
+    def list(self, request, *args, **kwargs):
+        return Response(ActionPlanSerializer(request.user.get_action_plans(), many=True), status=status.HTTP_200_OK)
 
 
 class BusinessAreaViewSet(viewsets.ModelViewSet):

@@ -442,12 +442,12 @@ class ActionPlanTestCase(TestCase):
         self.assertEqual(response.status_code, 201, msg=f'{response=}')
 
         ## Check that the response contains the created data
-        self.assertIn('id', data, msg=f'{response.data=}')
-        self.assertIn('user', data, msg=f'{response.data=}')
-        self.assertIn('name', data, msg=f'{response.data=}')
-        self.assertIn('description', data, msg=f'{response.data=}')
-        self.assertIn('creation_date', data, msg=f'{response.data=}')
-        self.assertIn('completion_date', data, msg=f'{response.data=}')
+        self.assertIn('id', response.data, msg=f'{response.data=}')
+        self.assertIn('user', response.data, msg=f'{response.data=}')
+        self.assertIn('name', response.data, msg=f'{response.data=}')
+        self.assertIn('description', response.data, msg=f'{response.data=}')
+        self.assertIn('creation_date', response.data, msg=f'{response.data=}')
+        self.assertIn('completion_date', response.data, msg=f'{response.data=}')
 
         ## Check that the action plan has actually been created
         number_of_action_plans_after = ActionPlan.objects.all().filter(user=mentee).count()
