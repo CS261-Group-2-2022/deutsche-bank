@@ -17,8 +17,14 @@ export const applyNotificationAction = (
   navigate: NavigateFunction
 ) => {
   switch (notification.type) {
-    case NotificationType.BUSINESS_AREA_CONFLICT: {
-      // TODO: link to mentee page
+    case NotificationType.BUSINESS_AREA_CONFLICT_MENTEE: {
+      // Navigate to the mentee page
+      navigate(`/mentoring/me`);
+      break;
+    }
+    case NotificationType.BUSINESS_AREA_CONFLICT_MENTOR: {
+      // Navigate to the mentee page
+      navigate(`/mentoring/${notification.action.mentee}`);
       break;
     }
     case NotificationType.MENTORSHIP_REQUEST_RECEIVED: {

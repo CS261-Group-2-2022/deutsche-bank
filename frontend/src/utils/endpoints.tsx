@@ -309,7 +309,8 @@ export type UpcomingSessions = {
 
 // Notifications
 export enum NotificationType {
-  BUSINESS_AREA_CONFLICT = 1,
+  BUSINESS_AREA_CONFLICT_MENTEE = 1,
+  BUSINESS_AREA_CONFLICT_MENTOR = 11,
   MEETING_REQUEST_RECEIVED = 2,
   MEETING_NOTES_MENTOR = 3,
   MEETING_NOTES_MENTEE = 4,
@@ -332,9 +333,20 @@ interface NotificationBase {
   action?: unknown;
 }
 
-export interface NotificationBusinessAreaConflict extends NotificationBase {
-  type: NotificationType.BUSINESS_AREA_CONFLICT;
-  action: unknown;
+export interface NotificationBusinessAreaConflictMentee
+  extends NotificationBase {
+  type: NotificationType.BUSINESS_AREA_CONFLICT_MENTEE;
+  action: {
+    mentor: number;
+  };
+}
+
+export interface NotificationBusinessAreaConflictMentor
+  extends NotificationBase {
+  type: NotificationType.BUSINESS_AREA_CONFLICT_MENTOR;
+  action: {
+    mentee: number;
+  };
 }
 
 export interface NotificationMeetingRequest extends NotificationBase {
@@ -383,7 +395,8 @@ export interface NotificationMeetingDeclined extends NotificationBase {
 }
 
 export type Notification =
-  | NotificationBusinessAreaConflict
+  | NotificationBusinessAreaConflictMentee
+  | NotificationBusinessAreaConflictMentor
   | NotificationMeetingRequest
   | NotificationMeetingNotesMentor
   | NotificationMeetingNotesMentee
