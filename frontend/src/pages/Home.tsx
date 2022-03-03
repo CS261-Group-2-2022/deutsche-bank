@@ -4,8 +4,9 @@ import {
   ExclamationIcon,
   UserGroupIcon,
 } from "@heroicons/react/solid";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useSWR from "swr";
+import { applyNotificationAction } from "../components/NotificationsPopup";
 //import RoundedImage from "../components/RoundedImage";
 import Topbar from "../components/Topbar";
 import UpcomingSession from "../components/UpcomingSessions";
@@ -17,23 +18,27 @@ import {
   FULL_USER_ENDPOINT,
   GroupSession,
   GroupSessionResponse,
+  LIST_ACTION_NOTIFICATIONS,
   LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
   Mentorship,
   MENTORSHIP_ENDPOINT,
+  Notification,
   UpcomingSessions,
   UPCOMING_SESSIONS_ENDPOINT,
   UserFull,
 } from "../utils/endpoints";
 
 type ActionProps = {
-  actionText: string;
-  buttonText?: string;
-  onClick: () => void;
+  action: Notification;
 };
 
-function Action({ actionText, buttonText = "View", onClick }: ActionProps) {
+function Action({ action }: ActionProps) {
+  const navigate = useNavigate();
+  const actionText = action.title;
+  const buttonText = "View";
+
   return (
-    <div className="shadow rounded-2xl bg-white px-4 py-2 border">
+    <div className="shadow rounded-lg bg-white px-4 py-2 border">
       <div className="flex-row gap-4 flex justify-center items-center">
         <div className="flex-shrink-0">
           <a href="#" className="block relative">
@@ -49,7 +54,7 @@ function Action({ actionText, buttonText = "View", onClick }: ActionProps) {
         </div>
         <button
           type="button"
-          onClick={onClick}
+          onClick={() => applyNotificationAction(action, navigate)}
           className="py-1 px-4 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2  rounded-lg "
         >
           {buttonText}
@@ -60,25 +65,20 @@ function Action({ actionText, buttonText = "View", onClick }: ActionProps) {
 }
 
 function ActionRequiredBox() {
+  const { data: actions } = useSWR<Notification[]>(LIST_ACTION_NOTIFICATIONS);
+  console.log(actions);
+
   return (
     <div className="rounded-2xl p-2 space-y-2">
       <h4 className="text-l sm:text-xl font-semibold flex items-center">
         <ExclamationIcon className="mr-2 h-6 w-6" />
         Actions Required
       </h4>
-      {/* <p className="text-m">You have no actions required</p> */}
-      <Action
-        actionText="Bob has requested to be your mentee"
-        onClick={() => undefined}
-      />
-      <Action
-        actionText="John has requested to be your mentee"
-        onClick={() => undefined}
-      />
-      <Action
-        actionText="Notes have not been recorded for your meeting with Steve on 25/01"
-        onClick={() => undefined}
-      />
+      {actions && actions.length > 0 ? (
+        actions.map((action) => <Action key={action.id} action={action} />)
+      ) : (
+        <p className="text-m">You have no actions required</p>
+      )}
     </div>
   );
 }

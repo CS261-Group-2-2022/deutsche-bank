@@ -39,6 +39,9 @@ export const CHANGE_USER_PLANS = `${HOSTNAME}/api/v1/plan/{ID}/`;
 export const UPCOMING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/events/`;
 export const CREATE_MENTOR_FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-feedback/`;
 export const CHANGE_PASSWORD_ENDPOINT = `${HOSTNAME}/api/v1/auth/password/`;
+export const LIST_ALL_NOTIFICATIONS = `${HOSTNAME}/api/v1/notification/`;
+export const LIST_ACTION_NOTIFICATIONS = `${HOSTNAME}/api/v1/notification/actions/`;
+export const DELETE_NOTIFICATION = `${HOSTNAME}/api/v1/notification/id/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -185,6 +188,7 @@ export type GroupSession = {
   skills?: Skill[];
   users: User[];
   virtual_link?: string;
+  image_link?: string;
 };
 
 export type GroupSessionResponse = GroupSession[];
@@ -302,3 +306,89 @@ export type UpcomingSessions = {
   meetings: ExtendedMeeting[];
   sessions: GroupSession[];
 };
+
+// Notifications
+export enum NotificationType {
+  BUSINESS_AREA_CONFLICT = 1,
+  MEETING_REQUEST_RECEIVED = 2,
+  MEETING_NOTES_MENTOR = 3,
+  MEETING_NOTES_MENTEE = 4,
+  MENTORSHIP_REQUEST_RECEIVED = 5,
+  GROUP_SESSION_PROMPT = 6,
+
+  MENTORSHIP_REQUEST_ACCEPTED = 7,
+  MENTORSHIP_REQUEST_DECLINED = 8,
+  MEETING_REQUEST_ACCEPTED = 9,
+  MEETING_REQUEST_DECLINED = 10,
+}
+
+interface NotificationBase {
+  id: number;
+  type: NotificationType;
+  user: User; // The user who the notification impacts?
+  title: string;
+  date: string;
+  seen: boolean;
+  action?: unknown;
+}
+
+export interface NotificationBusinessAreaConflict extends NotificationBase {
+  type: NotificationType.BUSINESS_AREA_CONFLICT;
+  action: unknown;
+}
+
+export interface NotificationMeetingRequest extends NotificationBase {
+  type: NotificationType.MEETING_REQUEST_RECEIVED;
+  action: {
+    mentee: number;
+  };
+}
+
+export interface NotificationMeetingNotesMentor extends NotificationBase {
+  type: NotificationType.MEETING_NOTES_MENTOR;
+  action: {
+    meeting: number;
+  };
+}
+
+export interface NotificationMeetingNotesMentee extends NotificationBase {
+  type: NotificationType.MEETING_NOTES_MENTEE;
+  action: {
+    meeting: number;
+    mentee: number;
+  };
+}
+
+export interface NotificationMentorshipRequest extends NotificationBase {
+  type: NotificationType.MENTORSHIP_REQUEST_RECEIVED;
+  action: {
+    request: number;
+  };
+}
+
+export interface NotificationMentorshipAccepted extends NotificationBase {
+  type: NotificationType.MENTORSHIP_REQUEST_ACCEPTED;
+}
+
+export interface NotificationMentorshipDeclined extends NotificationBase {
+  type: NotificationType.MENTORSHIP_REQUEST_DECLINED;
+}
+
+export interface NotificationMeetingAccepted extends NotificationBase {
+  type: NotificationType.MEETING_REQUEST_ACCEPTED;
+}
+
+export interface NotificationMeetingDeclined extends NotificationBase {
+  type: NotificationType.MEETING_REQUEST_DECLINED;
+}
+
+export type Notification =
+  | NotificationBusinessAreaConflict
+  | NotificationMeetingRequest
+  | NotificationMeetingNotesMentor
+  | NotificationMeetingNotesMentee
+  | NotificationMentorshipRequest
+  | NotificationMentorshipAccepted
+  | NotificationMentorshipDeclined
+  | NotificationMeetingAccepted
+  | NotificationMeetingDeclined;
