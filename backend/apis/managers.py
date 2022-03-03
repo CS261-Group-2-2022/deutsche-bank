@@ -58,7 +58,7 @@ class NotificationManager(Manager):
         mentor = mentorship.mentor
         self.create(type=NotificationType.MEETING_NOTES_MENTOR,
                     user=mentee,
-                    title=f"Don't forget to add meeting notes for your meeting with {mentor.get_full_name()}",
+                    title=f'Notes have not been recorded for your meeting with {mentor.get_full_name()} on {meeting.time.strftime("%d/%m")}',
                     action={'meeting': meeting.pk})
 
     def meeting_notes_mentee(self, meeting):
@@ -67,7 +67,7 @@ class NotificationManager(Manager):
         mentor = mentorship.mentor
         self.create(type=NotificationType.MEETING_NOTES_MENTEE,
                     user=mentor,
-                    title=f"Don't forget to add meeting notes for your meeting with {mentee.get_full_name()}",
+                    title=f'Notes have not been recorded for your meeting with {mentee.get_full_name()} on {meeting.time.strftime("%d/%m")}',
                     action={'mentee': mentee.pk, 'meeting': meeting.pk})
 
     def mentorship_request_received(self, mentor_request):
@@ -75,7 +75,7 @@ class NotificationManager(Manager):
         mentor = mentor_request.mentor
         self.create(type=NotificationType.MENTORSHIP_REQUEST_RECEIVED,
                     user=mentor,
-                    title=f'You received a mentor request from {mentee.get_full_name()}',
+                    title=f'{mentee.get_full_name()} requested to be your mentee',
                     action={'request': mentor_request.pk})
 
     def mentorship_request_accepted(self, mentor_request):
