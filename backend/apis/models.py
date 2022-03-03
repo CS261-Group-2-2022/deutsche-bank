@@ -385,4 +385,4 @@ class Notification(models.Model):
     type: int = models.IntegerField()
     action = models.JSONField(null=True, blank=True)
 
-    objects = NotificationManager
+    manager = NotificationManager

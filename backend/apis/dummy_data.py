@@ -330,4 +330,4 @@ def clear_database(force = False):
     if force or input("[y/n]>").lower() == 'y':
         models = apps.all_models['apis']
         for model in models:
-            models[model].objects.all().delete()
+            models[model].manager.all().delete()
