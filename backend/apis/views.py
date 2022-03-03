@@ -224,7 +224,7 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
             return Response("You're not a mentee, so you cannot create Action Plans.", status=status.HTTP_403_FORBIDDEN)
 
     def list(self, request, *args, **kwargs):
-        serializer = ActionPlanSerializer(request.user.get_action_plans(), many=True)
+        serializer = ActionPlanSerializer(request.user.get_action_plans().all(), many=True)
         return Response(serializer.data)
 
 

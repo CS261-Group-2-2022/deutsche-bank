@@ -451,7 +451,21 @@ class ActionPlanTestCase(TestCase):
         self.assertIn('description', response.data, msg=show_res(response))
         self.assertIn('creation_date', response.data, msg=show_res(response))
         self.assertIn('completion_date', response.data, msg=show_res(response))
+        created_action_plan = response.data
 
         ## Check that the action plan has actually been created
-        number_of_action_plans_after = ActionPlan.objects.all().filter(user=mentee).count()
+        number_of_action_plans_after = mentee.get_action_plans().count()
         self.assertGreater(number_of_action_plans_after, number_of_action_plans_before)
+
+        ## Check that we can retrieve the user's list of action plans, and this one is present.
+        request = factory.get('/api/v1/plan/', follow=True)
+        force_authenticate(request, user=mentee)
+
+        view = ActionPlanViewSet.as_view({'get': 'list'})
+        response = view(request)
+        response.render()
+
+        json_returned = json.loads(response.content)
+
+        ids_returned = [action_plan['id'] for action_plan in json_returned]
+        self.assertIn(created_action_plan['id'], ids_returned, msg=show_res(response))

@@ -164,12 +164,16 @@ class User(AbstractBaseUser, Randomisable):
     def get_mentorships_where_user_is_mentor(self) -> QuerySet[List[Type[User]]]:
         return Mentorship.objects.all().filter(mentor__pk__exact=self.pk)
 
+
     def get_mentor_rating_average(self) -> float:
         ret = self.get_mentorships_where_user_is_mentor().aggregate(Avg('rating'))['rating__avg']
         if ret == None:
             return 4
         else:
             return ret
+
+    def get_action_plans(self) -> QuerySet[List[Type[ActionPlan]]]:
+        return ActionPlan.objects.all().filter(user=self)
 
     @classmethod
     def choose_random(cls) -> Type[User]:
