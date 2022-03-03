@@ -182,7 +182,6 @@ export default function Topbar() {
               Feedback
               <ChatAlt2Icon className={"ml-2 h-5 w-5"} aria-hidden="true" />
             </Link>
-            {/* TODO: alignment */}
             <NotificationsPopup />
             <Link to="/settings">
               <p title="Settings">

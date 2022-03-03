@@ -27,13 +27,7 @@ const RegisteredUser = ({ user }: { user: User }) => {
   return (
     <div className="flex items-center">
       <div className="flex-shrink-0 h-10 w-10">
-        <img
-          className="h-10 w-10 rounded-full"
-          src={
-            "https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-          }
-          alt="profile picture"
-        />
+        <UserAvatar user={user} size={10} />
       </div>
       <div className="ml-4">
         <div className="text-sm font-medium text-gray-900">

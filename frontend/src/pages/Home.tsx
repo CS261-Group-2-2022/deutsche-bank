@@ -42,11 +42,8 @@ function Action({ action }: ActionProps) {
       <div className="flex-row gap-4 flex justify-center items-center">
         <div className="flex-shrink-0">
           <a href="#" className="block relative">
-            <img
-              alt="profil"
-              src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-              className="mx-auto object-cover rounded-full h-8 w-8"
-            />
+            {/* TODO: user avatar here? whos avatar should it be? or maybe no avatar, and instead an icon? */}
+            <UserAvatar size={8} />
           </a>
         </div>
         <div className="flex flex-col w-full">
@@ -66,7 +63,6 @@ function Action({ action }: ActionProps) {
 
 function ActionRequiredBox() {
   const { data: actions } = useSWR<Notification[]>(LIST_ACTION_NOTIFICATIONS);
-  console.log(actions);
 
   return (
     <div className="rounded-2xl p-2 space-y-2">

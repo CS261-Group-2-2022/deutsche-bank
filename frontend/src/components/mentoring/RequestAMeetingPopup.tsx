@@ -92,7 +92,6 @@ export default function RequestMeetingPopup({
     if (upcomingEvents && datetime && datetime !== "") {
       const selectedDay = DateTime.fromISO(datetime).startOf("day");
 
-      console.log(datetime, selectedDay);
       setConflictingSessions([
         ...upcomingEvents.meetings
           .filter((meeting) =>
