@@ -6,7 +6,7 @@ from random import randbytes
 
 import json
 
-from .views import GroupSessionViewSet
+from .views import GroupSessionViewSet, ActionPlanViewSet
 
 from .models import *
 from .dummy_data import *
@@ -375,45 +375,80 @@ class UserModelTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertNotEqual(response.status_code, 200)
 
-    def test_action_plans(self):
-        return # TODO Fix this test
-        #test if user can make plans of action
-        user = User.make_random()
-        rating = None
-        if random.choice([True,False]):
-           rating = random.randrange(0,10)
+class ActionPlanTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_dummy_data(quiet=True)
+        cls.randomly_created_user = User.make_random()
 
-        feedback = None
-        if random.choice([True,False]):
-            feedback = lorem_random(500)
+    def test_that_users_who_arent_mentees_cant_create_action_plans(self):
+        # This user doesn't have a mentor yet.
+        user = self.randomly_created_user
 
-        
-        mentor = User.make_random(mentor_intent=True)
-        mentee = User.make_random()
+        # Try to create an Action Plan by making a request.
+        body = {
+            "name": lorem_random(max_length=100),
+            "description": lorem_random(max_length=1000),
+        }
 
-        new_mentorship = Mentorship.objects.create(mentor=mentor,
-                                                mentee=mentee,
-                                                rating=rating,
-                                                feedback=feedback)
-        
-        creation_date = time_start + random_delta()
-        completion_date = None
-        if random.choice([True,False]):
-            completion_date = creation_date + random_delta()
-        action_plan_count = ActionPlan.objects.count()
-        new_action_plan = ActionPlan.objects.create(name=lorem_random(30),
-                                                    description=lorem_random(500),
-                                                    user=user,
-                                                    creation_date=creation_date,
-                                                    completion_date=completion_date)
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/plan/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=user)
 
-        #a new action plan object shouldn't be created if the user is
-        #not a mentee
-        self.assertFalse(ActionPlan.objects.count() > action_plan_count)
-        new_action_plan2 = ActionPlan.objects.create(name=lorem_random(30),
-                                                    description=lorem_random(500),
-                                                    user=mentee,
-                                                    creation_date=creation_date,
-                                                    completion_date=completion_date)
-        self.assertTrue(ActionPlan.objects.count() > action_plan_count)
-       
+        view = ActionPlanViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        ## Check that the request fails
+        self.assertNotEqual(response.status_code, 200, msg=f'{response=}')
+        self.assertEqual(response.status_code, 403, msg=f'{response=}')
+
+        ## Check that the response contains a suitable message
+        self.assertIn('not', response.data)
+        self.assertIn('mentee', response.data)
+
+        ## Check that the action plan hasn't been created
+        number_of_action_plans_of_user = ActionPlan.objects.all().filter(user=user).count()
+        self.assertEqual(number_of_action_plans_of_user, 0)
+
+    def test_mentees_can_create_action_plans(self):
+        # Pick a random mentorship
+        mentorship = Mentorship.choose_random()
+
+        if mentorship is None:
+            return # Random data generation meant there were no mentorships.
+
+        mentee = mentorship.mentee
+
+        # Create an action plan
+        body = {
+            "name": lorem_random(max_length=100),
+            "description": lorem_random(max_length=1000),
+        }
+
+        number_of_action_plans_before = ActionPlan.objects.all().filter(user=mentee).count()
+
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/plan/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentee)
+
+        view = ActionPlanViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        ## Check that the request succeeds
+        self.assertEqual(response.status_code, 201, msg=f'{response=}')
+
+        ## Check that the response contains the created data
+        self.assertIn('id', data, msg=f'{response.data=}')
+        self.assertIn('user', data, msg=f'{response.data=}')
+        self.assertIn('name', data, msg=f'{response.data=}')
+        self.assertIn('description', data, msg=f'{response.data=}')
+        self.assertIn('creation_date', data, msg=f'{response.data=}')
+        self.assertIn('completion_date', data, msg=f'{response.data=}')
+
+        ## Check that the action plan has actually been created
+        number_of_action_plans_after = ActionPlan.objects.all().filter(user=mentee).count()
+        self.assertGreater(number_of_action_plans_after, number_of_action_plans_before)

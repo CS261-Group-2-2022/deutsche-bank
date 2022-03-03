@@ -206,6 +206,22 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
     queryset = ActionPlan.objects.all()
     serializer_class = ActionPlanSerializer
 
+    def create(self, request, *args, **kwargs):
+        if request.user.mentorship is not None:
+            # The user is a mentee, so they can create an ActionPlan
+            request.data['user'] = request.user.pk
+            serializer = self.get_serializer(data=request.data)
+
+            serializer.is_valid(raise_exception=True)
+
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            # The user isn't a mentee. This means they shouldn't be permitted to create one.
+            return Response("You're not a mentee, so you cannot create Action Plans.", status=status.HTTP_403_FORBIDDEN)
+
 
 class BusinessAreaViewSet(viewsets.ModelViewSet):
     # TODO(akiss) If the front-end provides a token that is invalid, these endpoints still do not work.

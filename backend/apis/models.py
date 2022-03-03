@@ -72,7 +72,7 @@ class BusinessArea(models.Model, Randomisable):
 
 from dataclasses import dataclass
 @dataclass(init=False)
-class Mentorship(models.Model):
+class Mentorship(models.Model, Randomisable):
     """ Mentorship between mentor and mentee
     """
 
@@ -275,7 +275,7 @@ class ActionPlan(models.Model):
     name: str = models.CharField(max_length=100)
     description: str = models.CharField(max_length=1000)
     user: User = models.ForeignKey(User, on_delete=models.CASCADE)  # if the user is deleted action plans
-    creation_date: datetime = models.DateTimeField()  # creation date of action plan
+    creation_date: datetime = models.DateTimeField(auto_now_add=True)  # creation date of action plan
     completion_date: datetime = models.DateTimeField(null=True)  # completion date of action plan
 
 
