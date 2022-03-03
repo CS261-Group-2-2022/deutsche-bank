@@ -45,7 +45,7 @@ const GroupSessionCard = ({ session }: { session: GroupSession }) => {
           alt="Session Image"
           src={
             session.image_link ??
-            "https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
+            "https://thinkingportfolio.com/wp-content/uploads/2015/10/02G69046.jpg"
           }
           className="h-20 rounded-lg"
         />
