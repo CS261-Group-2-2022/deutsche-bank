@@ -127,12 +127,23 @@ class GroupSessionViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-
         serializer.is_valid(raise_exception=True)
         serializer.validated_data['host'] = request.user  # TODO: Test whether this works
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        skills = serializer.validated_data['skills']
+        host = request.user
+
+        # Check that the host has all of these skills
+        host_expertises = set(host.expertise.all())
+        skills_in_session = set(skills)
+        if skills_in_session.issubset(host_expertises):
+            # We're okay
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            return Response("Cannot create a group session with skills you're not an expert in.",
+                            status=status.HTTP_400_BAD_REQUEST)
 
     def list(self, request, *args, **kwargs) -> Response:
         queryset = GroupSession.objects.all()
