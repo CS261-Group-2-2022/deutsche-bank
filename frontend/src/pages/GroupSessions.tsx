@@ -5,7 +5,6 @@ import { ChevronUpIcon, PlusIcon } from "@heroicons/react/solid";
 import {
   GroupSession,
   GroupSessionResponse,
-  LIST_All_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
   LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
@@ -129,11 +128,10 @@ export default function GroupSessions() {
     LIST_USER_HOSTING_SESSIONS_ENDPOINT
   );
 
-  const allSessions = [
-    ...recommendedSessions,
-    ...joinedSessions,
-    ...hostingSessions,
-  ];
+  const findSession = (id: number) =>
+    hostingSessions.find((session) => session.id === id) ??
+    joinedSessions.find((session) => session.id === id) ??
+    recommendedSessions.find((session) => session.id === id);
 
   // Current search parameters
   const [searchParams, setSearchParams] = useSearchParams();
@@ -150,11 +148,9 @@ export default function GroupSessions() {
   // When data updates, we should update the object stored in selected session so it uses new information
   useEffect(() => {
     if (selectedSession) {
-      setSelectedSession(
-        allSessions.find((session) => session.id == selectedSession.id)
-      );
+      setSelectedSession(findSession(selectedSession.id));
     }
-  }, [allSessions]);
+  }, [hostingSessions, joinedSessions, recommendedSessions]);
 
   // Read the search parameters to set the selected session
   useEffect(() => {
@@ -168,7 +164,7 @@ export default function GroupSessions() {
       const selectedId = Number(selectedIdText);
       // Ignore if the session is already correct
       if (selectedSession && selectedSession.id === selectedId) return;
-      const session = allSessions.find((session) => session.id == selectedId);
+      const session = findSession(selectedId);
 
       // Check if the session with the ID actually exists. If it doesn't, then
       // just clear the ID
