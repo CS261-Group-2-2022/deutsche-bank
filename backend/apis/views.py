@@ -449,7 +449,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 
 
 class NotificationViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Notification.manager.all()
+    queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
