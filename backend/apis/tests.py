@@ -408,7 +408,7 @@ class ActionPlanTestCase(TestCase):
 
         ## Check that the request fails
         self.assertNotEqual(response.status_code, 200, msg=show_res(response))
-        self.assertEqual(response.status_code, 403, msg=show_res(response))
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
 
         ## Check that the response contains a suitable message
         self.assertIn('not', response.data)
