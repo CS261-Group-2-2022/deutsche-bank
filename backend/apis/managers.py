@@ -110,6 +110,6 @@ class NotificationManager(models.Manager):
         mentorship = meeting_request.mentorship
         mentee = mentorship.mentee
         mentor = mentorship.mentor
-        self.create(type=NotificationType.MEETING_REQUEST_DECLINED,
+        self.create(NotificationType.MEETING_REQUEST_DECLINED,
                     user=mentee,
                     title=f'{mentor.get_full_name()} accepted your meeting request')
