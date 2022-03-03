@@ -192,7 +192,7 @@ export default function NotificationsPopup() {
               leaveTo="opacity-0 translate-y-1"
               afterEnter={markAsSeen}
             >
-              <Popover.Panel className="absolute z-10 w-screen max-w-sm px-4 mt-3 transform -translate-x-full left-2/3 sm:px-0 lg:max-w-xl">
+              <Popover.Panel className="absolute z-10 w-screen max-w-sm px-4 mt-3 transform -translate-x-full left-2/3 sm:px-0 lg:max-w-lg">
                 <div className="overflow-hidden rounded-lg shadow-xl ring-1 ring-black ring-opacity-5">
                   <div className="relative flex flex-col bg-white">
                     {notifications && notifications.length > 0 ? (
@@ -205,7 +205,7 @@ export default function NotificationsPopup() {
                           />
                         ))
                     ) : (
-                      <p className="font-medium text-center text-gray-700">
+                      <p className="font-medium text-center text-gray-700 m-2">
                         No new notifications
                       </p>
                     )}
