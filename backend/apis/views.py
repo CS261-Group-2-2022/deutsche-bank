@@ -424,12 +424,22 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         if 'user' not in serializer.validated_data:
             serializer.validated_data['user'] = request.user
 
-        if serializer.validated_data['user'].mentorship is None:
-            return Response({'error': 'A user must be a mentee to create action plans'},
-                            status=status.HTTP_400_BAD_REQUEST)
+        target_user = serializer.validated_data['user']
+
+        if request.user is target_user:
+            # We're making an action plan for ourselves
+            if request.user.mentorship is None:
+                e = {'error': 'A user must be a mentee to create action plans'}
+                return Response(e, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # We're making an action plan for our mentee
+            if target_user.mentorship is None or target_user.mentorship.mentor.pk != request.user.pk:
+                e = {'error': "You can't create an action plan for someone who is not your mentee."}
+                return Response(e, status=status.HTTP_400_BAD_REQUEST)
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)

@@ -387,7 +387,7 @@ class ActionPlanTestCase(TestCase):
         create_dummy_data(quiet=True)
         cls.randomly_created_user = User.make_random()
 
-    def test_that_users_who_arent_mentees_cant_create_action_plans(self):
+    def test_that_users_who_arent_mentees_cant_create_action_plans_for_themselves(self):
         # This user doesn't have a mentor yet.
         user = self.randomly_created_user
 
@@ -417,6 +417,94 @@ class ActionPlanTestCase(TestCase):
         number_of_action_plans_of_user = ActionPlan.objects.all().filter(user=user).count()
         self.assertEqual(number_of_action_plans_of_user, 0)
 
+    def test_that_users_who_arent_mentors_cant_create_action_plans_for_anyone(self):
+        def filter_out_mentors(q):
+            return q.filter(mentorship_mentor=None)
+
+        non_mentor = User.choose_random(map_with=filter_out_mentors)
+        assert(non_mentor.get_mentees().count() == 0)
+
+        ## Try to create an action plan for the user themselves
+        body = {
+            "name": lorem_random(max_length=100),
+            "description": lorem_random(max_length=1000),
+        }
+
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/plan/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=non_mentor)
+
+        view = ActionPlanViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        # Check that the request fails
+        self.assertNotEqual(response.status_code, 200, msg=show_res(response))
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+
+        # Check that an appropriate error message is delivered
+        self.assertIn("must be a mentee", response.data['error'], msg=show_res(response))
+
+        ## Try to create an action plan for anyone else
+        def exclude_non_mentor(q):
+            return q.filter(pk__exact=non_mentor.pk)
+
+        other_user = User.choose_random(map_with=exclude_non_mentor)
+        assert(other_user is not non_mentor)
+
+        body = {
+            "name": lorem_random(max_length=100),
+            "description": lorem_random(max_length=1000),
+            "user": other_user.pk
+        }
+
+        request = factory.post('/api/v1/plan/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=non_mentor)
+        response = view(request)
+
+        # Check that the request fails
+        self.assertNotEqual(response.status_code, 200, msg=show_res(response))
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+
+        # Check that an appropriate error message is delivered
+        self.assertIn("not your mentee", response.data['error'], msg=show_res(response))
+
+    def test_that_mentors_cant_create_action_plans_for_mentees_that_arent_theirs(self):
+        # Pick a random mentor.
+        mentor = Mentorship.choose_random().mentor
+
+        # Get a mentee that isn't one of the mentor's mentees
+        def exclude_mentees_of_mentor(q):
+            return q.exclude(mentorship=None).exclude(mentorship__mentor=mentor)
+
+        other_mentee = User.choose_random(map_with=exclude_mentees_of_mentor)
+
+        ## Try to make an action plan for other_mentee as the mentor.
+        body = {
+            "name": lorem_random(max_length=100),
+            "description": lorem_random(max_length=1000),
+            "user": other_mentee.pk
+        }
+
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/plan/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentor)
+
+        view = ActionPlanViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        ## Check that the request fails
+        self.assertNotEqual(response.status_code, 200, msg=show_res(response))
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+
+        ## Check that the response contains a suitable message
+        self.assertIn('is not your mentee', response.data['error'])
+
     def test_mentees_can_create_action_plans(self):
         # Pick a random mentorship
         mentorship = Mentorship.choose_random()
@@ -439,6 +527,64 @@ class ActionPlanTestCase(TestCase):
                                json.dumps(body),
                                follow=True, content_type='application/json')
         force_authenticate(request, user=mentee)
+
+        view = ActionPlanViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        ## Check that the request succeeds
+        self.assertEqual(response.status_code, 201, msg=show_res(response))
+
+        ## Check that the response contains the created data
+        self.assertIn('id', response.data, msg=show_res(response))
+        self.assertIn('user', response.data, msg=show_res(response))
+        self.assertIn('name', response.data, msg=show_res(response))
+        self.assertIn('description', response.data, msg=show_res(response))
+        self.assertIn('creation_date', response.data, msg=show_res(response))
+        self.assertIn('completion_date', response.data, msg=show_res(response))
+        created_action_plan = response.data
+
+        ## Check that the action plan has actually been created
+        number_of_action_plans_after = mentee.get_action_plans().count()
+        self.assertGreater(number_of_action_plans_after, number_of_action_plans_before)
+
+        ## Check that we can retrieve the user's list of action plans, and this one is present.
+        request = factory.get('/api/v1/plan/', follow=True)
+        force_authenticate(request, user=mentee)
+
+        view = ActionPlanViewSet.as_view({'get': 'list'})
+        response = view(request)
+        response.render()
+
+        json_returned = json.loads(response.content)
+
+        ids_returned = [action_plan['id'] for action_plan in json_returned]
+        self.assertIn(created_action_plan['id'], ids_returned, msg=show_res(response))
+
+    def test_mentors_can_create_action_plans_for_their_mentees(self):
+        # Pick a random mentorship
+        mentorship = Mentorship.choose_random()
+
+        if mentorship is None:
+            return # Random data generation meant there were no mentorships.
+
+        mentor = mentorship.mentor
+        mentee = mentorship.mentee
+
+        # Create an action plan
+        body = {
+            "name": lorem_random(max_length=100),
+            "description": lorem_random(max_length=1000),
+            "user": mentee.pk,
+        }
+
+        number_of_action_plans_before = ActionPlan.objects.all().filter(user=mentee).count()
+
+        # Create an action plan for the mentee as the mentor
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/plan/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentor) # Signed in as the mentor
 
         view = ActionPlanViewSet.as_view({'post': 'create'})
         response = view(request)
