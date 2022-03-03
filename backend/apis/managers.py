@@ -56,7 +56,7 @@ class NotificationManager(models.Manager):
         self.create(NotificationType.MEETING_REQUEST_RECEIVED,
                     user=mentor,
                     title=f'Received a meeting request from {mentee.get_full_name()}',
-                    action={})
+                    action={'mentee': mentee.pk})
 
     def meeting_notes_mentor(self, meeting):  # TODO: Send notification
         mentorship = meeting.mentorship
