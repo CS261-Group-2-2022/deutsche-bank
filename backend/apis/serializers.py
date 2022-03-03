@@ -235,3 +235,4 @@ class FeedbackSerializer(ModelSerializer):
 class NotificationSerializer(ModelSerializer):
     class Meta:
         model = Notification
+        exclude = []
