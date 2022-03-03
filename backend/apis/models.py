@@ -382,7 +382,7 @@ class Notification(models.Model):
     title: str = models.CharField(max_length=100)
     date: datetime = models.DateTimeField(auto_now_add=True)
     seen: bool = models.BooleanField(default=False)
-    type: int = models.IntegerField()
+    type: NotificationType = models.IntegerField()
     action = models.JSONField(null=True, blank=True)
 
-    manager = NotificationManager
+    objects = NotificationManager()

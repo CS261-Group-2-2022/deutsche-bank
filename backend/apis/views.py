@@ -280,9 +280,9 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.validated_data['mentee'] = request.user
-        mentor_request: MentorRequest = self.perform_create(serializer)
+        self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        Notification.manager.mentorship_request_received(mentor_request)
+        Notification.objects.mentorship_request_received(serializer.instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=['post'])
@@ -305,7 +305,7 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
         mentee.get_outgoing_mentor_requests().delete()
         if mentee.mentorship is not None:
             return Response({'error': 'This user already has a mentor'}, status=status.HTTP_400_BAD_REQUEST)
-        Notification.manager.mentorship_request_accepted(mentor_request)
+        Notification.objects.mentorship_request_accepted(mentor_request)
         mentorship: Mentorship = Mentorship(mentee=mentee, mentor=mentor)
         mentorship.save()
         mentee.mentorship = mentorship
@@ -318,7 +318,7 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
         user: User = request.user
         if mentor_request.mentor != user:
             return Response({'error': 'You cannot cancel this mentor request'}, status=status.HTTP_400_BAD_REQUEST)
-        Notification.manager.mentorship_request_declined(mentor_request)
+        Notification.objects.mentorship_request_declined(mentor_request)
         mentor_request.delete()
         # TODO: Finish implementation
         return Response(status=status.HTTP_200_OK)
@@ -352,7 +352,7 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.validated_data['mentorship'] = request.user.mentorship
         meeting_request = self.perform_create(serializer)
-        Notification.manager.meeting_request_received(meeting_request)
+        Notification.objects.meeting_request_received(meeting_request)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -362,7 +362,7 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
         user: User = request.user
         if meeting_request.mentorship.mentee != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
-        Notification.manager.meeting_request_declined(meeting_request)
+        Notification.objects.meeting_request_declined(meeting_request)
         meeting_request.delete()
 
         return Response(status=status.HTTP_200_OK)
@@ -373,7 +373,7 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
         user: User = request.user
         if meeting_request.mentorship.mentor != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
-        Notification.manager.meeting_request_accepted(meeting_request)
+        Notification.objects.meeting_request_accepted(meeting_request)
         meeting_request.delete()
         meeting: Meeting = Meeting(mentorship=meeting_request.mentorship, time=meeting_request.time,
                                    description=meeting_request.description, location=meeting_request.location)
@@ -449,7 +449,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 
 
 class NotificationViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Notification.manager.all()
+    queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
