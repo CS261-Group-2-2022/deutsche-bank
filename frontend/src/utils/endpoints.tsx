@@ -7,7 +7,8 @@ export const LOGIN_ENDPOINT = `${HOSTNAME}/api/v1/auth/login/`;
 export const SIGNUP_ENDPOINT = `${HOSTNAME}/api/v1/auth/register/`;
 export const PROFILE_ENDPOINT = `${HOSTNAME}/api/v1/auth/profile/`;
 export const BUSINESS_AREAS_ENDPOINT = `${HOSTNAME}/api/v1/area/`;
-export const LIST_GROUP_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/`;
+export const LIST_All_GROUP_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/`;
+export const LIST_USER_SUGGESTED_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/find/`;
 export const LIST_USER_JOINED_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/user`;
 export const LIST_USER_HOSTING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/session/host`;
 export const CREATE_GROUP_SESSION_ENDPOINT = `${HOSTNAME}/api/v1/session/`;
@@ -17,6 +18,27 @@ export const SKILLS_ENDPOINT = `${HOSTNAME}/api/v1/skills/`;
 export const SETTINGS_ENDPOINT = `${HOSTNAME}/api/v1/user/{ID}/`;
 export const FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/feedback/`;
 export const FULL_USER_ENDPOINT = `${HOSTNAME}/api/v1/user/{ID}/full/`;
+export const MENTORSHIP_ENDPOINT = `${HOSTNAME}/api/v1/mentorship/{ID}/`;
+export const END_MENTORSHIP_ENDPOINT = `${HOSTNAME}/api/v1/mentorship/{ID}/end/`;
+export const CURRENT_MENTEES_ENDPOINT = `${HOSTNAME}/api/v1/user/mentees/`;
+export const SUGGESTED_MENTORS_ENDPOINT = `${HOSTNAME}/api/v1/user/matching/`;
+export const OUTGOING_REQUESTS_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/outgoing/`;
+export const INCOMING_REQUESTS_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/incoming/`;
+export const CREATE_MENTORING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/`;
+export const ACCEPT_MENTORING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/{ID}/accept/`;
+export const DECLINE_MENTORING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/{ID}/decline/`;
+export const CANCEL_MENTORING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-request/{ID}/cancel/`;
+export const UPDATE_MEETING_ENDPOINT = `${HOSTNAME}/api/v1/meeting/{ID}/`;
+export const CREATE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/`;
+export const ACCEPT_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/accept/`;
+export const DECLINE_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/decline/`;
+export const CANCEL_MEETING_REQUEST_ENDPOINT = `${HOSTNAME}/api/v1/meeting-request/{ID}/cancel/`;
+export const LIST_USER_PLANS = `${HOSTNAME}/api/v1/user/{ID}/plans/`;
+export const CREATE_USER_PLANS = `${HOSTNAME}/api/v1/plan/`;
+export const CHANGE_USER_PLANS = `${HOSTNAME}/api/v1/plan/{ID}/`;
+export const UPCOMING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/events/`;
+export const CREATE_MENTOR_FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-feedback/`;
+export const CHANGE_PASSWORD_ENDPOINT = `${HOSTNAME}/api/v1/auth/password/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -60,25 +82,11 @@ export type User = {
   is_email_verified: boolean;
   mentor_intent: boolean;
   business_area: number;
-  mentorship: null;
+  mentorship?: number;
   interests: number[];
   expertise: number[];
-
-  // TODO: backend
-  bio?: string;
-};
-
-export type Mentorship = {
-  id: number;
-  rating: null;
-  feedback: null;
-  mentee: number;
-  mentor: number;
-};
-
-export type Interest = {
-  id: number;
-  name: string;
+  interests_description?: string;
+  image_link?: "";
 };
 
 export type UserFull = {
@@ -92,7 +100,29 @@ export type UserFull = {
   email: string;
   is_email_verified: boolean;
   mentor_intent: boolean;
-  interests: Interest;
+  interests: Skill[];
+  interests_description?: string;
+  image_link?: "";
+};
+
+/** Drops down a UserFull data type to just a User, for simplicity */
+export const userFullToUser = (user: UserFull): User => {
+  return Object.assign(
+    {},
+    {
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      is_email_verified: user.is_email_verified,
+      mentor_intent: user.mentor_intent,
+      business_area: user.business_area.id,
+      mentorship: user.mentorship?.id,
+      interests: user.interests.map((skill) => skill.id),
+      expertise: user.expertise.map((skill) => skill.id),
+      interests_description: user.interests_description,
+    }
+  );
 };
 
 // Login
@@ -193,17 +223,41 @@ export type CreateSkillError = {
 };
 export type CreateSkillResponse = CreateSkillSuccess | CreateSkillError;
 
+// Mentorship
+export type Mentorship = {
+  id: number;
+  meetings: Meeting[];
+  meeting_requests: MeetingRequest[];
+  mentor_feedback: MentorFeedback[];
+  rating?: number;
+  feedback?: string;
+  mentee: number;
+  mentor: number;
+};
+
+export type MentorshipRequest = {
+  id: number;
+  mentor: User;
+  mentee: User;
+};
+
+export type MentorFeedback = {
+  id: number;
+  mentorship: number;
+  time: string;
+  positives: string;
+  improvements: string;
+};
+
 // Meeting
 export type Meeting = {
   id: number;
   time: string;
   mentorship: number;
-
-  // TODO: backend?
+  mentee_notes?: string;
+  mentor_notes?: string;
   location: string;
   description: string;
-  mentee_notes: string;
-  mentor_notes: string;
 };
 
 export type MeetingRequest = {
@@ -214,13 +268,37 @@ export type MeetingRequest = {
   mentorship: number;
 };
 
+// Meeting version sent through GET /events/
+export type ExtendedMeeting = {
+  isMeeting: true;
+  id: number;
+  time: string;
+  mentorship: {
+    mentor: User;
+    mentee: User;
+  };
+  mentee_notes?: string;
+  mentor_notes?: string;
+  location: string;
+  description: string;
+};
+
 //Plan Of Action
 export type PlanOfAction = {
+  id: number;
+  user: number;
   name: string;
   description: string;
-  // user: User;
+  due_date: string;
   creation_date: string;
+  completed: boolean;
   completion_date: string;
 };
 
 export type PlanOfActionResponse = PlanOfAction[];
+
+// Upcoming Sessions
+export type UpcomingSessions = {
+  meetings: ExtendedMeeting[];
+  sessions: GroupSession[];
+};

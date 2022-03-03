@@ -1,8 +1,9 @@
 import { PencilIcon } from "@heroicons/react/solid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { mutate } from "swr";
 import {
   FULL_USER_ENDPOINT,
+  getAuthToken,
   PROFILE_ENDPOINT,
   SETTINGS_ENDPOINT,
   Skill,
@@ -39,6 +40,14 @@ export default function AreasOfExpertise({
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
+  useEffect(() => {
+    setExpertise(
+      user.expertise
+        .map((id) => getSkillFromId(id, skills))
+        .filter<Skill>(isSkill)
+    );
+  }, [skills, user]);
+
   const updateAreasOfExpertise = async () => {
     setError(undefined);
 
@@ -48,6 +57,7 @@ export default function AreasOfExpertise({
         method: "PATCH",
         headers: {
           "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
         },
         body: JSON.stringify({ expertise: expertise.map((x) => x.id) }),
       }
@@ -75,7 +85,11 @@ export default function AreasOfExpertise({
           {title}
           {canEdit && (
             <button
-              className="ml-2 px-4 flex justify-center items-center  bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
+              className={`ml-2 px-4 flex justify-center items-center text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg ${
+                isEditing
+                  ? " bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200"
+                  : " bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200"
+              }`}
               onClick={() =>
                 isEditing ? updateAreasOfExpertise() : setIsEditing(true)
               }

@@ -12,6 +12,7 @@ import { Fragment } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useUser } from "../utils/authentication";
 import { getAreaFromId, useBusinessAreas } from "../utils/business_area";
+import UserAvatar from "./UserAvatar";
 
 type MenuButtonProps = {
   text: string;
@@ -123,18 +124,14 @@ export function DashboardUserHero({
   name,
   businessArea,
 }: DashboardUserHeroProps) {
+  const { user } = useUser();
+
   return (
     <div className="bg-white">
       <div className="flex flex-row lg:items-center lg:justify-between w-full py-2 z-20">
         <div className="flex flex-row items-center gap-3">
           <div className="flex-shrink-0">
-            <a href="#" className="block relative">
-              <img
-                alt="profil"
-                src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-                className="mx-auto object-cover rounded-full h-10 w-10"
-              />
-            </a>
+            <UserAvatar user={user} />
           </div>
           <h2>
             <span className="block text-m font-bold">{name}</span>

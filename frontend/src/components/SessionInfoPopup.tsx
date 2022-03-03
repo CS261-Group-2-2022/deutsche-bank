@@ -9,8 +9,9 @@ import {
   JoinSessionSuccess,
   JOIN_SESSION_ENDPOINT,
   LEAVE_SESSION_ENDPOINT,
-  LIST_GROUP_SESSIONS_ENDPOINT,
+  LIST_All_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
+  LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
   User,
 } from "../utils/endpoints";
 import { useUser } from "../utils/authentication";
@@ -19,6 +20,7 @@ import LocationText from "./LocationText";
 import DateText from "./DateText";
 import Popup from "./Popup";
 import CapacityText from "./CapacityText";
+import { LoadingButton } from "./LoadingButton";
 
 const RegisteredUser = ({ user }: { user: User }) => {
   return (
@@ -85,9 +87,13 @@ export default function SessionInfoPopup({
     setIsClosing(false);
   }, [isOpen]);
 
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const joinSession = async () => {
+    setIsLoading(true);
+    setError(undefined);
+
     try {
       const res = await fetch(
         JOIN_SESSION_ENDPOINT.replace("{ID}", session?.id.toString() ?? ""),
@@ -100,23 +106,27 @@ export default function SessionInfoPopup({
         }
       );
 
-      // Clear existing errors
-      setError(undefined);
       const body: JoinSessionResponse = await res.json();
 
       if (isJoinSuccess(res, body)) {
         // Update the list of available group sessions
-        mutate(LIST_GROUP_SESSIONS_ENDPOINT);
+        mutate(LIST_USER_SUGGESTED_SESSIONS_ENDPOINT);
+        mutate(LIST_USER_SUGGESTED_SESSIONS_ENDPOINT);
         mutate(LIST_USER_JOINED_SESSIONS_ENDPOINT);
       } else {
         setError(body.error ?? "An error occurred");
       }
     } catch (err) {
-      setError("An error occurered");
+      setError("An error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const leaveSession = async () => {
+    setIsLoading(true);
+    setError(undefined);
+
     try {
       const res = await fetch(
         LEAVE_SESSION_ENDPOINT.replace("{ID}", session?.id.toString() ?? ""),
@@ -129,19 +139,20 @@ export default function SessionInfoPopup({
         }
       );
 
-      // Clear existing errors
-      setError(undefined);
       const body: JoinSessionResponse = await res.json();
 
       if (isJoinSuccess(res, body)) {
         // Update the list of available group sessions
-        mutate(LIST_GROUP_SESSIONS_ENDPOINT);
+        mutate(LIST_All_GROUP_SESSIONS_ENDPOINT);
+        mutate(LIST_USER_SUGGESTED_SESSIONS_ENDPOINT);
         mutate(LIST_USER_JOINED_SESSIONS_ENDPOINT);
       } else {
         setError(body.error ?? "An error occurred");
       }
     } catch (err) {
       setError("An error occurered");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -225,13 +236,14 @@ export default function SessionInfoPopup({
 
       <div className="grid grid-cols-10 gap-2">
         {!isHosting ? (
-          <button
+          <LoadingButton
             type="button"
             className={`inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md focus:outline-none ${buttonColours[0]}`}
+            isLoading={isLoading}
             onClick={() => (hasJoined ? leaveSession() : joinSession())}
           >
             {hasJoined ? "Leave Session" : "Join Session"}
-          </button>
+          </LoadingButton>
         ) : (
           <p className="col-span-8 px-4 py-2 font-medium text-center text-gray-900">
             You are hosting this session

@@ -1,11 +1,12 @@
 import Topbar from "../components/Topbar";
 import { FormInput } from "../components/FormInput";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BusinessArea,
+  CHANGE_PASSWORD_ENDPOINT,
   FULL_USER_ENDPOINT,
+  getAuthToken,
   PROFILE_ENDPOINT,
-  SETTINGS_ENDPOINT,
   Skill,
 } from "../utils/endpoints";
 import { useUser } from "../utils/authentication";
@@ -23,8 +24,10 @@ export default function Settings() {
   const { user } = useUser();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPassword, setIsLoadingPassword] = useState(false);
   const [firstName, setFirstName] = useState(user?.first_name ?? "");
   const [lastName, setLastName] = useState(user?.last_name ?? "");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [retypedPasssword, setRetypedPassword] = useState("");
   const [businessArea, setBusinessArea] = useState<BusinessArea | undefined>(
@@ -44,6 +47,9 @@ export default function Settings() {
 
   const [firstNameError, setFirstNameError] = useState<string | undefined>();
   const [lastNameError, setLastNameError] = useState<string | undefined>();
+  const [currentPasswordError, setCurrentPasswordError] = useState<
+    string | undefined
+  >();
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const [retypedPasswordError, setRetypedPasswordError] = useState<
     string | undefined
@@ -54,6 +60,23 @@ export default function Settings() {
   const [expertiseError, setExpertiseError] = useState<string | undefined>();
   const [interestsError, setInterestsError] = useState<string | undefined>();
 
+  // If areas and skills get updated, update the values
+  useEffect(() => {
+    setBusinessArea(
+      user ? getAreaFromId(user.business_area, areas) : undefined
+    );
+    setExpertise(
+      (user?.expertise
+        ?.map((id) => skills.find((skill) => skill.id === id))
+        .filter((x) => x !== undefined) as Skill[]) ?? []
+    );
+    setInterests(
+      (user?.interests
+        ?.map((id) => skills.find((skill) => skill.id === id))
+        .filter((x) => x !== undefined) as Skill[]) ?? []
+    );
+  }, [areas, skills, user]);
+
   const clearErrors = () => {
     setFirstNameError(undefined);
     setLastNameError(undefined);
@@ -62,10 +85,60 @@ export default function Settings() {
     setBusinessAreaError(undefined);
     setExpertiseError(undefined);
     setInterestsError(undefined);
+    setCurrentPasswordError(undefined);
   };
 
   const sendSettingsUpdateRequest = async () => {
     setIsLoading(true);
+    clearErrors();
+
+    if (!user) return;
+
+    // Check business area is set
+    if (!businessArea) {
+      setBusinessAreaError("You must select a business area");
+      setIsLoading(false);
+      return false;
+    }
+
+    const res = await fetch(PROFILE_ENDPOINT, {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        expertise: expertise.map((skill) => skill.id),
+        interests: interests.map((skill) => skill.id),
+        // password : password,
+        business_area: businessArea.id,
+      }), // TODO currently you are not able to change the password with this endpoint, will fix this shortly
+    });
+
+    const body = await res.json();
+
+    if (res.ok) {
+      // Revalidate caches for profile information
+      mutate(PROFILE_ENDPOINT);
+      mutate(FULL_USER_ENDPOINT.replace("{ID}", user.id.toString()));
+
+      // TODO: better feedback?
+      alert("Settings Updated");
+    } else {
+      setFirstNameError(body.first_name?.join(" "));
+      setLastNameError(body.last_name?.join(" "));
+      setBusinessAreaError(body.business_area?.join(" "));
+      setExpertiseError(body.expertise?.join(" "));
+      setInterestsError(body.interests?.join(" "));
+    }
+
+    setIsLoading(false);
+  };
+
+  const updatePassword = async () => {
+    setIsLoadingPassword(true);
     clearErrors();
 
     if (!user) return;
@@ -84,60 +157,37 @@ export default function Settings() {
       return false;
     }
 
-    // Check business area is set
-    if (!businessArea) {
-      setBusinessAreaError("You must select a business area");
-      setIsLoading(false);
-      return false;
-    }
-
-    // TODO: verify with current password
-    // TODO: no authorization token passed?
-
-    const res = await fetch(
-      SETTINGS_ENDPOINT.replace("{ID}", user.id.toString()),
-      {
-        method: "PATCH",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName,
-          expertise: expertise.map((skill) => skill.id),
-          interests: interests.map((skill) => skill.id),
-          // password : password,
-          business_area: businessArea.id,
-        }), // TODO currently you are not able to change the password with this endpoint, will fix this shortly
-      }
-    );
-
-    const body = await res.json();
+    const res = await fetch(CHANGE_PASSWORD_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({
+        password: currentPassword,
+        new_password: password,
+      }),
+    });
 
     if (res.ok) {
-      // Revalidate caches for profile information
-      mutate(PROFILE_ENDPOINT);
-      mutate(FULL_USER_ENDPOINT.replace("{ID}", user.id.toString()));
-
       // TODO: better feedback?
-      alert("Settings Updated");
+      alert("Password Updated");
     } else {
-      setFirstNameError(body.first_name?.join(" "));
-      setLastNameError(body.last_name?.join(" "));
-      setPasswordError(body.password?.join(" "));
-      setBusinessAreaError(body.business_area?.join(" "));
-      setExpertiseError(body.expertise?.join(" "));
-      setInterestsError(body.interests?.join(" "));
+      const body = await res.json();
+      setCurrentPasswordError(
+        body.password?.join(" ") ?? body.non_field_errors?.join(" ")
+      );
+      setPasswordError(body.new_password?.join(" "));
     }
 
-    setIsLoading(false);
+    setIsLoadingPassword(false);
   };
 
   return (
     <>
       <Topbar />
       <div className="min-h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
+        <div className="max-w-md w-full space-y-5">
           <div>
             <h2 className="mt-1 text-center text-3xl font-extrabold text-gray-900">
               Change Details
@@ -205,31 +255,6 @@ export default function Settings() {
                   {interestsError}
                 </div>
               )}
-              <FormInput
-                id="password"
-                name="New Password"
-                type="password"
-                placeholder="Password"
-                autoComplete="current-password"
-                text={password}
-                onChange={setPassword}
-                error={passwordError}
-              />
-              <PasswordStrengthIndicator
-                password={password}
-                otherInputs={[firstName, lastName]}
-                updateResult={(score) => (passwordStrength.current = score)}
-              />
-              <FormInput
-                id="retyped-password"
-                name="Retype New Password"
-                type="password"
-                placeholder="Retype Password"
-                autoComplete="current-password"
-                text={retypedPasssword}
-                onChange={setRetypedPassword}
-                error={retypedPasswordError}
-              />
             </div>
 
             <div>
@@ -239,6 +264,73 @@ export default function Settings() {
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Save Changes
+              </LoadingButton>
+            </div>
+          </form>
+
+          <hr />
+
+          <form
+            className="mt-8 space-y-3"
+            action="#"
+            method="POST"
+            onSubmit={(e) => {
+              e.preventDefault();
+              updatePassword();
+            }}
+          >
+            <div className="rounded-md shadow-sm space-y-3">
+              <FormInput
+                id="current-password"
+                name="Current Password"
+                type="password"
+                placeholder="Password"
+                autoComplete="current-password"
+                text={currentPassword}
+                onChange={setCurrentPassword}
+                error={currentPasswordError}
+                required
+                hideRequiredAsterisk
+              />
+              <FormInput
+                id="password"
+                name="New Password"
+                type="password"
+                placeholder="Password"
+                autoComplete="false"
+                text={password}
+                onChange={setPassword}
+                error={passwordError}
+                required
+                hideRequiredAsterisk
+              />
+
+              <FormInput
+                id="retyped-password"
+                name="Retype New Password"
+                type="password"
+                placeholder="Retype Password"
+                autoComplete="current-password"
+                text={retypedPasssword}
+                onChange={setRetypedPassword}
+                error={retypedPasswordError}
+                required
+                hideRequiredAsterisk
+              />
+              <PasswordStrengthIndicator
+                password={password}
+                otherInputs={[firstName, lastName]}
+                updateResult={(score) => (passwordStrength.current = score)}
+              />
+            </div>
+
+            <div>
+              <LoadingButton
+                type="submit"
+                isLoading={isLoadingPassword}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Update Password
               </LoadingButton>
             </div>
           </form>
