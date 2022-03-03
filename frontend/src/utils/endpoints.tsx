@@ -41,7 +41,8 @@ export const CREATE_MENTOR_FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-fe
 export const CHANGE_PASSWORD_ENDPOINT = `${HOSTNAME}/api/v1/auth/password/`;
 export const LIST_ALL_NOTIFICATIONS = `${HOSTNAME}/api/v1/notification/`;
 export const LIST_ACTION_NOTIFICATIONS = `${HOSTNAME}/api/v1/notification/actions/`;
-export const DELETE_NOTIFICATION = `${HOSTNAME}/api/v1/notification/id/`;
+export const UPDATE_NOTIFICATION = `${HOSTNAME}/api/v1/notification/{ID}/`;
+export const DELETE_NOTIFICATION = `${HOSTNAME}/api/v1/notification/{ID}/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {

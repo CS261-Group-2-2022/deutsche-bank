@@ -10,6 +10,7 @@ import {
   LIST_ALL_NOTIFICATIONS,
   Notification,
   NotificationType,
+  UPDATE_NOTIFICATION,
 } from "../utils/endpoints";
 
 export const applyNotificationAction = (
@@ -58,7 +59,7 @@ const NotificationPanel = ({ notification }: NotificationPanelProps) => {
   const navigate = useNavigate();
   const datetime = DateTime.fromISO(notification.date);
 
-  const hasAction = notification.action !== undefined;
+  const hasAction = !!notification.action;
   const isImportant = hasAction;
 
   const [error, setError] = useState<string | undefined>();
@@ -77,12 +78,11 @@ const NotificationPanel = ({ notification }: NotificationPanelProps) => {
       }
     );
 
-    const body = await res.json();
-
     if (res.ok) {
       // Revalidate the caches for notifications
       mutate(LIST_ALL_NOTIFICATIONS);
     } else {
+      const body = await res.json();
       setError(
         body.error ??
           "An error occured when deleting this notification. Please try again."
@@ -138,10 +138,30 @@ export default function NotificationsPopup() {
   const importantNotifications =
     notifications &&
     notifications.find(
-      (notification) => !notification.seen || notification.action !== undefined
+      (notification) => !notification.seen || !!notification.action
     );
 
-  // TODO: WHEN OPENED, MARK NOTIFICATIONS AS SEEN
+  const markAsSeen = async () => {
+    if (!notifications) return;
+    const unseenNotifications = notifications.filter((item) => !item.seen);
+    if (unseenNotifications.length === 0) return;
+
+    const promises = unseenNotifications.map((notification) =>
+      fetch(UPDATE_NOTIFICATION.replace("{ID}", notification.id.toString()), {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Token ${getAuthToken()}`,
+        },
+        body: JSON.stringify({
+          seen: true,
+        }),
+      })
+    );
+
+    await Promise.all(promises);
+    mutate(LIST_ALL_NOTIFICATIONS);
+  };
 
   return (
     <div>
@@ -167,17 +187,20 @@ export default function NotificationsPopup() {
               leave="transition ease-in duration-150"
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 translate-y-1"
+              afterEnter={markAsSeen}
             >
               <Popover.Panel className="absolute z-10 w-screen max-w-sm px-4 mt-3 transform -translate-x-full left-2/3 sm:px-0 lg:max-w-xl">
                 <div className="overflow-hidden rounded-lg shadow-xl ring-1 ring-black ring-opacity-5">
-                  <div className="relative flex flex-col gap-2 bg-white">
+                  <div className="relative flex flex-col bg-white">
                     {notifications && notifications.length > 0 ? (
-                      notifications.map((notification) => (
-                        <NotificationPanel
-                          key={notification.id}
-                          notification={notification}
-                        />
-                      ))
+                      notifications
+                        .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
+                        .map((notification) => (
+                          <NotificationPanel
+                            key={notification.id}
+                            notification={notification}
+                          />
+                        ))
                     ) : (
                       <p className="font-medium text-center text-gray-700">
                         No new notifications
