@@ -239,15 +239,6 @@ class User(AbstractBaseUser, Randomisable):
     def get_actions(self):
         return self.get_notifications().filter(action__isnull=False)
 
-    @classmethod
-    def choose_random(cls) -> Type[User]:
-        return random.choice(cls.objects.all())
-
-    @classmethod
-    def choose_list_at_random(cls) -> List[Type[User]]:
-        return random.sample(list(cls.objects.all()),
-                             random.randint(1, cls.objects.all().count()))
-
     # TODO Add to a mixin type thing.
     @classmethod
     def make_distinct_email_from(cls, first_name, last_name):
@@ -267,7 +258,7 @@ class User(AbstractBaseUser, Randomisable):
                     skills_pool: List[Skill] = None,
                     business_area_pool: List[BusinessArea] = None,
                     dataset=dataset,
-                    **kwargs_for_user_constructor) -> Type[User]:
+                    **kwargs_for_user_constructor) -> User:
         if skills_pool is None:
             skills_pool = list(Skill.objects.all())
 
