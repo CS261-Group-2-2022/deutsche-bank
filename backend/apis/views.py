@@ -433,7 +433,7 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         if 'user' not in serializer.validated_data:
             serializer.validated_data['user'] = request.user
-        elif not request.user.get_mentees().filter(user__pk__exact=serializer.validated_data['user'].pk
+        elif not request.user.get_mentees().filter(pk__exact=serializer.validated_data['user'].pk
                                                    ).exists() and serializer.validated_data['user'] != request.user:
             return Response({'error': 'You must be this users mentee to create an action plan for them'},
                             status=status.HTTP_400_BAD_REQUEST)
