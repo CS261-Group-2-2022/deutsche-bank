@@ -170,7 +170,7 @@ class NotificationManager(models.Manager):
                     user=mentee,
                     title=f'{mentor.get_full_name()} created a {action_plan.name} action plan')
 
-    def action_plan_completed_mentee(self, action_plan):  # TODO: Send notification
+    def action_plan_completed_mentee(self, action_plan):
         mentee = action_plan.user
         mentorship = mentee.mentorship
         mentor = mentorship.mentor
@@ -178,7 +178,7 @@ class NotificationManager(models.Manager):
                     user=mentor,
                     title=f'{mentee.get_full_name()} marked their {action_plan.name} action plan as completed')
 
-    def action_plan_completed_mentor(self, action_plan):  # TODO: Send notification
+    def action_plan_completed_mentor(self, action_plan):
         mentee = action_plan.user
         mentorship = mentee.mentorship
         mentor = mentorship.mentor

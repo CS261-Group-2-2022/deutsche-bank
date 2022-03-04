@@ -9,7 +9,7 @@ from rest_framework import viewsets, generics, permissions, status, mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import DestroyModelMixin, ListModelMixin, UpdateModelMixin
+from rest_framework.mixins import DestroyModelMixin, ListModelMixin, UpdateModelMixin, CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 from rest_framework.views import APIView
@@ -423,7 +423,7 @@ class MentorFeedbackViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixi
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class ActionPlanViewSet(viewsets.ModelViewSet):
+class ActionPlanViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet):
     queryset = ActionPlan.objects.all()
     serializer_class = ActionPlanSerializer
     permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to manage action plans
@@ -435,7 +435,7 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
             serializer.validated_data['user'] = request.user
         elif not request.user.get_mentees().filter(pk__exact=serializer.validated_data['user'].pk
                                                    ).exists() and serializer.validated_data['user'] != request.user:
-            return Response({'error': 'You must be this users mentee to create an action plan for them'},
+            return Response({'error': 'You must be this users mentor to create an action plan for them'},
                             status=status.HTTP_400_BAD_REQUEST)
         self.perform_create(serializer)
         if serializer.validated_data['user'] == request.user:
@@ -444,6 +444,29 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
             Notification.objects.action_plan_created_mentor(serializer.instance)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        user: User = request.user
+        instance: ActionPlan = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        if serializer.validated_data['completed'] and not instance.completed:
+            if instance.user == user:
+                Notification.objects.action_plan_completed_mentee(instance)
+            elif user.get_mentees().filter(pk__exact=instance.user.pk).exists():
+                Notification.objects.action_plan_completed_mentor(instance)
+            else:
+                return Response({'error': 'You must be this users mentor to modify their action plan'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
         return Response(ActionPlanSerializer(request.user.get_action_plans(), many=True), status=status.HTTP_200_OK)
