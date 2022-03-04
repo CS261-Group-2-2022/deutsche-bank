@@ -286,7 +286,7 @@ export default function MentoringMatchingPage({ user }: MatchingPageProps) {
           ) : (
             <h4 className="font-medium text-xl text-gray-700 mt-10 text-center">
               There are currently no available mentors which match your profile.
-              Please refresh or try again later.
+              Check you areas of interest and refresh, or try again later.
             </h4>
           )}
         </div>
