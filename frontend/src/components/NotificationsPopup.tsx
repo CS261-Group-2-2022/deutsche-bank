@@ -156,7 +156,11 @@ const NotificationPanel = ({ notification }: NotificationPanelProps) => {
 
 export default function NotificationsPopup() {
   const { data: notifications } = useSWR<Notification[]>(
-    LIST_ALL_NOTIFICATIONS
+    LIST_ALL_NOTIFICATIONS,
+    null,
+    {
+      refreshInterval: 60 * 1000, // every 60 seconds
+    }
   );
 
   const importantNotifications =
