@@ -381,5 +381,6 @@ class Notification(models.Model):
     seen: bool = models.BooleanField(default=False)
     type: NotificationType = models.IntegerField()
     action = models.JSONField(null=True, blank=True)
+    info = models.JSONField(null=True, blank=True)
 
     objects = NotificationManager()

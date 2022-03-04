@@ -406,7 +406,7 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
-class MentorFeedbackViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, mixins.UpdateModelMixin, GenericViewSet):
+class MentorFeedbackViewSet(CreateModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
     queryset = MentorFeedback.objects.all()
     serializer_class = MentorFeedbackSerializer
     permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to manage mentor feedback
