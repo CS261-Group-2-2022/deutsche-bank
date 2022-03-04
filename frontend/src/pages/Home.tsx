@@ -7,7 +7,6 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import useSWR from "swr";
 import { applyNotificationAction } from "../components/NotificationsPopup";
-//import RoundedImage from "../components/RoundedImage";
 import Topbar from "../components/Topbar";
 import UpcomingSession from "../components/UpcomingSessions";
 import UserAvatar from "../components/UserAvatar";
@@ -42,11 +41,8 @@ function Action({ action }: ActionProps) {
       <div className="flex-row gap-4 flex justify-center items-center">
         <div className="flex-shrink-0">
           <a href="#" className="block relative">
-            <img
-              alt="profil"
-              src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-              className="mx-auto object-cover rounded-full h-8 w-8"
-            />
+            {/* TODO: user avatar here? whos avatar should it be? or maybe no avatar, and instead an icon? */}
+            <UserAvatar size={8} />
           </a>
         </div>
         <div className="flex flex-col w-full">
@@ -66,7 +62,6 @@ function Action({ action }: ActionProps) {
 
 function ActionRequiredBox() {
   const { data: actions } = useSWR<Notification[]>(LIST_ACTION_NOTIFICATIONS);
-  console.log(actions);
 
   return (
     <div className="rounded-2xl p-2 space-y-2">
@@ -107,7 +102,7 @@ function MentoringInfo() {
             className="mt-2 py-2 px-4 flex grow justify-between items-center border bg-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg"
           >
             <div className="flex gap-2">
-              <UserAvatar user={mentor} />
+              <UserAvatar user={mentor} size={12} />
               <div className="flex flex-col text-left">
                 <h4 className="font-bold text-lg text-gray-900">
                   {mentor.first_name} {mentor.last_name}
@@ -145,11 +140,11 @@ function MentoringInfo() {
           >
             <span className="flex flex-wrap justify-center -space-x-2 mr-2">
               {currentMentees.map((mentee) => (
-                <img
+                <UserAvatar
                   key={mentee.id}
-                  className="inline-block h-10 w-10 rounded-full object-cover ring-2 ring-white"
-                  src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-                  alt={mentee.first_name}
+                  user={mentee}
+                  size={10}
+                  className="inline-block ring-2 ring-white"
                 />
               ))}
             </span>

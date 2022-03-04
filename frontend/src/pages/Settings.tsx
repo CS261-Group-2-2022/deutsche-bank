@@ -114,7 +114,7 @@ export default function Settings() {
         interests: interests.map((skill) => skill.id),
         // password : password,
         business_area: businessArea.id,
-      }), // TODO currently you are not able to change the password with this endpoint, will fix this shortly
+      }),
     });
 
     const body = await res.json();

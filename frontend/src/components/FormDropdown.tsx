@@ -20,11 +20,6 @@ function DropdownItem<T extends DropdownOption>({
 }: DropdownItemProps<T>) {
   return (
     <div className="flex items-center">
-      {/* <img
-        src={person.avatar}
-        alt=""
-        className="flex-shrink-0 h-6 w-6 rounded-full"
-      /> */}
       <span
         className={`${
           selected ? "font-semibold" : "font-normal"

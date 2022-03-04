@@ -41,7 +41,8 @@ export const CREATE_MENTOR_FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-fe
 export const CHANGE_PASSWORD_ENDPOINT = `${HOSTNAME}/api/v1/auth/password/`;
 export const LIST_ALL_NOTIFICATIONS = `${HOSTNAME}/api/v1/notification/`;
 export const LIST_ACTION_NOTIFICATIONS = `${HOSTNAME}/api/v1/notification/actions/`;
-export const DELETE_NOTIFICATION = `${HOSTNAME}/api/v1/notification/id/`;
+export const UPDATE_NOTIFICATION = `${HOSTNAME}/api/v1/notification/{ID}/`;
+export const DELETE_NOTIFICATION = `${HOSTNAME}/api/v1/notification/{ID}/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -309,7 +310,8 @@ export type UpcomingSessions = {
 
 // Notifications
 export enum NotificationType {
-  BUSINESS_AREA_CONFLICT = 1,
+  BUSINESS_AREA_CONFLICT_MENTEE = 1,
+  BUSINESS_AREA_CONFLICT_MENTOR = 11,
   MEETING_REQUEST_RECEIVED = 2,
   MEETING_NOTES_MENTOR = 3,
   MEETING_NOTES_MENTEE = 4,
@@ -332,9 +334,20 @@ interface NotificationBase {
   action?: unknown;
 }
 
-export interface NotificationBusinessAreaConflict extends NotificationBase {
-  type: NotificationType.BUSINESS_AREA_CONFLICT;
-  action: unknown;
+export interface NotificationBusinessAreaConflictMentee
+  extends NotificationBase {
+  type: NotificationType.BUSINESS_AREA_CONFLICT_MENTEE;
+  action: {
+    mentor: number;
+  };
+}
+
+export interface NotificationBusinessAreaConflictMentor
+  extends NotificationBase {
+  type: NotificationType.BUSINESS_AREA_CONFLICT_MENTOR;
+  action: {
+    mentee: number;
+  };
 }
 
 export interface NotificationMeetingRequest extends NotificationBase {
@@ -383,7 +396,8 @@ export interface NotificationMeetingDeclined extends NotificationBase {
 }
 
 export type Notification =
-  | NotificationBusinessAreaConflict
+  | NotificationBusinessAreaConflictMentee
+  | NotificationBusinessAreaConflictMentor
   | NotificationMeetingRequest
   | NotificationMeetingNotesMentor
   | NotificationMeetingNotesMentee
