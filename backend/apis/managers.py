@@ -51,21 +51,26 @@ class NotificationManager(models.Manager):
         notification.save(using=self._db)
         return notification
 
-    def business_area_conflict_mentee(self, mentorship):  # TODO: Send notification, delete after acted on
+    def delete_business_area_conflict(self, mentorship):
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+        self.filter(type=NotificationType.BUSINESS_AREA_CONFLICT_MENTEE.value, user=mentor,
+                    action__mentee=mentee.pk).delete()
+        self.filter(type=NotificationType.BUSINESS_AREA_CONFLICT_MENTOR.value, user=mentee,
+                    action__mentor=mentor.pk).delete()
+
+    def business_area_conflict(self, mentorship):
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(NotificationType.BUSINESS_AREA_CONFLICT_MENTEE,
-                    user=mentee,
-                    title=f'Your business area is the same as {mentor.get_full_name()}',
-                    action={'mentor': mentor.pk})
-
-    def business_area_conflict_mentor(self, mentorship):  # TODO: Send notification, delete after acted on
-        mentee = mentorship.mentee
-        mentor = mentorship.mentor
-        self.create(NotificationType.BUSINESS_AREA_CONFLICT_MENTOR,
                     user=mentor,
                     title=f'Your business area is the same as {mentee.get_full_name()}',
                     action={'mentee': mentee.pk})
+
+        self.create(NotificationType.BUSINESS_AREA_CONFLICT_MENTOR,
+                    user=mentee,
+                    title=f'Your business area is the same as {mentor.get_full_name()}',
+                    action={'mentor': mentor.pk})
 
     def meeting_request_received(self, meeting_request):
         mentorship = meeting_request.mentorship

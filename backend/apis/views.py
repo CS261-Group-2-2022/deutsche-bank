@@ -147,7 +147,7 @@ class CurrentUserView(APIView):
         return Response(serializer.data)
 
     def patch(self, request, *args, **kwargs):
-        instance = request.user
+        instance: User = request.user
         serializer = UserSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -156,6 +156,12 @@ class CurrentUserView(APIView):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
+
+        if 'business_area' in serializer.validated_data:
+            if instance.mentorship:
+                instance.mentorship.send_conflict_notifications()
+            for mentorship in instance.get_mentorships_where_user_is_mentor():
+                mentorship.send_conflict_notifications()
 
         return Response(serializer.data)
 
@@ -264,6 +270,7 @@ class MentorshipViewSet(viewsets.ModelViewSet):
             return Response({'error': 'This mentorship is not active'}, status=status.HTTP_208_ALREADY_REPORTED)
         mentee.mentorship = None
         mentee.save()
+        Notification.objects.delete_business_area_conflict(mentorship)
         return Response(status=status.HTTP_200_OK)
 
 
