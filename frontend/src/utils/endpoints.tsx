@@ -346,7 +346,7 @@ export interface NotificationBusinessAreaConflictMentee
   extends NotificationBase {
   type: NotificationType.BUSINESS_AREA_CONFLICT_MENTEE;
   action: {
-    mentor: number;
+    mentee: number;
   };
 }
 
@@ -354,7 +354,7 @@ export interface NotificationBusinessAreaConflictMentor
   extends NotificationBase {
   type: NotificationType.BUSINESS_AREA_CONFLICT_MENTOR;
   action: {
-    mentee: number;
+    mentor: number;
   };
 }
 

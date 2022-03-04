@@ -42,12 +42,12 @@ export const applyNotificationAction = (
   switch (notification.type) {
     case NotificationType.BUSINESS_AREA_CONFLICT_MENTEE: {
       // Navigate to the mentee page
-      navigate(`/mentoring/me`);
+      navigate(`/mentoring/${notification.action.mentee}`);
       break;
     }
     case NotificationType.BUSINESS_AREA_CONFLICT_MENTOR: {
       // Navigate to the mentee page
-      navigate(`/mentoring/${notification.action.mentee}`);
+      navigate(`/mentoring/me`);
       break;
     }
     case NotificationType.MENTORSHIP_REQUEST_RECEIVED: {
