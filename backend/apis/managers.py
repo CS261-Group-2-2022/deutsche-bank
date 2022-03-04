@@ -192,4 +192,4 @@ class NotificationManager(models.Manager):
         mentor = mentorship.mentor
         self.create(NotificationType.ACTION_PLAN_COMPLETED_MENTOR,
                     user=mentee,
-                    title=f'{mentor.get_full_name()} marked their {action_plan.name} action plan as completed')
+                    title=f'{mentor.get_full_name()} marked your {action_plan.name} action plan as completed')
