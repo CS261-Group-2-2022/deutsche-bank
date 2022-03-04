@@ -322,6 +322,13 @@ export enum NotificationType {
   MENTORSHIP_REQUEST_DECLINED = 8,
   MEETING_REQUEST_ACCEPTED = 9,
   MEETING_REQUEST_DECLINED = 10,
+  MEETING_CANCELLED_MENTEE = 12,
+  MEETING_CANCELLED_MENTOR = 13,
+
+  ACTION_PLAN_CREATED_MENTEE = 14,
+  ACTION_PLAN_CREATED_MENTOR = 15,
+  ACTION_PLAN_COMPLETED_MENTEE = 16,
+  ACTION_PLAN_COMPLETED_MENTOR = 17,
 }
 
 interface NotificationBase {
@@ -332,6 +339,7 @@ interface NotificationBase {
   date: string;
   seen: boolean;
   action?: unknown;
+  info?: unknown;
 }
 
 export interface NotificationBusinessAreaConflictMentee
@@ -353,7 +361,11 @@ export interface NotificationBusinessAreaConflictMentor
 export interface NotificationMeetingRequest extends NotificationBase {
   type: NotificationType.MEETING_REQUEST_RECEIVED;
   action: {
+    request: number;
     mentee: number;
+  };
+  info: {
+    time: string;
   };
 }
 
@@ -362,6 +374,9 @@ export interface NotificationMeetingNotesMentor extends NotificationBase {
   action: {
     meeting: number;
   };
+  info: {
+    time: string;
+  };
 }
 
 export interface NotificationMeetingNotesMentee extends NotificationBase {
@@ -369,6 +384,9 @@ export interface NotificationMeetingNotesMentee extends NotificationBase {
   action: {
     meeting: number;
     mentee: number;
+  };
+  info: {
+    time: string;
   };
 }
 
@@ -389,10 +407,48 @@ export interface NotificationMentorshipDeclined extends NotificationBase {
 
 export interface NotificationMeetingAccepted extends NotificationBase {
   type: NotificationType.MEETING_REQUEST_ACCEPTED;
+  info: {
+    time: string;
+  };
 }
 
 export interface NotificationMeetingDeclined extends NotificationBase {
   type: NotificationType.MEETING_REQUEST_DECLINED;
+  info: {
+    time: string;
+  };
+}
+
+export interface NotificationMeetingCancelledMentee extends NotificationBase {
+  type: NotificationType.MEETING_CANCELLED_MENTEE;
+  info: {
+    time: string;
+  };
+}
+
+export interface NotificationMeetingCancelledMentor extends NotificationBase {
+  type: NotificationType.MEETING_CANCELLED_MENTOR;
+  info: {
+    time: string;
+  };
+}
+
+export interface NotificationActionPlanCreatedMentee extends NotificationBase {
+  type: NotificationType.ACTION_PLAN_CREATED_MENTEE;
+}
+
+export interface NotificationActionPlanCreatedMentor extends NotificationBase {
+  type: NotificationType.ACTION_PLAN_CREATED_MENTOR;
+}
+
+export interface NotificationActionPlanCompletedMentee
+  extends NotificationBase {
+  type: NotificationType.ACTION_PLAN_COMPLETED_MENTEE;
+}
+
+export interface NotificationActionPlanCompletedMentor
+  extends NotificationBase {
+  type: NotificationType.ACTION_PLAN_COMPLETED_MENTOR;
 }
 
 export type Notification =
@@ -405,4 +461,10 @@ export type Notification =
   | NotificationMentorshipAccepted
   | NotificationMentorshipDeclined
   | NotificationMeetingAccepted
-  | NotificationMeetingDeclined;
+  | NotificationMeetingDeclined
+  | NotificationMeetingCancelledMentee
+  | NotificationMeetingCancelledMentor
+  | NotificationActionPlanCreatedMentee
+  | NotificationActionPlanCreatedMentor
+  | NotificationActionPlanCompletedMentee
+  | NotificationActionPlanCompletedMentor;

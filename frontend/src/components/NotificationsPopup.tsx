@@ -13,6 +13,28 @@ import {
   UPDATE_NOTIFICATION,
 } from "../utils/endpoints";
 
+export const createNotificationTitle = (notification: Notification) => {
+  switch (notification.type) {
+    case NotificationType.MEETING_REQUEST_RECEIVED: // "Received a meeting request from NAME"
+    case NotificationType.MEETING_REQUEST_ACCEPTED: // "NAME accepted your meeting request"
+    case NotificationType.MEETING_REQUEST_DECLINED: // "NAME declined your meeting request"
+      return `${notification.title} for ${DateTime.fromISO(
+        notification.info.time
+      ).toFormat("F")}`;
+
+    case NotificationType.MEETING_CANCELLED_MENTOR: // "NAME cancelled your meeting"
+    case NotificationType.MEETING_CANCELLED_MENTEE: // "NAME cancelled your meeting"
+    case NotificationType.MEETING_NOTES_MENTOR: // "Notes have not been recorded for your meeting with NAME"
+    case NotificationType.MEETING_NOTES_MENTEE: // "Notes have not been recorded for your meeting with NAME"
+      return `${notification.title} on ${DateTime.fromISO(
+        notification.info.time
+      ).toFormat("F")}`;
+
+    default:
+      return notification.title;
+  }
+};
+
 export const applyNotificationAction = (
   notification: Notification,
   navigate: NavigateFunction
@@ -105,7 +127,9 @@ const NotificationPanel = ({ notification }: NotificationPanelProps) => {
             </div>
           )}
 
-          <p className="text-md font-medium">{notification.title}</p>
+          <p className="text-md font-medium">
+            {createNotificationTitle(notification)}
+          </p>
         </div>
         <p className="text-sm text-gray-600">{datetime.toRelative()}</p>
         {error && <p className="text-sm text-red-600">{error}</p>}
