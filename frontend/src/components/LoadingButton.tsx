@@ -14,7 +14,9 @@ export const LoadingButton = (
       {...remainingProps}
       onClick={remainingProps.onClick}
       className={`${remainingProps.className ?? ""} ${
-        props.isLoading ? "opacity-50 cursor-not-allowed" : ""
+        props.isLoading || remainingProps.disabled
+          ? "opacity-50 cursor-not-allowed"
+          : ""
       }`}
       disabled={isLoading || remainingProps.disabled}
     >
