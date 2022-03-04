@@ -79,10 +79,6 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
         return Response(cereal.data)
 
     @action(detail=True, methods=['get'])
-    def full(self, request, pk=None) -> Response:
-        return Response(UserSerializerFull(self.get_object()).data)
-
-    @action(detail=True, methods=['get'])
     def expertise(self, request, pk=None) -> Response:
         user: User = self.get_object()
 
@@ -337,6 +333,7 @@ class MentorRequestViewSet(CreateModelMixin, GenericViewSet):
 class MeetingViewSet(UpdateModelMixin, DestroyModelMixin, GenericViewSet):
     queryset = Meeting.objects.all()
     serializer_class = MeetingSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -452,19 +449,20 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
 
 
 class BusinessAreaViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-    permission_classes = (permissions.AllowAny,)  # User does not need to be authenticated to login
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)  # User does not need to be authenticated to login
     authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = BusinessArea.objects.all()
     serializer_class = BusinessAreaSerializer
 
 
 class SkillViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-    permission_classes = (permissions.AllowAny,)  # User does not need to be authenticated to login
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)  # User does not need to be authenticated to login
     authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
 
 
 class FeedbackViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
