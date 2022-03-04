@@ -3,6 +3,7 @@ from __future__ import annotations  # This allows us to use type hints of a clas
 
 from datetime import datetime
 import random
+from typing import List
 
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
@@ -20,16 +21,20 @@ from .managers import *
 
 class Randomisable:
     @classmethod
-    def choose_random(cls) -> Type[cls]:
-        return random.choice(cls.objects.all())
+    def choose_random(cls, map_with=None):
+        pool = cls.objects.all()
+        if map_with is not None:
+            pool = map_with(pool)
+
+        return random.choice(pool)
 
     @classmethod
     def choose_list_at_random(cls,
                               minimum_number=1,
                               maximum_number=None,
-                              map_with=None) -> List[Type[cls]]:
+                              map_with=None) -> List:
         pool = []
-        if map_with == None:
+        if map_with is None:
             pool = list(cls.objects.all())
         else:
             pool = list(map_with(cls.objects.all()))
@@ -48,7 +53,7 @@ class Randomisable:
         return random.sample(pool, how_many_to_choose)
 
     @classmethod
-    def make_random(cls) -> Type[cls]:
+    def make_random(cls):
         raise NotImplementedError()
 
 
@@ -75,8 +80,8 @@ class BusinessArea(models.Model, Randomisable):
 from dataclasses import dataclass
 
 
-# @dataclass(init=False)
-class Mentorship(models.Model):
+@dataclass(init=False)
+class Mentorship(models.Model, Randomisable):
     """ Mentorship between mentor and mentee
     """
 
@@ -159,7 +164,7 @@ class User(AbstractBaseUser, Randomisable):
 
     def get_mentees(self) -> QuerySet[User]:
         """ Retrieves the list of mentees for this user.
-        :return the set of users who have this user as their mentor.
+        :return: the set of users who have this user as their mentor.
         """
         return User.objects.filter(mentorship__mentor__pk__exact=self.pk)
 
@@ -218,7 +223,7 @@ class User(AbstractBaseUser, Randomisable):
     def has_mentees(self) -> bool:
         return self.get_mentees().count() > 0
 
-    def get_mentorships_where_user_is_mentor(self) -> QuerySet[List[Type[User]]]:
+    def get_mentorships_where_user_is_mentor(self) -> QuerySet[User]:
         return Mentorship.objects.filter(mentor__pk__exact=self.pk)
 
     def get_mentor_rating_average(self) -> float:
@@ -263,7 +268,7 @@ class User(AbstractBaseUser, Randomisable):
                     business_area_pool: List[BusinessArea] = None,
                     dataset=dataset,
                     **kwargs_for_user_constructor) -> Type[User]:
-        if skills_pool == None:
+        if skills_pool is None:
             skills_pool = list(Skill.objects.all())
 
         business_area = ''
