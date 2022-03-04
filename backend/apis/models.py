@@ -102,6 +102,11 @@ class Mentorship(models.Model, Randomisable):
     def get_mentor_feedback(self):
         return self.mentorship_feedback.all()
 
+    def send_conflict_notifications(self):
+        Notification.objects.delete_business_area_conflict(self)  # Clear previous
+        if self.mentee.business_area == self.mentor.business_area:
+            Notification.objects.business_area_conflict(self)
+
 
 class MentorRequest(models.Model):
     """ Mentorship request from a mentee to a mentor
@@ -223,7 +228,7 @@ class User(AbstractBaseUser, Randomisable):
     def has_mentees(self) -> bool:
         return self.get_mentees().count() > 0
 
-    def get_mentorships_where_user_is_mentor(self) -> QuerySet[User]:
+    def get_mentorships_where_user_is_mentor(self) -> QuerySet[Mentorship]:
         return Mentorship.objects.filter(mentor__pk__exact=self.pk)
 
     def get_mentor_rating_average(self) -> float:
