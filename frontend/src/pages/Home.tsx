@@ -6,7 +6,10 @@ import {
 } from "@heroicons/react/solid";
 import { Link, useNavigate } from "react-router-dom";
 import useSWR from "swr";
-import { applyNotificationAction } from "../components/NotificationsPopup";
+import {
+  applyNotificationAction,
+  createNotificationTitle,
+} from "../components/NotificationsPopup";
 import Topbar from "../components/Topbar";
 import UpcomingSession from "../components/UpcomingSessions";
 import UserAvatar from "../components/UserAvatar";
@@ -33,7 +36,7 @@ type ActionProps = {
 
 function Action({ action }: ActionProps) {
   const navigate = useNavigate();
-  const actionText = action.title;
+  const actionText = createNotificationTitle(action);
   const buttonText = "View";
 
   return (
