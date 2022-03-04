@@ -307,6 +307,8 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
         if mentee.mentorship is not None:
             return Response({'error': 'This user already has a mentor'}, status=status.HTTP_400_BAD_REQUEST)
         Notification.objects.mentorship_request_accepted(mentor_request)
+        Notification.objects.filter(type=NotificationType.MENTORSHIP_REQUEST_RECEIVED.value,
+                                    action__request__exact=mentor_request.pk).delete()
         mentorship: Mentorship = Mentorship(mentee=mentee, mentor=mentor)
         mentorship.save()
         mentee.mentorship = mentorship
@@ -320,6 +322,8 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
         if mentor_request.mentor != user:
             return Response({'error': 'You cannot cancel this mentor request'}, status=status.HTTP_400_BAD_REQUEST)
         Notification.objects.mentorship_request_declined(mentor_request)
+        Notification.objects.filter(type=NotificationType.MENTORSHIP_REQUEST_RECEIVED.value,
+                                    action__request__exact=mentor_request.pk).delete()
         mentor_request.delete()
         # TODO: Finish implementation
         return Response(status=status.HTTP_200_OK)
@@ -331,8 +335,13 @@ class MeetingViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.mentorship.mentor != request.user and instance.mentorship.mentee != request.user:
+        if instance.mentorship.mentor == request.user:
+            Notification.objects.meeting_cancelled_mentor(instance)
+        elif instance.mentorship.mentee == request.user:
+            Notification.objects.meeting_cancelled_mentee(instance)
+        else:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
+
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -374,6 +383,8 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
         if meeting_request.mentorship.mentor != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
         Notification.objects.meeting_request_accepted(meeting_request)
+        Notification.objects.filter(type=NotificationType.MEETING_REQUEST_RECEIVED.value,
+                                    action__request__exact=meeting_request.pk).delete()
         meeting_request.delete()
         meeting: Meeting = Meeting(mentorship=meeting_request.mentorship, time=meeting_request.time,
                                    description=meeting_request.description, location=meeting_request.location)
@@ -388,6 +399,8 @@ class MeetingRequestViewSet(viewsets.ModelViewSet):
         if meeting_request.mentorship.mentor != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
         Notification.objects.meeting_request_declined(meeting_request)
+        Notification.objects.filter(type=NotificationType.MEETING_REQUEST_RECEIVED.value,
+                                    action__request__exact=meeting_request.pk).delete()
         meeting_request.delete()
         # TODO: Finish implementation
         return Response(status=status.HTTP_200_OK)
@@ -420,7 +433,15 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         if 'user' not in serializer.validated_data:
             serializer.validated_data['user'] = request.user
+        elif not request.user.get_mentees().filter(user__pk__exact=serializer.validated_data['user'].pk
+                                                   ).exists() and serializer.validated_data['user'] != request.user:
+            return Response({'error': 'You must be this users mentee to create an action plan for them'},
+                            status=status.HTTP_400_BAD_REQUEST)
         self.perform_create(serializer)
+        if serializer.validated_data['user'] == request.user:
+            Notification.objects.action_plan_created_mentee(serializer.instance)
+        else:
+            Notification.objects.action_plan_created_mentor(serializer.instance)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 

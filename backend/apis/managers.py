@@ -35,6 +35,13 @@ class NotificationType(Enum):
     MEETING_REQUEST_DECLINED = 10
 
     BUSINESS_AREA_CONFLICT_MENTOR = 11
+    MEETING_CANCELLED_MENTOR = 12
+    MEETING_CANCELLED_MENTEE = 13
+
+    ACTION_PLAN_CREATED_MENTEE = 14
+    ACTION_PLAN_CREATED_MENTOR = 15
+    ACTION_PLAN_COMPLETED_MENTEE = 16
+    ACTION_PLAN_COMPLETED_MENTOR = 17
 
 
 class NotificationManager(models.Manager):
@@ -43,7 +50,7 @@ class NotificationManager(models.Manager):
         notification.save(using=self._db)
         return notification
 
-    def business_area_conflict_mentee(self, mentorship):  # TODO: Send notification
+    def business_area_conflict_mentee(self, mentorship):  # TODO: Send notification, delete after acted on
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(NotificationType.BUSINESS_AREA_CONFLICT_MENTEE,
@@ -51,7 +58,7 @@ class NotificationManager(models.Manager):
                     title=f'Your business area is the same as {mentor.get_full_name()}',
                     action={'mentor': mentor.pk})
 
-    def business_area_conflict_mentor(self, mentorship):  # TODO: Send notification
+    def business_area_conflict_mentor(self, mentorship):  # TODO: Send notification, delete after acted on
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(NotificationType.BUSINESS_AREA_CONFLICT_MENTOR,
@@ -61,29 +68,32 @@ class NotificationManager(models.Manager):
 
     def meeting_request_received(self, meeting_request):
         mentorship = meeting_request.mentorship
+        time = meeting_request.time
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(NotificationType.MEETING_REQUEST_RECEIVED,
                     user=mentor,
-                    title=f'Received a meeting request from {mentee.get_full_name()}',
-                    action={'mentee': mentee.pk})
+                    title=f'Received a meeting request from {mentee.get_full_name()} for {time.strftime("%d/%m at %l:%M%p")}',
+                    action={'request': meeting_request.pk, 'mentee': mentee.pk})
 
-    def meeting_notes_mentor(self, meeting):  # TODO: Send notification
+    def meeting_notes_mentor(self, meeting):  # TODO: Send notification, delete after acted on
         mentorship = meeting.mentorship
+        time = meeting.time
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(NotificationType.MEETING_NOTES_MENTOR,
                     user=mentee,
-                    title=f'Notes have not been recorded for your meeting with {mentor.get_full_name()} on {meeting.time.strftime("%d/%m")}',
+                    title=f'Notes have not been recorded for your meeting with {mentor.get_full_name()} on {time.strftime("%d/%m at %l:%M%p")}',
                     action={'meeting': meeting.pk})
 
-    def meeting_notes_mentee(self, meeting):  # TODO: Send notification
+    def meeting_notes_mentee(self, meeting):  # TODO: Send notification, delete after acted on
         mentorship = meeting.mentorship
+        time = meeting.time
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(NotificationType.MEETING_NOTES_MENTEE,
                     user=mentor,
-                    title=f'Notes have not been recorded for your meeting with {mentee.get_full_name()} on {meeting.time.strftime("%d/%m")}',
+                    title=f'Notes have not been recorded for your meeting with {mentee.get_full_name()} on {time.strftime("%d/%m at %l:%M%p")}',
                     action={'mentee': mentee.pk, 'meeting': meeting.pk})
 
     def mentorship_request_received(self, mentor_request):
@@ -110,16 +120,68 @@ class NotificationManager(models.Manager):
 
     def meeting_request_accepted(self, meeting_request):
         mentorship = meeting_request.mentorship
+        time = meeting_request.time
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(NotificationType.MEETING_REQUEST_ACCEPTED,
                     user=mentee,
-                    title=f'{mentor.get_full_name()} accepted your meeting request')
+                    title=f'{mentor.get_full_name()} accepted your meeting request on {time.strftime("%d/%m at %l:%M%p")}')
 
     def meeting_request_declined(self, meeting_request):
         mentorship = meeting_request.mentorship
+        time = meeting_request.time
         mentee = mentorship.mentee
         mentor = mentorship.mentor
         self.create(NotificationType.MEETING_REQUEST_DECLINED,
                     user=mentee,
-                    title=f'{mentor.get_full_name()} accepted your meeting request')
+                    title=f'{mentor.get_full_name()} declined your meeting request for {time.strftime("%d/%m at %l:%M%p")}')
+
+    def meeting_cancelled_mentee(self, meeting):
+        mentorship = meeting.mentorship
+        time = meeting.time
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+        self.create(NotificationType.MEETING_CANCELLED_MENTEE,
+                    user=mentor,
+                    title=f'{mentee.get_full_name()} cancelled your meeting on {time.strftime("%d/%m at %l:%M%p")}')
+
+    def meeting_cancelled_mentor(self, meeting):
+        mentorship = meeting.mentorship
+        time = meeting.time
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+        self.create(NotificationType.MEETING_CANCELLED_MENTOR,
+                    user=mentee,
+                    title=f'{mentor.get_full_name()} cancelled your meeting on {time.strftime("%d/%m at %l:%M%p")}')
+
+    def action_plan_created_mentee(self, action_plan):
+        mentee = action_plan.user
+        mentorship = mentee.mentorship
+        mentor = mentorship.mentor
+        self.create(NotificationType.ACTION_PLAN_CREATED_MENTEE,
+                    user=mentor,
+                    title=f'{mentee.get_full_name()} created a {action_plan.name} action plan')
+
+    def action_plan_created_mentor(self, action_plan):
+        mentee = action_plan.user
+        mentorship = mentee.mentorship
+        mentor = mentorship.mentor
+        self.create(NotificationType.ACTION_PLAN_CREATED_MENTOR,
+                    user=mentee,
+                    title=f'{mentor.get_full_name()} created a {action_plan.name} action plan')
+
+    def action_plan_completed_mentee(self, action_plan):  # TODO: Send notification
+        mentee = action_plan.user
+        mentorship = mentee.mentorship
+        mentor = mentorship.mentor
+        self.create(NotificationType.ACTION_PLAN_COMPLETED_MENTEE,
+                    user=mentor,
+                    title=f'{mentee.get_full_name()} marked their {action_plan.name} action plan as completed')
+
+    def action_plan_completed_mentor(self, action_plan):  # TODO: Send notification
+        mentee = action_plan.user
+        mentorship = mentee.mentorship
+        mentor = mentorship.mentor
+        self.create(NotificationType.ACTION_PLAN_COMPLETED_MENTOR,
+                    user=mentee,
+                    title=f'{mentor.get_full_name()} marked their {action_plan.name} action plan as completed')
