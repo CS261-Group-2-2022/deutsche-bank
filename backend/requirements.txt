@@ -10,3 +10,4 @@ yake
 pyyaml
 uritemplate
 coverage
+Sphinx
