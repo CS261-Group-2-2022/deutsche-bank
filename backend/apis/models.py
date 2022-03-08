@@ -3,6 +3,7 @@ from __future__ import annotations  # This allows us to use type hints of a clas
 
 from datetime import datetime
 import random
+from typing import List
 
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
@@ -17,9 +18,10 @@ from .managers import UserManager
 """ This file contains the database models and some associated utilities.
 """
 
+
 class Randomisable:
     @classmethod
-    def choose_random(cls, map_with=None) -> Type[cls]:
+    def choose_random(cls, map_with=None):
         pool = cls.objects.all()
         if map_with is not None:
             pool = map_with(pool)
@@ -28,11 +30,11 @@ class Randomisable:
 
     @classmethod
     def choose_list_at_random(cls,
-                              minimum_number = 1,
-                              maximum_number = None,
-                              map_with = None) -> List[Type[cls]]:
+                              minimum_number=1,
+                              maximum_number=None,
+                              map_with=None) -> List:
         pool = []
-        if map_with == None:
+        if map_with is None:
             pool = list(cls.objects.all())
         else:
             pool = list(map_with(cls.objects.all()))
@@ -54,8 +56,9 @@ class Randomisable:
         return random.sample(pool, how_many_to_choose)
 
     @classmethod
-    def make_random(cls) -> Type[cls]:
+    def make_random(cls):
         raise NotImplementedError()
+
 
 class Skill(models.Model, Randomisable):
     """ Database model that holds all the 'kinds' of expertise users may have.
@@ -78,6 +81,8 @@ class BusinessArea(models.Model, Randomisable):
 
 
 from dataclasses import dataclass
+
+
 @dataclass(init=False)
 class Mentorship(models.Model, Randomisable):
     """ Mentorship between mentor and mentee
@@ -162,7 +167,7 @@ class User(AbstractBaseUser, Randomisable):
 
     def get_mentees(self) -> QuerySet[User]:
         """ Retrieves the list of mentees for this user.
-        :return the set of users who have this user as their mentor.
+        :return: the set of users who have this user as their mentor.
         """
         return User.objects.filter(mentorship__mentor__pk__exact=self.pk)
 
@@ -185,7 +190,7 @@ class User(AbstractBaseUser, Randomisable):
         :return: set of upcoming group sessions this user is in
         """
         return GroupSession.objects.filter(users__pk__contains=self.pk,
-                                                 date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
+                                           date__gt=datetime.now(tz=settings.TIME_ZONE_INFO))
 
     def get_all_sessions(self) -> QuerySet[GroupSession]:
         """  Retrieves set of all upcoming group sessions this user is in or is hosting
@@ -221,7 +226,7 @@ class User(AbstractBaseUser, Randomisable):
     def has_mentees(self) -> bool:
         return self.get_mentees().count() > 0
 
-    def get_mentorships_where_user_is_mentor(self) -> QuerySet[List[Type[User]]]:
+    def get_mentorships_where_user_is_mentor(self) -> QuerySet[User]:
         return Mentorship.objects.filter(mentor__pk__exact=self.pk)
 
     def get_mentor_rating_average(self) -> float:
@@ -247,11 +252,11 @@ class User(AbstractBaseUser, Randomisable):
 
     @classmethod
     def make_random(cls,
-                    skills_pool : List[Skill] = None,
-                    business_area_pool : List[BusinessArea] = None,
-                    dataset = dataset,
-                    **kwargs_for_user_constructor) -> Type[User]:
-        if skills_pool == None:
+                    skills_pool: List[Skill] = None,
+                    business_area_pool: List[BusinessArea] = None,
+                    dataset=dataset,
+                    **kwargs_for_user_constructor) -> User:
+        if skills_pool is None:
             skills_pool = list(Skill.objects.all())
 
         business_area = ''
@@ -261,10 +266,10 @@ class User(AbstractBaseUser, Randomisable):
             if business_area_pool == None:
                 business_area_pool = list(BusinessArea.objects.all())
 
-            business_area=random.choice(business_area_pool)
+            business_area = random.choice(business_area_pool)
 
-        first_name=random.choice(dataset["first_names"])
-        last_name=random.choice(dataset["last_names"])
+        first_name = random.choice(dataset["first_names"])
+        last_name = random.choice(dataset["last_names"])
 
         email_domain = "deutschebank.com"
 
@@ -272,13 +277,13 @@ class User(AbstractBaseUser, Randomisable):
         if 'interests' in kwargs_for_user_constructor:
             interests = kwargs_for_user_constructor.pop('interests')
         else:
-            interests = random.sample(skills_pool, random.randrange(1,7))
+            interests = random.sample(skills_pool, random.randrange(1, 7))
 
         expertise = []
         if 'expertise' in kwargs_for_user_constructor:
             expertise = kwargs_for_user_constructor.pop('expertise')
         else:
-            expertise = random.sample(skills_pool, random.randrange(1,7))
+            expertise = random.sample(skills_pool, random.randrange(1, 7))
 
         mentor_intent = False
         if 'mentor_intent' in kwargs_for_user_constructor:
@@ -286,11 +291,9 @@ class User(AbstractBaseUser, Randomisable):
         else:
             mentor_intent = random.choice([False, True])
 
-
         password = 'nunya'
         if 'password' in kwargs_for_user_constructor:
             password = kwargs_for_user_constructor.pop('password')
-
 
         email = None
         if 'email' in kwargs_for_user_constructor:
