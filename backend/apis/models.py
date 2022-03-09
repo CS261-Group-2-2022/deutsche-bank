@@ -7,13 +7,12 @@ from typing import List
 
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.db import models
+from django.db import models as models
 from django.db.models import QuerySet
 from django.db.models import Avg
 
 from .dummy_data_dataset import dataset
-from .managers import *
-
+from . import managers as apis_managers
 
 """ This file contains the database models and some associated utilities.
 """
@@ -138,14 +137,16 @@ class User(AbstractBaseUser, Randomisable):
     is_email_verified: bool = models.BooleanField(default=False)
 
     mentorship: Mentorship = models.OneToOneField(Mentorship, null=True, on_delete=models.SET_NULL)
-    mentor_intent: bool = models.BooleanField(default=False)  # whether a user wishes to become a mentor
+    mentor_intent: bool = models.BooleanField(default=True)  # whether a user wishes to become a mentor
+    group_prompt_intent: bool = models.BooleanField(
+        default=True)  # whether a user wishes to be prompted to organise group sessions
 
     interests: QuerySet[Skill] = models.ManyToManyField(Skill, related_name='user_interests', blank=True)
     expertise: QuerySet[Skill] = models.ManyToManyField(Skill, related_name='user_expertise', blank=True)
 
     interests_description: str = models.CharField(max_length=500, default="", blank=True)
 
-    objects = UserManager()
+    objects = apis_managers.UserManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'business_area']
@@ -380,8 +381,8 @@ class Notification(models.Model):
     title: str = models.CharField(max_length=100)
     date: datetime = models.DateTimeField(auto_now_add=True)
     seen: bool = models.BooleanField(default=False)
-    type: NotificationType = models.IntegerField()
+    type: apis_managers.NotificationType = models.IntegerField()
     action = models.JSONField(null=True, blank=True)
     info = models.JSONField(null=True, blank=True)
 
-    objects = NotificationManager()
+    objects = apis_managers.NotificationManager()
