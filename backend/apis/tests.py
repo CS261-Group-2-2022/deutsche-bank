@@ -444,8 +444,53 @@ class UserModelTests(TestCase):
 
         meeting_count_after = Meeting.objects.count()
         self.assertTrue(meeting_count_before > meeting_count_after)
+        
+       
+    def test_user_cannot_delete_meetings_that_they_arent_in(self):
+        rating = None
+        if random.choice([True,False]):
+            rating = random.randrange(0,10)
 
+        feedback = None
+        if random.choice([True,False]):
+            feedback = lorem_random(500)
 
+        # TODO: Make sure mentor_intent actually carries through
+        user1 = User.make_random(mentor_intent=True)
+        user2 = User.make_random(mentor_intent=False)
+        rando = User.make_random()
+
+        assert(user1.mentor_intent == True)
+        assert(user2.mentor_intent == False)
+
+        new_mentorship = Mentorship.objects.create(mentor=user1,
+                                                   mentee=user2,
+                                                   rating=rating,
+                                                   feedback=feedback)
+        user2.mentorship=new_mentorship
+        mentee_notes_len = Meeting._meta.get_field('mentee_notes').max_length
+        mentor_notes_len = Meeting._meta.get_field('mentor_notes').max_length
+        new_meeting = Meeting.objects.create(mentorship=new_mentorship,
+                                             time=time_start + random_delta(),
+                                             mentee_notes=lorem_random(max_length=mentee_notes_len),
+                                             mentor_notes= lorem_random(max_length=mentor_notes_len))
+        meeting_count_before = Meeting.objects.count()
+        body = {"meeting":new_meeting.pk}
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/meeting/destroy',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=rando)
+        
+
+        view = MeetingViewSet.as_view({'post': 'destroy'})
+        response = view(request, pk=new_meeting.pk)
+
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+        self.assertNotEqual(response.status_code, 204)
+
+        meeting_count_after = Meeting.objects.count()
+        self.assertTrue(meeting_count_before == meeting_count_after)
 
     def test_mentor_can_send_feedback_to_mentee(self):
         rating = None
