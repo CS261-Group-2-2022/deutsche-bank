@@ -6,7 +6,7 @@ from random import randbytes
 
 import json
 
-from .views import GroupSessionViewSet, ActionPlanViewSet,MentorFeedbackViewSet, MentorshipViewSet
+from .views import *
 from .matching_algorithm import NoPossibleMentorsError, matching_algorithm
 from .models import *
 from .dummy_data import *
