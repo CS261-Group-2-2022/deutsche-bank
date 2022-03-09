@@ -64,7 +64,13 @@ function Action({ action }: ActionProps) {
 }
 
 function ActionRequiredBox() {
-  const { data: actions } = useSWR<Notification[]>(LIST_ACTION_NOTIFICATIONS);
+  const { data: actions } = useSWR<Notification[]>(
+    LIST_ACTION_NOTIFICATIONS,
+    null,
+    {
+      refreshInterval: 60 * 1000, // every 60 seconds
+    }
+  );
 
   return (
     <div className="rounded-2xl p-2 space-y-2">

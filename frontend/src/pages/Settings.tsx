@@ -24,6 +24,7 @@ export default function Settings() {
   const { user } = useUser();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
   const [firstName, setFirstName] = useState(user?.first_name ?? "");
   const [lastName, setLastName] = useState(user?.last_name ?? "");
@@ -76,6 +77,19 @@ export default function Settings() {
         .filter((x) => x !== undefined) as Skill[]) ?? []
     );
   }, [areas, skills, user]);
+
+  // Determine if we have made changes compared to the original user
+  useEffect(() => {
+    const changed =
+      firstName !== user?.first_name ||
+      lastName !== user.last_name ||
+      businessArea?.id !== user.business_area ||
+      expertise.some((expertise) => !user.expertise.includes(expertise.id)) ||
+      user.expertise.some((id) => !expertise.find((skill) => skill.id == id)) ||
+      interests.some((interests) => !user.interests.includes(interests.id)) ||
+      user.interests.some((id) => !interests.find((skill) => skill.id == id));
+    setHasChanges(changed);
+  }, [firstName, lastName, businessArea, expertise, interests]);
 
   const clearErrors = () => {
     setFirstNameError(undefined);
@@ -146,14 +160,14 @@ export default function Settings() {
     // Check password and retyped password are equivalent
     if (password !== retypedPasssword) {
       setRetypedPasswordError("Passwords do not match");
-      setIsLoading(false);
+      setIsLoadingPassword(false);
       return false;
     }
 
     // Check the score is high enough
     if (password !== "" && passwordStrength.current <= 2) {
       setPasswordError("This password is too weak, try something stronger.");
-      setIsLoading(false);
+      setIsLoadingPassword(false);
       return false;
     }
 
@@ -262,6 +276,7 @@ export default function Settings() {
                 type="submit"
                 isLoading={isLoading}
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                disabled={!hasChanges}
               >
                 Save Changes
               </LoadingButton>
@@ -329,6 +344,11 @@ export default function Settings() {
                 type="submit"
                 isLoading={isLoadingPassword}
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                disabled={
+                  currentPassword === "" ||
+                  password === "" ||
+                  retypedPasssword === ""
+                }
               >
                 Update Password
               </LoadingButton>
