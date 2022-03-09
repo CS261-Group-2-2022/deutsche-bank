@@ -280,6 +280,45 @@ class UserModelTests(TestCase):
 
         ## Check that user2 is found in user1's mentees.
         self.assertIn(user2, user1.get_mentees())
+     
+    def test_mentorship_cancellation(self):
+        rating = None
+        if random.choice([True,False]):
+            rating = random.randrange(0,10)
+
+        feedback = None
+        if random.choice([True,False]):
+            feedback = lorem_random(500)
+
+        user1 = User.make_random(mentor_intent=True)
+        assert(user1.mentor_intent==True)
+
+        user2 = User.make_random(mentor_intent=False)
+        assert(user2.mentor_intent==False)
+
+        new_mentorship = Mentorship.objects.create(mentor=user1,
+                                                   mentee=user2,
+                                                   rating=rating,
+                                                   feedback=feedback)
+        user2.mentorship = new_mentorship
+        user2.save()
+        body = {
+            "mentorship":new_mentorship.pk,
+            "user":user2.pk,
+            "mentee":user2.pk
+        }
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/mentorship/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=user2)
+        
+
+        view = MentorshipViewSet.as_view({'post': 'end'})
+        response = view(request)
+
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+        self.assertNotEqual(response.status_code, 200)
 
     def test_meeting_creation(self):
         #this tests if a mentee can create a meeting with their mentor
@@ -314,6 +353,51 @@ class UserModelTests(TestCase):
         self.assertTrue(meeting_count_before < meeting_count_after)
 
         # TODO Add endpoint test to make sure that both users can see their meetings in their upcoming list.
+      
+    def test_mentor_can_send_feedback_to_mentee(self):
+        rating = None
+        if random.choice([True,False]):
+            rating = random.randrange(0,10)
+
+        feedback = None
+        if random.choice([True,False]):
+            feedback = lorem_random(500)
+
+        # TODO: Make sure mentor_intent actually carries through
+        user1 = User.make_random(mentor_intent=True)
+        user2 = User.make_random(mentor_intent=False)
+
+        assert(user1.mentor_intent == True)
+        assert(user2.mentor_intent == False)
+
+        new_mentorship = Mentorship.objects.create(mentor=user1,
+                                                   mentee=user2,
+                                                   rating=rating,
+                                                   feedback=feedback)
+
+        user1.save()
+        user2.mentorship = new_mentorship
+        user2.save()
+        time = time_start + random_delta()
+        body = {
+            "mentorship":new_mentorship.pk,
+            "positives":lorem_random(1000),
+            "improvements":lorem_random(1000),
+            "date":str(time)
+        }
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/mentorship-feedback/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=user2)
+        
+
+        view = MentorFeedbackViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+        self.assertNotEqual(response.status_code, 200)
+
       
     def test_participants_can_join_group_sessions(self):
         #test to see if user can create and join group sessions
