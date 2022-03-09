@@ -20,7 +20,9 @@ import {
   FULL_USER_ENDPOINT,
   GroupSession,
   GroupSessionResponse,
+  isGroupSessionPrompt,
   LIST_ACTION_NOTIFICATIONS,
+  LIST_ALL_NOTIFICATIONS,
   LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
   Mentorship,
   MENTORSHIP_ENDPOINT,
@@ -190,8 +192,17 @@ function GroupSessionsInfo() {
   const { data: recommendedSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_USER_SUGGESTED_SESSIONS_ENDPOINT
   );
+  const { data: notifications = [] } = useSWR<Notification[]>(
+    LIST_ALL_NOTIFICATIONS
+  );
 
   const numAvailableSessions = recommendedSessions.length;
+
+  // Check our notifications to see if we have received prompts for any sessions in demand
+  // If so, display an alert for this
+  const skillsInDemand = notifications
+    .filter(isGroupSessionPrompt)
+    .map((notification) => notification.info.skill).length;
 
   return (
     <div className="bg-gray-50rounded-2xl p-2 space-y-2">
@@ -205,7 +216,15 @@ function GroupSessionsInfo() {
           <span className="font-bold">{numAvailableSessions}</span> group
           session{numAvailableSessions == 1 ? " " : "s "}
           available which match{numAvailableSessions == 1 ? "es" : ""} your
-          interests
+          interests.{" "}
+          {skillsInDemand > 0 && (
+            <>
+              <br />
+              There is also demand for group sessions in{" "}
+              <span className="font-bold">{skillsInDemand}</span> topic
+              {skillsInDemand == 1 ? " " : "s "} which you are an expert in.
+            </>
+          )}
         </p>
         <Link
           to="/groups"

@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { useSearchParams } from "react-router-dom";
-import { ChevronUpIcon, PlusIcon } from "@heroicons/react/solid";
+import {
+  ChartSquareBarIcon,
+  ChevronUpIcon,
+  PlusIcon,
+} from "@heroicons/react/solid";
 import {
   GroupSession,
   GroupSessionResponse,
+  LIST_ALL_NOTIFICATIONS,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
   LIST_USER_JOINED_SESSIONS_ENDPOINT,
   LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
+  Notification,
+  isGroupSessionPrompt,
 } from "../utils/endpoints";
 import Topbar from "../components/Topbar";
 import SessionInfoPopup from "../components/SessionInfoPopup";
@@ -17,6 +24,7 @@ import DateTextProps from "../components/DateText";
 import CreateSessionPopup from "../components/CreateSessionPopup";
 import SearchBar from "../components/SearchBar";
 import { Disclosure } from "@headlessui/react";
+import { useSkills } from "../utils/skills";
 
 function CreateSessionsButton({ onClick }: { onClick: () => unknown }) {
   return (
@@ -119,6 +127,46 @@ function HideableSessionsInfo({
   );
 }
 
+type InDemandSessionsAlertProps = {
+  demandSkills: number[];
+};
+
+const InDemandSessionsAlert = ({
+  demandSkills,
+}: InDemandSessionsAlertProps) => {
+  const { skills } = useSkills();
+
+  return (
+    <div className="w-full bg-blue-200 rounded-lg p-2 border border-blue-400">
+      <div className="sm:flex sm:items-start">
+        <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-200 sm:mx-0 sm:h-10 sm:w-10">
+          <ChartSquareBarIcon
+            className="h-6 w-6 text-blue-700"
+            aria-hidden="true"
+          />
+        </div>
+        <div className="ml-3 text-left">
+          <h3 className="text-lg leading-6 font-medium text-blue-800">
+            Sessions In Demand
+          </h3>
+          <div className="my-1">
+            <p className="text-base text-blue-700">
+              There is demand for group events in the following areas:
+              <ul>
+                {demandSkills.map((id) => (
+                  <li key={id}>
+                    • {skills.find((skill) => skill.id === id)?.name ?? id}
+                  </li>
+                ))}
+              </ul>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function GroupSessions() {
   // Pull in session data from backend
   const { data: recommendedSessionsData, isValidating } =
@@ -129,6 +177,9 @@ export default function GroupSessions() {
   );
   const { data: hostingSessions = [] } = useSWR<GroupSessionResponse>(
     LIST_USER_HOSTING_SESSIONS_ENDPOINT
+  );
+  const { data: notifications = [] } = useSWR<Notification[]>(
+    LIST_ALL_NOTIFICATIONS
   );
 
   const findSession = (id: number) =>
@@ -203,6 +254,12 @@ export default function GroupSessions() {
     // Filter by the user searchbar input
     .filter(sessionFilter);
 
+  // Check our notifications to see if we have received prompts for any sessions in demand
+  // If so, display an alert for this
+  const demandSkills = notifications
+    .filter(isGroupSessionPrompt)
+    .map((notification) => notification.info.skill);
+
   return (
     <>
       <Topbar />
@@ -216,6 +273,10 @@ export default function GroupSessions() {
         closeModal={() => setCreatingSession(false)}
       />
       <div className="relative mx-5 space-y-3">
+        {demandSkills.length > 0 && (
+          <InDemandSessionsAlert demandSkills={demandSkills} />
+        )}
+
         <div className="grid grid-cols-6 gap-3">
           <CreateSessionsButton onClick={() => setCreatingSession(true)} />
 

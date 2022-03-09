@@ -451,6 +451,18 @@ export interface NotificationActionPlanCompletedMentor
   type: NotificationType.ACTION_PLAN_COMPLETED_MENTOR;
 }
 
+export interface NotificationGroupSessionPrompt extends NotificationBase {
+  type: NotificationType.GROUP_SESSION_PROMPT;
+  info: {
+    skill: number;
+  };
+}
+
+export const isGroupSessionPrompt = (
+  notification: Notification
+): notification is NotificationGroupSessionPrompt =>
+  notification.type === NotificationType.GROUP_SESSION_PROMPT;
+
 export type Notification =
   | NotificationBusinessAreaConflictMentee
   | NotificationBusinessAreaConflictMentor
@@ -467,4 +479,5 @@ export type Notification =
   | NotificationActionPlanCreatedMentee
   | NotificationActionPlanCreatedMentor
   | NotificationActionPlanCompletedMentee
-  | NotificationActionPlanCompletedMentor;
+  | NotificationActionPlanCompletedMentor
+  | NotificationGroupSessionPrompt;
