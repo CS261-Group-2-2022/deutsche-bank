@@ -485,23 +485,20 @@ class UserModelTests(TestCase):
                             description=lorem_random(max_length=2000),
                             host=host,
                             capacity=1,
-                            date =time_start + random_delta())
+                            date=time_start + random_delta())
         new_groupsession.skills.set([expertise_of_host])
         new_groupsession.users.set([participant])
+        new_groupsession.save()
         self.assertIn(participant, new_groupsession.users.all())
-        body = {
-            "session": new_groupsession.pk,
-            "user":user.pk
-        }
         factory = APIRequestFactory()
-        request = factory.post('/api/v1/session/',
-                               json.dumps(body),
-                               follow=True, content_type='application/json')
+
+        url = 'api/v1/session/join'
+        request = factory.post(url, follow=True)
+
         force_authenticate(request, user=user)
 
         view = GroupSessionViewSet.as_view({'post': 'join'})
-        response = view(request)
-        response.render()
+        response = view(request, pk=new_groupsession.pk)
 
         self.assertEqual(response.status_code, 400, msg=show_res(response))
         self.assertNotEqual(response.status_code, 200)
