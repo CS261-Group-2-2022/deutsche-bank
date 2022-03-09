@@ -464,6 +464,49 @@ class UserModelTests(TestCase):
 
         self.assertEqual(response.status_code, 400, msg=show_res(response))
         self.assertNotEqual(response.status_code, 200)
+       
+    def test_user_cannot_join_a_full_group_session(self):
+        
+        skills = list(Skill.objects.all())
+        host = User.make_random()
+        expertise_of_host = random.choice(skills) # Pick 1
+        host.expertise.set([expertise_of_host])
+        host.save()
+
+        participant = User.make_random()
+        participant.save()
+        user = User.make_random()
+        user.save()
+
+        new_groupsession = GroupSession.objects.create(name=lorem_random(max_length=100),
+                            location=lorem_random(max_length=100),
+                            virtual_link=lorem_random(max_length=100),
+                            image_link= lorem_random(max_length=100),
+                            description=lorem_random(max_length=2000),
+                            host=host,
+                            capacity=1,
+                            date =time_start + random_delta())
+        new_groupsession.skills.set([expertise_of_host])
+        new_groupsession.users.set([participant])
+        self.assertIn(participant, new_groupsession.users.all())
+        body = {
+            "session": new_groupsession.pk,
+            "user":user.pk
+        }
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/session/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=user)
+
+        view = GroupSessionViewSet.as_view({'post': 'join'})
+        response = view(request)
+        response.render()
+
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+        self.assertNotEqual(response.status_code, 200)
+
+
 
 class ActionPlanTestCase(TestCase):
     @classmethod
