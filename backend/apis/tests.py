@@ -494,7 +494,7 @@ class UserModelTests(TestCase):
             "user":user.pk
         }
         factory = APIRequestFactory()
-        request = factory.post('/api/v1/session/',
+        request = factory.post('/api/v1/session/join',
                                json.dumps(body),
                                follow=True, content_type='application/json')
         force_authenticate(request, user=user)
