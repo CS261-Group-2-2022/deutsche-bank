@@ -85,6 +85,7 @@ export type User = {
   email: string;
   is_email_verified: boolean;
   mentor_intent: boolean;
+  group_prompt_intent: boolean;
   business_area: number;
   mentorship?: number;
   interests: number[];
@@ -104,6 +105,7 @@ export type UserFull = {
   email: string;
   is_email_verified: boolean;
   mentor_intent: boolean;
+  group_prompt_intent: boolean;
   interests: Skill[];
   interests_description?: string;
   image_link?: "";
@@ -120,6 +122,7 @@ export const userFullToUser = (user: UserFull): User => {
       email: user.email,
       is_email_verified: user.is_email_verified,
       mentor_intent: user.mentor_intent,
+      group_prompt_intent: user.group_prompt_intent,
       business_area: user.business_area.id,
       mentorship: user.mentorship?.id,
       interests: user.interests.map((skill) => skill.id),

@@ -17,6 +17,7 @@ import FormDropdown from "../components/FormDropdown";
 import { getAreaFromId, useBusinessAreas } from "../utils/business_area";
 import { mutate } from "swr";
 import { LoadingButton } from "../components/LoadingButton";
+import Toggle from "../components/Toggle";
 
 export default function Settings() {
   const { areas } = useBusinessAreas();
@@ -43,6 +44,12 @@ export default function Settings() {
     (user?.interests
       ?.map((id) => skills.find((skill) => skill.id === id))
       .filter((x) => x !== undefined) as Skill[]) ?? []
+  );
+  const [mentorIntent, setMentorIntent] = useState(
+    user?.mentor_intent ?? false
+  );
+  const [groupPromptIntent, setGroupPromptIntent] = useState(
+    user?.group_prompt_intent ?? false
   );
   const passwordStrength = useRef(0);
 
@@ -87,9 +94,19 @@ export default function Settings() {
       expertise.some((expertise) => !user.expertise.includes(expertise.id)) ||
       user.expertise.some((id) => !expertise.find((skill) => skill.id == id)) ||
       interests.some((interests) => !user.interests.includes(interests.id)) ||
-      user.interests.some((id) => !interests.find((skill) => skill.id == id));
+      user.interests.some((id) => !interests.find((skill) => skill.id == id)) ||
+      mentorIntent !== user.mentor_intent ||
+      groupPromptIntent !== user.group_prompt_intent;
     setHasChanges(changed);
-  }, [firstName, lastName, businessArea, expertise, interests]);
+  }, [
+    firstName,
+    lastName,
+    businessArea,
+    expertise,
+    interests,
+    mentorIntent,
+    groupPromptIntent,
+  ]);
 
   const clearErrors = () => {
     setFirstNameError(undefined);
@@ -126,8 +143,9 @@ export default function Settings() {
         last_name: lastName,
         expertise: expertise.map((skill) => skill.id),
         interests: interests.map((skill) => skill.id),
-        // password : password,
         business_area: businessArea.id,
+        mentor_intent: mentorIntent,
+        group_prompt_intent: groupPromptIntent,
       }),
     });
 
@@ -269,6 +287,26 @@ export default function Settings() {
                   {interestsError}
                 </div>
               )}
+              <div className="flex justify-between">
+                <p className="text-gray-700 text-sm font-medium">
+                  Accepting new mentee requests
+                </p>
+                <Toggle
+                  name="Accepting new mentee requests"
+                  enabled={mentorIntent}
+                  setEnabled={setMentorIntent}
+                />
+              </div>
+              <div className="flex justify-between">
+                <p className="text-gray-700 text-sm font-medium">
+                  Receive prompts for group sessions in demand
+                </p>
+                <Toggle
+                  name="Receive prompts for group sessions in demand"
+                  enabled={groupPromptIntent}
+                  setEnabled={setGroupPromptIntent}
+                />
+              </div>
             </div>
 
             <div>
