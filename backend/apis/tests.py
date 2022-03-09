@@ -6,8 +6,8 @@ from random import randbytes
 
 import json
 
-from .views import GroupSessionViewSet, ActionPlanViewSet
-
+from .views import GroupSessionViewSet, ActionPlanViewSet,MentorFeedbackViewSet, MentorshipViewSet
+from .matching_algorithm import NoPossibleMentorsError, matching_algorithm
 from .models import *
 from .dummy_data import *
 from .dummy_data_dataset import dataset
@@ -649,3 +649,96 @@ class ActionPlanTestCase(TestCase):
 
         ids_returned = [action_plan['id'] for action_plan in json_returned]
         self.assertIn(created_action_plan['id'], ids_returned, msg=show_res(response))
+ 
+class MatchingAlgorithmTestCases(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_dummy_data(quiet=True)
+        cls.randomly_created_user = User.make_random()
+
+    def test_user_wont_be_suggested_mentors_that_dont_want_to_be_mentors(self):
+        mentee = self.randomly_created_user
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        mentee.interests.set([mentee_interests])
+        mentee.save()
+
+        try:
+            m = matching_algorithm(user_looking_for_mentor=mentee,
+                           users_who_want_to_mentor=list(User.objects.filter(mentor_intent=True)),
+                           all_mentorships=list(Mentorship.objects.filter()),
+                           current_mentorships=[],
+                           all_users=list(User.objects.filter()),
+                           all_requests= list(MentorRequest.objects.filter()))
+            for x in m:
+                self.assertTrue(x.mentor_intent)
+        except NoPossibleMentorsError:
+            self.assertTrue(True)
+    
+    def test_user_wont_be_suggested_mentors_from_same_business_area(self):
+        mentee = self.randomly_created_user
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        mentee.interests.set([mentee_interests])
+        
+        business_area = mentee.business_area
+        
+        mentee.save()
+        try:
+            m = matching_algorithm(user_looking_for_mentor=mentee,
+                           users_who_want_to_mentor=list(User.objects.filter(mentor_intent=True)),
+                           all_mentorships=list(Mentorship.objects.filter()),
+                           current_mentorships=[],
+                           all_users=list(User.objects.filter()),
+                           all_requests= list(MentorRequest.objects.filter()))
+            for x in m:
+                self.assertFalse(x.business_area == business_area)
+        except NoPossibleMentorsError:
+            self.assertTrue(True)
+    
+    def test_suggested_mentors_have_the_required_expertise(self):
+        mentee = self.randomly_created_user
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        mentee.interests.set([mentee_interests])
+        mentee.save()
+
+        try:
+            m = matching_algorithm(user_looking_for_mentor=mentee,
+                           users_who_want_to_mentor=list(User.objects.filter(mentor_intent=True)),
+                           all_mentorships=list(Mentorship.objects.filter()),
+                           current_mentorships=[],
+                           all_users=list(User.objects.filter()),
+                           all_requests= list(MentorRequest.objects.filter()))
+            for x in m:
+                self.assertTrue(compatible(x,mentee))
+        except NoPossibleMentorsError:
+            self.assertTrue(True)
+
+    def test_user_is_not_suggested_previous_mentors(self):
+        mentee = random.choice(list(User.objects.all()))
+        #ex_mentors = list(filter(lambda m: m.mentee == mentee,
+        #                                 list(Mentorship.objects.filter())))
+        ex_mentor = User.make_random()
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        ex_mentor.expertise.set([mentee_interests])
+        ex_mentor.save()
+        mentee.interests.set([mentee_interests])
+        mentee.save()
+        old_mentorship = Mentorship.objects.create(mentor=ex_mentor,
+                                                   mentee=mentee,
+                                                   rating=None,
+                                                   feedback=None)
+        mentee.mentorship = old_mentorship
+        try:
+            m = matching_algorithm(user_looking_for_mentor=mentee,
+                           users_who_want_to_mentor=list(User.objects.filter(mentor_intent=True)),
+                           all_mentorships=list(Mentorship.objects.filter()),
+                           current_mentorships=[],
+                           all_users=list(User.objects.filter()),
+                           all_requests= list(MentorRequest.objects.filter()))
+            for x in m:
+                self.assertFalse(x==ex_mentor)
+        except NoPossibleMentorsError:
+            self.assertTrue(True)
