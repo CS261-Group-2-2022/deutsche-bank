@@ -68,6 +68,8 @@ class NotificationManager(django_models.Manager):
 
     def business_area_conflict(self, mentorship: apis_models.Mentorship):
         mentee = mentorship.mentee
+        if mentee.mentorship != mentorship:
+            return
         mentor = mentorship.mentor
         self.create(NotificationType.BUSINESS_AREA_CONFLICT_MENTEE,
                     user=mentor,
