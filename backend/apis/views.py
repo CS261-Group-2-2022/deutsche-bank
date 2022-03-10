@@ -9,7 +9,7 @@ from rest_framework import viewsets, generics, permissions, status, mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import DestroyModelMixin, ListModelMixin, UpdateModelMixin, CreateModelMixin
+from rest_framework.mixins import *
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 from rest_framework.views import APIView
@@ -22,7 +22,7 @@ from .dummy_data import create_dummy_data
 from .matching_algorithm import matching_algorithm, NoPossibleMentorsError
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -77,10 +77,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
         cereal = UserSerializerFull(user.get_mentees(), many=True)
         return Response(cereal.data)
-
-    @action(detail=True, methods=['get'])
-    def full(self, request, pk=None) -> Response:
-        return Response(UserSerializerFull(self.get_object()).data)
 
     @action(detail=True, methods=['get'])
     def expertise(self, request, pk=None) -> Response:
@@ -179,7 +175,7 @@ class ChangePasswordView(generics.GenericAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class GroupSessionViewSet(viewsets.ModelViewSet):
+class GroupSessionViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     queryset = GroupSession.objects.all()
     serializer_class = GroupSessionSerializer
     permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to manage group sessions
@@ -251,7 +247,7 @@ class GroupSessionViewSet(viewsets.ModelViewSet):
         return Response(GroupSessionSerializer(session).data)
 
 
-class MentorshipViewSet(viewsets.ModelViewSet):
+class MentorshipViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = Mentorship.objects.all()
     serializer_class = MentorshipSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -274,7 +270,7 @@ class MentorshipViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
-class MentorRequestViewSet(viewsets.ModelViewSet):
+class MentorRequestViewSet(CreateModelMixin, GenericViewSet):
     queryset = MentorRequest.objects.all()
     serializer_class = MentorRequestSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -347,9 +343,10 @@ class MentorRequestViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
 
-class MeetingViewSet(viewsets.ModelViewSet):
+class MeetingViewSet(UpdateModelMixin, DestroyModelMixin, GenericViewSet):
     queryset = Meeting.objects.all()
     serializer_class = MeetingSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -364,7 +361,7 @@ class MeetingViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class MeetingRequestViewSet(viewsets.ModelViewSet):
+class MeetingRequestViewSet(CreateModelMixin, GenericViewSet):
     queryset = MeetingRequest.objects.all()
     serializer_class = MeetingRequestSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -502,21 +499,22 @@ class ActionPlanViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Gene
                         status=status.HTTP_200_OK)
 
 
-class BusinessAreaViewSet(viewsets.ModelViewSet):
-    permission_classes = (permissions.AllowAny,)  # User does not need to be authenticated to login
+class BusinessAreaViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)  # User does not need to be authenticated to login
     authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = BusinessArea.objects.all()
     serializer_class = BusinessAreaSerializer
 
 
-class SkillViewSet(viewsets.ModelViewSet):
-    permission_classes = (permissions.AllowAny,)  # User does not need to be authenticated to login
+class SkillViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)  # User does not need to be authenticated to login
     authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
 
 
-class FeedbackViewSet(viewsets.ModelViewSet):
+class FeedbackViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
 
