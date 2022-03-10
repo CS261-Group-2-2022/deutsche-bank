@@ -7,13 +7,12 @@ from typing import List
 
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
-from django.db import models
+from django.db import models as models
 from django.db.models import QuerySet
 from django.db.models import Avg
 
 from .dummy_data_dataset import dataset
-
-from .managers import UserManager
+from . import managers as apis_managers
 
 """ This file contains the database models and some associated utilities.
 """
@@ -105,6 +104,11 @@ class Mentorship(models.Model, Randomisable):
     def get_mentor_feedback(self):
         return self.mentorship_feedback.all()
 
+    def send_conflict_notifications(self):
+        Notification.objects.delete_business_area_conflict(self)  # Clear previous
+        if self.mentee.business_area == self.mentor.business_area:
+            Notification.objects.business_area_conflict(self)
+
 
 class MentorRequest(models.Model):
     """ Mentorship request from a mentee to a mentor
@@ -136,14 +140,16 @@ class User(AbstractBaseUser, Randomisable):
     is_email_verified: bool = models.BooleanField(default=False)
 
     mentorship: Mentorship = models.OneToOneField(Mentorship, null=True, on_delete=models.SET_NULL)
-    mentor_intent: bool = models.BooleanField(default=False)  # whether a user wishes to become a mentor
+    mentor_intent: bool = models.BooleanField(default=True)  # whether a user wishes to become a mentor
+    group_prompt_intent: bool = models.BooleanField(
+        default=True)  # whether a user wishes to be prompted to organise group sessions
 
     interests: QuerySet[Skill] = models.ManyToManyField(Skill, related_name='user_interests', blank=True)
     expertise: QuerySet[Skill] = models.ManyToManyField(Skill, related_name='user_expertise', blank=True)
 
     interests_description: str = models.CharField(max_length=500, default="", blank=True)
 
-    objects = UserManager()
+    objects = apis_managers.UserManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'business_area']
@@ -226,7 +232,7 @@ class User(AbstractBaseUser, Randomisable):
     def has_mentees(self) -> bool:
         return self.get_mentees().count() > 0
 
-    def get_mentorships_where_user_is_mentor(self) -> QuerySet[User]:
+    def get_mentorships_where_user_is_mentor(self) -> QuerySet[Mentorship]:
         return Mentorship.objects.filter(mentor__pk__exact=self.pk)
 
     def get_mentor_rating_average(self) -> float:
@@ -235,6 +241,12 @@ class User(AbstractBaseUser, Randomisable):
             return 4
         else:
             return ret
+
+    def get_notifications(self):
+        return self.user_notifications.all()
+
+    def get_actions(self):
+        return self.get_notifications().filter(action__isnull=False)
 
     # TODO Add to a mixin type thing.
     @classmethod
@@ -348,14 +360,6 @@ class ActionPlan(models.Model):
     completed: bool = models.BooleanField(default=False)  # whether the action plan is completed
 
 
-class Notification(models.Model):
-    user: User = models.ForeignKey(User, on_delete=models.CASCADE)
-    name: str = models.CharField(max_length=100)
-    description: str = models.CharField(max_length=1000)
-    date: datetime = models.DateTimeField(auto_now_add=True)
-    actioned: bool = models.BooleanField()  # user has acted on notification
-
-
 class GroupSession(models.Model):
     name: str = models.CharField(max_length=100)
     location: str = models.CharField(max_length=100)
@@ -373,3 +377,15 @@ class GroupSession(models.Model):
 class Feedback(models.Model):
     date: datetime = models.DateTimeField()
     feedback: str = models.CharField(max_length=1000)
+
+
+class Notification(models.Model):
+    user: User = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_notifications')
+    title: str = models.CharField(max_length=100)
+    date: datetime = models.DateTimeField(auto_now_add=True)
+    seen: bool = models.BooleanField(default=False)
+    type: apis_managers.NotificationType = models.IntegerField()
+    action = models.JSONField(null=True, blank=True)
+    info = models.JSONField(null=True, blank=True)
+
+    objects = apis_managers.NotificationManager()
