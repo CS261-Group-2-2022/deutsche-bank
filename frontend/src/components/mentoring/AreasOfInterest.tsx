@@ -5,7 +5,6 @@ import {
   FULL_USER_ENDPOINT,
   getAuthToken,
   PROFILE_ENDPOINT,
-  SETTINGS_ENDPOINT,
   Skill,
   User,
 } from "../../utils/endpoints";
@@ -53,15 +52,15 @@ export default function AreasOfInterest({
     setError(undefined);
 
     const res = await fetch(
-      SETTINGS_ENDPOINT.replace("{ID}", user.id.toString()),
-      {
-        method: "PATCH",
-        headers: {
-          "content-type": "application/json",
-          authorization: `Token ${getAuthToken()}`,
-        },
-        body: JSON.stringify({ interests: interests.map((x) => x.id) }),
-      }
+        PROFILE_ENDPOINT,
+        {
+          method: "PATCH",
+          headers: {
+            "content-type": "application/json",
+            authorization: `Token ${getAuthToken()}`,
+          },
+          body: JSON.stringify({interests: interests.map((x) => x.id)}),
+        }
     );
 
     const body = await res.json();

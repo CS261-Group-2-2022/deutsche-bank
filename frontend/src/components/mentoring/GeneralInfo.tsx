@@ -7,7 +7,6 @@ import {
   Mentorship,
   MENTORSHIP_ENDPOINT,
   PROFILE_ENDPOINT,
-  SETTINGS_ENDPOINT,
   Skill,
   User,
   UserFull,
