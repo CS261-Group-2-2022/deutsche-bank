@@ -23,7 +23,6 @@ import Feedback from "./pages/Feedback";
 import LoggedOutPage from "./pages/LoggedOutPage";
 import MentoringProfile from "./pages/MentoringProfile";
 import YourMentees from "./pages/YourMentees";
-import MentoringMatchingPage from "./components/mentoring/MentoringMatching";
 
 const fetcher: BareFetcher = async (resource) => {
   const token = getAuthToken();
