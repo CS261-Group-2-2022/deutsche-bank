@@ -8,7 +8,6 @@ import {
   getAuthToken,
   Skill,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
-  LIST_All_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 import { useSkills } from "../utils/skills";
@@ -49,6 +48,7 @@ export default function CreateSessionPopup({
   const [datetime, setDatetime] = useState("");
   const [assignedSkills, setAssignedSkills] = useState<Skill[]>([]);
 
+  // Error state
   const [sessionTitleError, setSessionTitleError] = useState<
     string | undefined
   >();

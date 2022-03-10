@@ -1,3 +1,4 @@
+// Enforce that `isLoading` should be present within our props, but we can have anything else
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface LoadingButtonProps extends Record<any, any> {
   isLoading: boolean;

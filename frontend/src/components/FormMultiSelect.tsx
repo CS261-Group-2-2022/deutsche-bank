@@ -73,8 +73,12 @@ export default function FormMultiSelect<T extends DropdownOption>({
   };
 
   return (
-    // @ts-expect-error because we need to
-    <Listbox value={selected} onChange={updateSelection}>
+    <Listbox
+      value={selected}
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore Listbox only provides a single value into onChange (the button that got selected), but our selected is an array. So we need to override this.
+      onChange={updateSelection}
+    >
       {({ open }) => (
         <div>
           <Listbox.Label className="flex flex-row text-sm font-medium text-gray-700">
