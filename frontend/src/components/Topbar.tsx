@@ -12,6 +12,7 @@ import { Fragment } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useUser } from "../utils/authentication";
 import { getAreaFromId, useBusinessAreas } from "../utils/business_area";
+import NotificationsPopup from "./NotificationsPopup";
 import UserAvatar from "./UserAvatar";
 
 type MenuButtonProps = {
@@ -173,7 +174,7 @@ export default function Topbar() {
           </nav>
 
           {/* RHS Panel */}
-          <div className="flex items-center justify-end md:flex-1 lg:w-0">
+          <div className="flex items-center justify-end flex-1">
             <Link
               to="/feedback"
               className="flex text-gray-600 hover:text-gray-800 items-center mr-5"
@@ -181,16 +182,11 @@ export default function Topbar() {
               Feedback
               <ChatAlt2Icon className={"ml-2 h-5 w-5"} aria-hidden="true" />
             </Link>
-            <BellIcon
-              className={"text-gray-600 ml-2 h-5 w-5 group-hover:text-gray-500"}
-              aria-hidden="true"
-            />
+            <NotificationsPopup />
             <Link to="/settings">
               <p title="Settings">
                 <CogIcon
-                  className={
-                    "text-gray-600 ml-2 h-5 w-5 group-hover:text-gray-500"
-                  }
+                  className={"text-gray-600 ml-2 h-5 w-5 hover:text-gray-500"}
                   aria-hidden="true"
                 />
               </p>
@@ -198,9 +194,7 @@ export default function Topbar() {
             <Link to="/logout">
               <p title="Logout">
                 <LogoutIcon
-                  className={
-                    "text-gray-600 ml-2 h-5 w-5 group-hover:text-gray-500"
-                  }
+                  className={"text-gray-600 ml-2 h-5 w-5 hover:text-gray-500"}
                   aria-hidden="true"
                 />
               </p>
