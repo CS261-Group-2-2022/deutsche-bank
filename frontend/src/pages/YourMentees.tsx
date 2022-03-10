@@ -73,7 +73,7 @@ const PendingUserPanel = ({ request }: PendingUserPanelProps) => {
       user={mentee}
       extra_information={
         <>
-          <p className="text-sm">
+          <div className="text-sm">
             {mentee.interests.length > 0 ? (
               <div className="flex flex-wrap gap-1">
                 <span>Interested in:</span>
@@ -87,7 +87,7 @@ const PendingUserPanel = ({ request }: PendingUserPanelProps) => {
             ) : (
               "No current interests"
             )}
-          </p>
+          </div>
           {error && (
             <div className="block text-sm m-1 font-medium text-red-700">
               {error}
@@ -200,7 +200,7 @@ const CurrentMentees = ({ currentMentees }: CurrentMenteesProps) => {
               key={mentee.id}
               user={mentee}
               extra_information={
-                <p className="text-sm">
+                <div className="text-sm">
                   {mentee.interests.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       <span>Interested in:</span>
@@ -214,7 +214,7 @@ const CurrentMentees = ({ currentMentees }: CurrentMenteesProps) => {
                   ) : (
                     "Currently not interested in anything"
                   )}
-                </p>
+                </div>
               }
               actions={
                 <Link

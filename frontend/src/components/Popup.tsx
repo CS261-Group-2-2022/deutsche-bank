@@ -7,6 +7,7 @@ type PopupProps = {
   initiateClose: () => unknown;
   closeModal: () => unknown;
   children: React.ReactNode;
+  className?: string;
 };
 
 export default function Popup({
@@ -15,6 +16,7 @@ export default function Popup({
   closeModal,
   initiateClose,
   children,
+  className,
 }: PopupProps) {
   return (
     <>
@@ -58,7 +60,9 @@ export default function Popup({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <div className="inline-block w-full max-w-3xl p-3 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+              <div
+                className={`inline-block w-full max-w-3xl p-3 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl ${className}`}
+              >
                 {children}
               </div>
             </Transition.Child>
