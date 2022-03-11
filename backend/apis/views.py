@@ -507,7 +507,8 @@ class BusinessAreaViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
 
 
 class SkillViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-    permission_classes = (permissions.IsAuthenticated,)
+    # TODO(Arpad): Make a test that checks unauthenticated users can get the skills to pay the bills
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     # TODO(Arpad): If we have this enabled, requests to create new skills fail with an authentication error.
     #authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = Skill.objects.all()
