@@ -73,16 +73,20 @@ export default function Settings() {
     setBusinessArea(
       user ? getAreaFromId(user.business_area, areas) : undefined
     );
-    setExpertise(
-      (user?.expertise
-        ?.map((id) => skills.find((skill) => skill.id === id))
-        .filter((x) => x !== undefined) as Skill[]) ?? []
-    );
-    setInterests(
-      (user?.interests
-        ?.map((id) => skills.find((skill) => skill.id === id))
-        .filter((x) => x !== undefined) as Skill[]) ?? []
-    );
+    if (expertise.length === 0) {
+      setExpertise(
+        (user?.expertise
+          ?.map((id) => skills.find((skill) => skill.id === id))
+          .filter((x) => x !== undefined) as Skill[]) ?? []
+      );
+    }
+    if (interests.length === 0) {
+      setInterests(
+        (user?.interests
+          ?.map((id) => skills.find((skill) => skill.id === id))
+          .filter((x) => x !== undefined) as Skill[]) ?? []
+      );
+    }
   }, [areas, skills, user]);
 
   // Determine if we have made changes compared to the original user
@@ -270,7 +274,10 @@ export default function Settings() {
               <SkillsFuzzyList
                 title="Areas of Expertise"
                 skills={expertise}
-                setSkills={setExpertise}
+                setSkills={(skills) => {
+                  setExpertise(skills);
+                  return Promise.resolve(true);
+                }}
               />
               {expertiseError && (
                 <div className="block text-sm m-1 font-medium text-red-700">
@@ -280,7 +287,10 @@ export default function Settings() {
               <SkillsFuzzyList
                 title="Areas of Interest"
                 skills={interests}
-                setSkills={setInterests}
+                setSkills={(skills) => {
+                  setInterests(skills);
+                  return Promise.resolve(true);
+                }}
               />
               {interestsError && (
                 <div className="block text-sm m-1 font-medium text-red-700">
