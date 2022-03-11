@@ -204,7 +204,8 @@ export default function RequestMeetingPopup({
           className="space-y-1"
           onSubmit={(e) => {
             e.preventDefault();
-            sendMeetingRequest();
+            // TODO(Arpad): Removed duplicate sendMeetingRequest, only send with the accept button onclick.
+            // sendMeetingRequest();
           }}
         >
           <FormInput
