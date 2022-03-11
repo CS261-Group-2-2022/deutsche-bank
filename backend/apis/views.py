@@ -46,6 +46,7 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
         current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         all_requests: List[MentorRequest] = list(MentorRequest.objects.all())
 
+        potential_mentors = []
         try:
             potential_mentors: List[User] = matching_algorithm(user,
                                                                all_users,
@@ -55,7 +56,6 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
                                                                all_requests)
             response_status = HTTP_200_OK
         except NoPossibleMentorsError:
-            potential_mentors = []
             response_status = HTTP_204_NO_CONTENT
 
         cereal = UserSerializer(potential_mentors, many=True)
