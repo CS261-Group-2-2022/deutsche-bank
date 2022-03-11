@@ -17,6 +17,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from .models import *
 from .serializers import *
+from .managers import NotificationType
 from .dummy_data import create_dummy_data
 
 from .matching_algorithm import matching_algorithm, NoPossibleMentorsError
