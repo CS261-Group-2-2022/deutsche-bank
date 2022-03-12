@@ -784,10 +784,10 @@ class ActionPlanTestCase(TestCase):
 
         ## Try to create an action plan for anyone else
         def exclude_non_mentor(q):
-            return q.filter(pk__exact=non_mentor.pk)
+            return q.exclude(pk__exact=non_mentor.pk)
 
         other_user = User.choose_random(map_with=exclude_non_mentor)
-        assert(other_user is not non_mentor)
+        assert(other_user.pk != non_mentor.pk)
 
         body = {
             "name": lorem_random(max_length=100),

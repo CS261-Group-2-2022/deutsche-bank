@@ -447,7 +447,7 @@ class ActionPlanViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Gene
 
         target_user = serializer.validated_data['user']
 
-        if request.user is target_user:
+        if request.user.pk == target_user.pk:
             # We're making an action plan for ourselves
             if request.user.mentorship is None:
                 e = {'error': 'A user must be a mentee to create action plans'}
