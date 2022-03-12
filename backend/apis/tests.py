@@ -1218,14 +1218,8 @@ class NotificationTestCases(TestCase):
             u.interests.set(expertises_of_expert)
             u.save()
 
-        notification_count_before = Notification.objects.count()
         noti = Notification.objects
         noti.send_group_session_prompts()
-        notification_count_after = Notification.objects.count()
-
-        print(f'{notification_count_before=}')
-        print(f'{notification_count_after=}')
-
 
         factory = APIRequestFactory()
         request = factory.get('/api/v1/notification/', follow=True)
