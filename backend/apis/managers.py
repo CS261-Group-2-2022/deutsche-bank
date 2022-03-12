@@ -244,8 +244,8 @@ class NotificationManager(django_models.Manager):
                 if len(experts) <= 0:
                     continue
 
-                if len(experts) > required:
-                    how_many_to_pick = min(abs(int(required)), len(experts)-1)
+                if len(experts) > capacity_needed:
+                    how_many_to_pick = min(abs(int(capacity_needed)), len(experts)-1)
                     experts = random.sample(experts, how_many_to_pick)
 
                 for expert in experts:
