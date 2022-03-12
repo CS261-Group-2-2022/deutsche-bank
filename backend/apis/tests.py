@@ -1231,3 +1231,71 @@ class NotificationTestCases(TestCase):
         a = expert.get_notifications()
 
         self.assertGreater(a.count(), 0, msg=show_res(response))
+
+
+class MentorshipViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_dummy_data(quiet=True)
+
+    def test_that_patch_request_to_update_mentor_feedback_works(self):
+        # Pick a random mentorship
+        mentorship = Mentorship.choose_random()
+
+        if mentorship is None:
+            return # Random data generation meant there were no mentorships.
+
+        mentee = mentorship.mentee
+
+        # Make a request to the mentorship endpoint to update the review text and rating
+        # The data to be sent with PATCH
+        feedback_len = Mentorship._meta.get_field('feedback').max_length
+        body = {
+            'feedback': lorem_random(max_length=feedback_len),
+            'rating': random.randrange(1,10)
+        }
+
+        factory = APIRequestFactory()
+        request = factory.patch('/api/v1/mentorship/',
+                                json.dumps(body),
+                                follow=True, content_type='application/json')
+        force_authenticate(request, user=mentee)
+
+        view = MentorshipViewSet.as_view({'patch': 'partial_update'}) # TODO Is this it
+        response = view(request, pk=mentorship.pk)
+
+        self.assertEqual(response.status_code, 200, msg=show_res(response))
+
+    def test_that_patch_request_to_feedback_doesnt_work_if_not_in_mentorship(self):
+        # Pick a random mentorship
+        mentorship = Mentorship.choose_random()
+
+        if mentorship is None:
+            return # Random data generation meant there were no mentorships.
+
+        # And a user not in the mentorship
+        user = User.make_random()
+
+        # Make a request to the mentorship endpoint to update the review text and rating
+        # The data to be sent with PATCH
+        feedback_len = Mentorship._meta.get_field('feedback').max_length
+        body = {
+            'feedback': lorem_random(max_length=feedback_len),
+            'rating': random.randrange(1,10)
+        }
+
+        factory = APIRequestFactory()
+        request = factory.patch('/api/v1/mentorship/',
+                                json.dumps(body),
+                                follow=True, content_type='application/json')
+        force_authenticate(request, user=user)
+
+        view = MentorshipViewSet.as_view({'patch': 'partial_update'}) # TODO Is this it
+        response = view(request, pk=mentorship.pk)
+
+        ## Check that the request fails
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+
+        ## Check that the response contains a suitable message
+
+        self.assertIn('cannot modify', response.data['error'], msg=show_res(response))
