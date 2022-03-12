@@ -997,3 +997,215 @@ class ActionPlanTestCase(TestCase):
 
         ids_returned = [action_plan['id'] for action_plan in json_returned]
         self.assertIn(created_action_plan['id'], ids_returned, msg=show_res(response))
+        
+class MatchingAlgorithmTestCases(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_dummy_data(quiet=True)
+        cls.randomly_created_user = User.make_random()
+
+    def test_user_wont_be_suggested_mentors_that_dont_want_to_be_mentors(self):
+        mentee = self.randomly_created_user
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        mentee.interests.set([mentee_interests])
+        mentee.save()
+
+        try:
+            m = matching_algorithm(user_looking_for_mentor=mentee,
+                           users_who_want_to_mentor=list(User.objects.filter(mentor_intent=True)),
+                           all_mentorships=list(Mentorship.objects.filter()),
+                           current_mentorships=[],
+                           all_users=list(User.objects.filter()),
+                           all_requests= list(MentorRequest.objects.filter()))
+            for x in m:
+                self.assertTrue(x.mentor_intent)
+        except NoPossibleMentorsError:
+            self.assertTrue(True)
+    
+    def test_user_wont_be_suggested_mentors_from_same_business_area(self):
+        mentee = self.randomly_created_user
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        mentee.interests.set([mentee_interests])
+        
+        business_area = mentee.business_area
+        
+        mentee.save()
+        try:
+            m = matching_algorithm(user_looking_for_mentor=mentee,
+                           users_who_want_to_mentor=list(User.objects.filter(mentor_intent=True)),
+                           all_mentorships=list(Mentorship.objects.filter()),
+                           current_mentorships=[],
+                           all_users=list(User.objects.filter()),
+                           all_requests= list(MentorRequest.objects.filter()))
+            for x in m:
+                self.assertFalse(x.business_area == business_area)
+        except NoPossibleMentorsError:
+            self.assertTrue(True)
+    
+    def test_suggested_mentors_have_the_required_expertise(self):
+        mentee = self.randomly_created_user
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        mentee.interests.set([mentee_interests])
+        mentee.save()
+
+        try:
+            m = matching_algorithm(user_looking_for_mentor=mentee,
+                           users_who_want_to_mentor=list(User.objects.filter(mentor_intent=True)),
+                           all_mentorships=list(Mentorship.objects.filter()),
+                           current_mentorships=[],
+                           all_users=list(User.objects.filter()),
+                           all_requests= list(MentorRequest.objects.filter()))
+            for x in m:
+                self.assertTrue(compatible(x,mentee))
+        except NoPossibleMentorsError:
+            self.assertTrue(True)
+
+    def test_user_is_not_suggested_previous_mentors(self):
+        mentee = self.randomly_created_user
+        #ex_mentors = list(filter(lambda m: m.mentee == mentee,
+        #                                 list(Mentorship.objects.filter())))
+        ex_mentor = User.make_random()
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        ex_mentor.expertise.set([mentee_interests])
+        ex_mentor.save()
+        mentee.interests.set([mentee_interests])
+        mentee.save()
+        old_mentorship = Mentorship.objects.create(mentor=ex_mentor,
+                                                   mentee=mentee,
+                                                   rating=None,
+                                                   feedback=None)
+        #mentee.mentorship = old_mentorship
+        try:
+            m = matching_algorithm(user_looking_for_mentor=mentee,
+                           users_who_want_to_mentor=list(User.objects.filter(mentor_intent=True)),
+                           all_mentorships=list(Mentorship.objects.filter()),
+                           current_mentorships=[],
+                           all_users=list(User.objects.filter()),
+                           all_requests= list(MentorRequest.objects.filter()))
+            for x in m:
+                self.assertFalse(x==ex_mentor)
+        except NoPossibleMentorsError:
+            self.assertTrue(True)
+
+    def test_user_can_send_mentor_requests(self):
+        mentee = self.randomly_created_user
+        mentor = User.make_random()
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        mentor.expertise.set([mentee_interests])
+        mentor.save()
+        mentee.interests.set([mentee_interests])
+        mentee.save()
+        body = {
+            "mentee":mentee.pk,
+            "mentor":mentor.pk
+        }
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/mentorship-request/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentee)
+
+        view = MentorRequestViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        self.assertEqual(response.status_code, 201, msg=show_res(response))
+
+    def test_mentor_can_accept_mentor_requests(self):
+        mentee = self.randomly_created_user
+        mentor = User.make_random()
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        mentor.expertise.set([mentee_interests])
+        mentor.save()
+        mentee.interests.set([mentee_interests])
+        mentee.save()
+        mentor_request = MentorRequest.objects.create(mentee=mentee,
+                                                      mentor=mentor)
+        body = {
+            "mentor-request":mentor_request.pk,
+            "mentor":mentor.pk
+        }
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/mentorship-request/accept',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentor)
+
+        view = MentorRequestViewSet.as_view({'post': 'accept'})
+        response = view(request, pk=mentor_request.pk)
+
+        self.assertEqual(response.status_code, 201, msg=show_res(response))
+
+
+
+    def test_mentor_can_reject_mentor_request(self):
+        mentee = self.randomly_created_user
+        mentor = User.make_random()
+        skills = list(Skill.objects.all())
+        mentee_interests = random.choice(skills)
+        mentor.expertise.set([mentee_interests])
+        mentor.save()
+        mentee.interests.set([mentee_interests])
+        mentee.save()
+        mentor_request = MentorRequest.objects.create(mentee=mentee,
+                                                      mentor=mentor)
+        body = {
+            "mentor-request":mentor_request.pk,
+            "mentor":mentor.pk
+        }
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/mentorship-request/decline',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentor)
+
+        view = MentorRequestViewSet.as_view({'post': 'decline'})
+        response = view(request, pk=mentor_request.pk)
+
+        self.assertEqual(response.status_code, 200, msg=show_res(response))
+
+    def test_mentee_can_only_have_one_mentor(self):
+        rating = None
+        if random.choice([True,False]):
+            rating = random.randrange(0,10)
+
+        feedback = None
+        if random.choice([True,False]):
+            feedback = lorem_random(500)
+
+        # TODO: Make sure mentor_intent actually carries through
+        mentor = User.make_random(mentor_intent=True)
+        mentee = User.make_random(mentor_intent=False)
+
+        assert(mentor.mentor_intent == True)
+        assert(mentee.mentor_intent == False)
+
+        new_mentorship = Mentorship.objects.create(mentor=mentor,
+                                                   mentee=mentee,
+                                                   rating=rating,
+                                                   feedback=feedback)
+
+        mentor.save()
+        mentee.mentorship = new_mentorship
+        mentee.save()
+        body = {
+            "mentee":mentee.pk,
+            "mentor":mentor.pk
+        }
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/mentorship-request/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentee)
+
+        view = MentorRequestViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+        
+    
