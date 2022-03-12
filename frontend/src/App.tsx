@@ -62,6 +62,7 @@ function App() {
                   </Route>
                   <Route path="groups" element={<GroupSessions />} />
                   <Route path="settings" element={<Settings />} />
+                  <Route path="feedback" element={<Feedback />} />
                 </Route>
 
                 {/* All subpages here are rendered as logged out pages - i.e. if you are logged in you will be redirected out of here */}
@@ -71,7 +72,6 @@ function App() {
                 </Route>
 
                 <Route path="logout" element={<Logout />} />
-                <Route path="feedback" element={<Feedback />} />
                 <Route path="*" element={<Error404 />} />
               </Routes>
             </BrowserRouter>

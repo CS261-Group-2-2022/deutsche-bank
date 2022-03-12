@@ -1,8 +1,10 @@
 import { MouseEventHandler } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Topbar from "../components/Topbar";
+import { useUser } from "../utils/authentication";
 
 export default function Error404() {
+  const { user } = useUser();
   const navigate = useNavigate();
 
   // Navigate back one step in history
@@ -13,7 +15,7 @@ export default function Error404() {
 
   return (
     <>
-      <Topbar />
+      {user && <Topbar />}
 
       <div className="flex items-center justify-center h-screen bg-white">
         <div className="text-center mx-auto z-20">
