@@ -11,3 +11,4 @@ pyyaml
 uritemplate
 coverage
 Sphinx
+schedule

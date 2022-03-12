@@ -7,7 +7,6 @@ import {
   Mentorship,
   MENTORSHIP_ENDPOINT,
   PROFILE_ENDPOINT,
-  SETTINGS_ENDPOINT,
   Skill,
   User,
   UserFull,
@@ -32,6 +31,7 @@ import { DateTime } from "luxon";
 import FeedbackReportPopup from "./FeedbackReportPopup";
 import InterestsDescription from "./InterestsDescription";
 import { LoadingButton } from "../LoadingButton";
+import UserAvatar from "../UserAvatar";
 
 type TerminateRelationshipPromptProps = {
   mentorship: Mentorship;
@@ -220,11 +220,7 @@ const MentorProfile = ({
       <div className="flex justify-between items-center p-2">
         <div>
           <div className="flex items-center space-x-4">
-            <img
-              alt="Profile Picture"
-              src="https://t4.ftcdn.net/jpg/03/64/21/11/360_F_364211147_1qgLVxv1Tcq0Ohz3FawUfrtONzz8nq3e.jpg"
-              className="h-20 rounded-lg"
-            />
+            <UserAvatar user={mentor} size={20} />
 
             <div className="flex-auto flex-col gap-1">
               <h1 className="font-bold text-xl">
@@ -447,8 +443,24 @@ export default function GeneralInfo({
         <BusinessAreaConflictWarning perspective={perspective} />
       )}
 
-      <InterestsDescription user={mentee} canEdit={perspective === "mentee"} />
-      <AreasOfInterest user={mentee} canEdit={perspective === "mentee"} />
+      <AreasOfInterest
+        user={mentee}
+        canEdit={perspective === "mentee"}
+        title={
+          perspective === "mentee"
+            ? "Your Areas of Interest"
+            : "Areas of Interest"
+        }
+      />
+      <InterestsDescription
+        user={mentee}
+        canEdit={perspective === "mentee"}
+        title={
+          perspective === "mentee"
+            ? "Your Interests Description"
+            : "Interests Description"
+        }
+      />
 
       <div className="flex flex-col gap-5">
         <MentorProfile

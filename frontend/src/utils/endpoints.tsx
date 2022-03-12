@@ -39,6 +39,10 @@ export const CHANGE_USER_PLANS = `${HOSTNAME}/api/v1/plan/{ID}/`;
 export const UPCOMING_SESSIONS_ENDPOINT = `${HOSTNAME}/api/v1/events/`;
 export const CREATE_MENTOR_FEEDBACK_ENDPOINT = `${HOSTNAME}/api/v1/mentorship-feedback/`;
 export const CHANGE_PASSWORD_ENDPOINT = `${HOSTNAME}/api/v1/auth/password/`;
+export const LIST_ALL_NOTIFICATIONS = `${HOSTNAME}/api/v1/notification/`;
+export const LIST_ACTION_NOTIFICATIONS = `${HOSTNAME}/api/v1/notification/actions/`;
+export const UPDATE_NOTIFICATION = `${HOSTNAME}/api/v1/notification/{ID}/`;
+export const DELETE_NOTIFICATION = `${HOSTNAME}/api/v1/notification/{ID}/`;
 
 /** Retrieves a stored session token */
 export const getAuthToken = () => {
@@ -81,6 +85,7 @@ export type User = {
   email: string;
   is_email_verified: boolean;
   mentor_intent: boolean;
+  group_prompt_intent: boolean;
   business_area: number;
   mentorship?: number;
   interests: number[];
@@ -100,6 +105,7 @@ export type UserFull = {
   email: string;
   is_email_verified: boolean;
   mentor_intent: boolean;
+  group_prompt_intent: boolean;
   interests: Skill[];
   interests_description?: string;
   image_link?: "";
@@ -116,6 +122,7 @@ export const userFullToUser = (user: UserFull): User => {
       email: user.email,
       is_email_verified: user.is_email_verified,
       mentor_intent: user.mentor_intent,
+      group_prompt_intent: user.group_prompt_intent,
       business_area: user.business_area.id,
       mentorship: user.mentorship?.id,
       interests: user.interests.map((skill) => skill.id),
@@ -185,6 +192,7 @@ export type GroupSession = {
   skills?: Skill[];
   users: User[];
   virtual_link?: string;
+  image_link?: string;
 };
 
 export type GroupSessionResponse = GroupSession[];
@@ -302,3 +310,177 @@ export type UpcomingSessions = {
   meetings: ExtendedMeeting[];
   sessions: GroupSession[];
 };
+
+// Notifications
+export enum NotificationType {
+  BUSINESS_AREA_CONFLICT_MENTEE = 1,
+  BUSINESS_AREA_CONFLICT_MENTOR = 11,
+  MEETING_REQUEST_RECEIVED = 2,
+  MEETING_NOTES_MENTOR = 3,
+  MEETING_NOTES_MENTEE = 4,
+  MENTORSHIP_REQUEST_RECEIVED = 5,
+  GROUP_SESSION_PROMPT = 6,
+
+  MENTORSHIP_REQUEST_ACCEPTED = 7,
+  MENTORSHIP_REQUEST_DECLINED = 8,
+  MEETING_REQUEST_ACCEPTED = 9,
+  MEETING_REQUEST_DECLINED = 10,
+  MEETING_CANCELLED_MENTEE = 12,
+  MEETING_CANCELLED_MENTOR = 13,
+
+  ACTION_PLAN_CREATED_MENTEE = 14,
+  ACTION_PLAN_CREATED_MENTOR = 15,
+  ACTION_PLAN_COMPLETED_MENTEE = 16,
+  ACTION_PLAN_COMPLETED_MENTOR = 17,
+}
+
+interface NotificationBase {
+  id: number;
+  type: NotificationType;
+  user: User; // The user who the notification impacts?
+  title: string;
+  date: string;
+  seen: boolean;
+  action?: unknown;
+  info?: unknown;
+}
+
+export interface NotificationBusinessAreaConflictMentee
+  extends NotificationBase {
+  type: NotificationType.BUSINESS_AREA_CONFLICT_MENTEE;
+  action: {
+    mentee: number;
+  };
+}
+
+export interface NotificationBusinessAreaConflictMentor
+  extends NotificationBase {
+  type: NotificationType.BUSINESS_AREA_CONFLICT_MENTOR;
+  action: {
+    mentor: number;
+  };
+}
+
+export interface NotificationMeetingRequest extends NotificationBase {
+  type: NotificationType.MEETING_REQUEST_RECEIVED;
+  action: {
+    request: number;
+    mentee: number;
+  };
+  info: {
+    time: string;
+  };
+}
+
+export interface NotificationMeetingNotesMentor extends NotificationBase {
+  type: NotificationType.MEETING_NOTES_MENTOR;
+  action: {
+    meeting: number;
+  };
+  info: {
+    time: string;
+  };
+}
+
+export interface NotificationMeetingNotesMentee extends NotificationBase {
+  type: NotificationType.MEETING_NOTES_MENTEE;
+  action: {
+    meeting: number;
+    mentee: number;
+  };
+  info: {
+    time: string;
+  };
+}
+
+export interface NotificationMentorshipRequest extends NotificationBase {
+  type: NotificationType.MENTORSHIP_REQUEST_RECEIVED;
+  action: {
+    request: number;
+  };
+}
+
+export interface NotificationMentorshipAccepted extends NotificationBase {
+  type: NotificationType.MENTORSHIP_REQUEST_ACCEPTED;
+}
+
+export interface NotificationMentorshipDeclined extends NotificationBase {
+  type: NotificationType.MENTORSHIP_REQUEST_DECLINED;
+}
+
+export interface NotificationMeetingAccepted extends NotificationBase {
+  type: NotificationType.MEETING_REQUEST_ACCEPTED;
+  info: {
+    time: string;
+  };
+}
+
+export interface NotificationMeetingDeclined extends NotificationBase {
+  type: NotificationType.MEETING_REQUEST_DECLINED;
+  info: {
+    time: string;
+  };
+}
+
+export interface NotificationMeetingCancelledMentee extends NotificationBase {
+  type: NotificationType.MEETING_CANCELLED_MENTEE;
+  info: {
+    time: string;
+  };
+}
+
+export interface NotificationMeetingCancelledMentor extends NotificationBase {
+  type: NotificationType.MEETING_CANCELLED_MENTOR;
+  info: {
+    time: string;
+  };
+}
+
+export interface NotificationActionPlanCreatedMentee extends NotificationBase {
+  type: NotificationType.ACTION_PLAN_CREATED_MENTEE;
+}
+
+export interface NotificationActionPlanCreatedMentor extends NotificationBase {
+  type: NotificationType.ACTION_PLAN_CREATED_MENTOR;
+}
+
+export interface NotificationActionPlanCompletedMentee
+  extends NotificationBase {
+  type: NotificationType.ACTION_PLAN_COMPLETED_MENTEE;
+}
+
+export interface NotificationActionPlanCompletedMentor
+  extends NotificationBase {
+  type: NotificationType.ACTION_PLAN_COMPLETED_MENTOR;
+}
+
+export interface NotificationGroupSessionPrompt extends NotificationBase {
+  type: NotificationType.GROUP_SESSION_PROMPT;
+  info: {
+    skill: number;
+  };
+}
+
+export const isGroupSessionPrompt = (
+  notification: Notification
+): notification is NotificationGroupSessionPrompt =>
+  notification.type === NotificationType.GROUP_SESSION_PROMPT;
+
+export type Notification =
+  | NotificationBusinessAreaConflictMentee
+  | NotificationBusinessAreaConflictMentor
+  | NotificationMeetingRequest
+  | NotificationMeetingNotesMentor
+  | NotificationMeetingNotesMentee
+  | NotificationMentorshipRequest
+  | NotificationMentorshipAccepted
+  | NotificationMentorshipDeclined
+  | NotificationMeetingAccepted
+  | NotificationMeetingDeclined
+  | NotificationMeetingCancelledMentee
+  | NotificationMeetingCancelledMentor
+  | NotificationActionPlanCreatedMentee
+  | NotificationActionPlanCreatedMentor
+  | NotificationActionPlanCompletedMentee
+  | NotificationActionPlanCompletedMentor
+  | NotificationGroupSessionPrompt;

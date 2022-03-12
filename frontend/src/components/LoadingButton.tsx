@@ -1,5 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-interface LoadingButtonProps extends Record<any, any> {
+interface LoadingButtonProps
+  extends React.DetailedHTMLProps<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    HTMLButtonElement
+  > {
   isLoading: boolean;
 }
 
@@ -14,7 +18,9 @@ export const LoadingButton = (
       {...remainingProps}
       onClick={remainingProps.onClick}
       className={`${remainingProps.className ?? ""} ${
-        props.isLoading ? "opacity-50 cursor-not-allowed" : ""
+        props.isLoading || remainingProps.disabled
+          ? "opacity-50 cursor-not-allowed"
+          : ""
       }`}
       disabled={isLoading || remainingProps.disabled}
     >

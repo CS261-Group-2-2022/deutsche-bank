@@ -17,6 +17,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from .models import *
 from .serializers import *
+from .managers import NotificationType
 from .dummy_data import create_dummy_data
 
 from .matching_algorithm import matching_algorithm, NoPossibleMentorsError
@@ -45,6 +46,7 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
         current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         all_requests: List[MentorRequest] = list(MentorRequest.objects.all())
 
+        potential_mentors = []
         try:
             potential_mentors: List[User] = matching_algorithm(user,
                                                                all_users,
@@ -54,18 +56,11 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
                                                                all_requests)
             response_status = HTTP_200_OK
         except NoPossibleMentorsError:
-            potential_mentors = []
             response_status = HTTP_204_NO_CONTENT
 
         cereal = UserSerializer(potential_mentors, many=True)
 
         return Response(cereal.data, status=response_status)
-
-    @action(detail=True, methods=['get'])
-    def reset(self, request, pk=None):
-        # clear_database()
-        create_dummy_data()
-        return Response("Reset database.")
 
     @action(detail=True, methods=['get'])
     def full(self, request, pk=None):
@@ -143,7 +138,7 @@ class CurrentUserView(APIView):
         return Response(serializer.data)
 
     def patch(self, request, *args, **kwargs):
-        instance = request.user
+        instance: User = request.user
         serializer = UserSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -152,6 +147,12 @@ class CurrentUserView(APIView):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
+
+        if 'business_area' in serializer.validated_data:
+            if instance.mentorship:
+                instance.mentorship.send_conflict_notifications()
+            for mentorship in instance.get_mentorships_where_user_is_mentor():
+                mentorship.send_conflict_notifications()
 
         return Response(serializer.data)
 
@@ -241,25 +242,51 @@ class GroupSessionViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
         return Response(GroupSessionSerializer(session).data)
 
 
-class MentorshipViewSet(RetrieveModelMixin, GenericViewSet):
+class MentorshipViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     queryset = Mentorship.objects.all()
     serializer_class = MentorshipSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        # Check we're actually a member of the mentorship
+        mentorship: Mentorship = self.get_object()
+
+        if request.user != mentorship.mentor and request.user != mentorship.mentee:
+            return Response({'error': 'You cannot modify this mentorship'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # If we're a member of the mentorship, we can go ahead and continue with the update.
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
     @action(detail=True, methods=['post'])
     def end(self, request, *args, **kwargs):  # Terminates a mentorship
-        serializer = PasswordLoginSerializer(data=request.data, context=self.get_serializer_context())
+        serializer = PasswordLoginSerializer(data=request.data,
+                                             context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)  # Check user password
 
         mentorship: Mentorship = self.get_object()
         user: User = request.user
         mentee: User = mentorship.mentee
         if user != mentorship.mentor and user != mentorship.mentee:
-            return Response({'error': 'You cannot end this mentorship'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'You cannot end this mentorship'},
+                            status=status.HTTP_400_BAD_REQUEST)
         if not mentee.mentorship or mentee.mentorship.pk != mentorship.pk:
             return Response({'error': 'This mentorship is not active'}, status=status.HTTP_208_ALREADY_REPORTED)
         mentee.mentorship = None
         mentee.save()
+        Notification.objects.delete_business_area_conflict(mentorship)
         return Response(status=status.HTTP_200_OK)
 
 
@@ -290,6 +317,7 @@ class MentorRequestViewSet(CreateModelMixin, GenericViewSet):
         serializer.validated_data['mentee'] = request.user
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+        Notification.objects.mentorship_request_received(serializer.instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=['post'])
@@ -312,6 +340,9 @@ class MentorRequestViewSet(CreateModelMixin, GenericViewSet):
         mentee.get_outgoing_mentor_requests().delete()
         if mentee.mentorship is not None:
             return Response({'error': 'This user already has a mentor'}, status=status.HTTP_400_BAD_REQUEST)
+        Notification.objects.mentorship_request_accepted(mentor_request)
+        Notification.objects.filter(type=NotificationType.MENTORSHIP_REQUEST_RECEIVED.value,
+                                    action__request__exact=mentor_request.pk).delete()
         mentorship: Mentorship = Mentorship(mentee=mentee, mentor=mentor)
         mentorship.save()
         mentee.mentorship = mentorship
@@ -324,7 +355,9 @@ class MentorRequestViewSet(CreateModelMixin, GenericViewSet):
         user: User = request.user
         if mentor_request.mentor != user:
             return Response({'error': 'You cannot cancel this mentor request'}, status=status.HTTP_400_BAD_REQUEST)
-
+        Notification.objects.mentorship_request_declined(mentor_request)
+        Notification.objects.filter(type=NotificationType.MENTORSHIP_REQUEST_RECEIVED.value,
+                                    action__request__exact=mentor_request.pk).delete()
         mentor_request.delete()
         # TODO: Finish implementation
         return Response(status=status.HTTP_200_OK)
@@ -337,8 +370,13 @@ class MeetingViewSet(UpdateModelMixin, DestroyModelMixin, GenericViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.mentorship.mentor != request.user and instance.mentorship.mentee != request.user:
+        if instance.mentorship.mentor == request.user:
+            Notification.objects.meeting_cancelled_mentor(instance)
+        elif instance.mentorship.mentee == request.user:
+            Notification.objects.meeting_cancelled_mentee(instance)
+        else:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
+
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -359,6 +397,7 @@ class MeetingRequestViewSet(CreateModelMixin, GenericViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.validated_data['mentorship'] = request.user.mentorship
         self.perform_create(serializer)
+        Notification.objects.meeting_request_received(serializer.instance)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -378,6 +417,9 @@ class MeetingRequestViewSet(CreateModelMixin, GenericViewSet):
         user: User = request.user
         if meeting_request.mentorship.mentor != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
+        Notification.objects.meeting_request_accepted(meeting_request)
+        Notification.objects.filter(type=NotificationType.MEETING_REQUEST_RECEIVED.value,
+                                    action__request__exact=meeting_request.pk).delete()
         meeting_request.delete()
         meeting: Meeting = Meeting(mentorship=meeting_request.mentorship, time=meeting_request.time,
                                    description=meeting_request.description, location=meeting_request.location)
@@ -391,7 +433,9 @@ class MeetingRequestViewSet(CreateModelMixin, GenericViewSet):
         user: User = request.user
         if meeting_request.mentorship.mentor != user:
             return Response({'error': 'You cannot cancel this meeting'}, status=status.HTTP_400_BAD_REQUEST)
-
+        Notification.objects.meeting_request_declined(meeting_request)
+        Notification.objects.filter(type=NotificationType.MEETING_REQUEST_RECEIVED.value,
+                                    action__request__exact=meeting_request.pk).delete()
         meeting_request.delete()
         # TODO: Finish implementation
         return Response(status=status.HTTP_200_OK)
@@ -414,7 +458,7 @@ class MentorFeedbackViewSet(CreateModelMixin, ListModelMixin, UpdateModelMixin, 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class ActionPlanViewSet(viewsets.ModelViewSet):
+class ActionPlanViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet):
     queryset = ActionPlan.objects.all()
     serializer_class = ActionPlanSerializer
     permission_classes = (permissions.IsAuthenticated,)  # User must be authenticated to manage action plans
@@ -428,7 +472,7 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
 
         target_user = serializer.validated_data['user']
 
-        if request.user is target_user:
+        if request.user.pk == target_user.pk:
             # We're making an action plan for ourselves
             if request.user.mentorship is None:
                 e = {'error': 'A user must be a mentee to create action plans'}
@@ -440,8 +484,35 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
                 return Response(e, status=status.HTTP_400_BAD_REQUEST)
 
         self.perform_create(serializer)
+        if serializer.validated_data['user'] == request.user:
+            Notification.objects.action_plan_created_mentee(serializer.instance)
+        else:
+            Notification.objects.action_plan_created_mentor(serializer.instance)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        user: User = request.user
+        instance: ActionPlan = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        if serializer.validated_data['completed'] and not instance.completed:
+            if instance.user == user:
+                Notification.objects.action_plan_completed_mentee(instance)
+            elif user.get_mentees().filter(pk__exact=instance.user.pk).exists():
+                Notification.objects.action_plan_completed_mentor(instance)
+            else:
+                return Response({'error': 'You must be this users mentor to modify their action plan'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
         return Response(ActionPlanSerializer(request.user.get_action_plans(), many=True).data,
@@ -449,15 +520,17 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
 
 
 class BusinessAreaViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)  # User does not need to be authenticated to login
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = BusinessArea.objects.all()
     serializer_class = BusinessAreaSerializer
 
 
 class SkillViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)  # User does not need to be authenticated to login
-    authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
+    # TODO(Arpad): Make a test that checks unauthenticated users can get the skills to pay the bills
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    # TODO(Arpad): If we have this enabled, requests to create new skills fail with an authentication error.
+    #authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
 
@@ -466,3 +539,24 @@ class FeedbackViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+
+
+class NotificationViewSet(DestroyModelMixin, UpdateModelMixin, ListModelMixin, GenericViewSet):
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def list(self, request, *args, **kwargs):
+        user: User = request.user
+        return Response(NotificationSerializer(user.get_notifications(), many=True).data)
+
+    def update(self, request, *args, **kwargs):
+        notification: Notification = self.get_object()
+        if notification.user != request.user:
+            return Response({'error': 'You cannot update this notification'}, status=status.HTTP_400_BAD_REQUEST)
+        return super().update(request, *args, **kwargs)
+
+    @action(detail=False, methods=['get'])
+    def actions(self, request, *args, **kwargs):
+        user: User = request.user
+        return Response(NotificationSerializer(user.get_actions(), many=True).data)

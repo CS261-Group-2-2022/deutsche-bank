@@ -88,7 +88,8 @@ def lorem_random(max_length = None):
 
 
 import pytz
-time_start = datetime(2022, 2, 11, 10, 0, 0, 0, pytz.UTC)
+# Make sure time_start is always now so that events are in the future.
+time_start = datetime.now(tz=pytz.UTC)
 
 def random_delta():
     return timedelta(days = random.randrange(0, 30),
@@ -158,15 +159,23 @@ def create_dummy_group_sessions():
     users = User.objects.all()
     user_count = User.objects.count()
 
-    users_with_sessions = random.sample(list(users), random.randrange(0, user_count))
+    users_with_sessions = random.sample(list(users), random.randrange(user_count // 3, user_count))
 
     def new(u):
-        max_to_pick = min(3, u.expertise.count())
-        min_to_pick = 0
+        max_to_pick = u.expertise.count()
+        if max_to_pick < 2:
+            pass
+        else:
+            max_to_pick = random.randrange(1, max_to_pick)
+
+        min_to_pick = 1 if u.expertise.count() != 0 else 0
         skills = []
         if max_to_pick != 0:
-            how_many_skills_in_event = random.randrange(min_to_pick, max_to_pick)
-            skills = random.sample(list(u.expertise.all()), how_many_skills_in_event)
+            if min_to_pick >= max_to_pick:
+                skills = random.sample(list(u.expertise.all()), min_to_pick)
+            else:
+                how_many_skills_in_event = random.randrange(min_to_pick, max_to_pick)
+                skills = random.sample(list(u.expertise.all()), how_many_skills_in_event)
 
         name = lorem_random(max_length=GroupSession._meta.get_field('name').max_length)
         location = lorem_random(max_length=GroupSession._meta.get_field('location').max_length)
@@ -179,11 +188,19 @@ def create_dummy_group_sessions():
                                         capacity=random.randrange(0, 150),
                                         date=time_start + random_delta())
         g.skills.set(skills)
-        g.users.set(random.sample(list(users), random.randrange(1, user_count)))
+        number_of_users_to_pick = g.capacity
+        if number_of_users_to_pick < 2:
+            pass
+        else:
+            number_of_users_to_pick = random.randrange(1, min(g.capacity, user_count))
+
+        number_of_users_to_pick = min(number_of_users_to_pick, user_count)
+
+        g.users.set(random.sample(list(users), number_of_users_to_pick))
         g.save()
 
     for u in users_with_sessions:
-        how_many_group_sessions = random.randrange(1,3)
+        how_many_group_sessions = random.randrange(1,4)
         for _ in range(how_many_group_sessions):
             new(u)
 
@@ -328,9 +345,9 @@ def create_dummy_data(quiet=False, seed="We're literally the best software eng t
 
 from django.apps import apps
 
-def clear_database(force = False):
-    print("Are you sure you want to clear db?")
-    if force or input("[y/n]>").lower() == 'y':
-        models = apps.all_models['apis']
-        for model in models:
-            models[model].objects.all().delete()
+#def clear_database(force = False):
+#    print("Are you sure you want to clear db?")
+#    if force or input("[y/n]>").lower() == 'y':
+#        models = apps.all_models['apis']
+#        for model in models:
+#            models[model].manager.all().delete()

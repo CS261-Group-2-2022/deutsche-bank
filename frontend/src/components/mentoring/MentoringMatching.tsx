@@ -65,23 +65,21 @@ const RecommendationPanel = ({ mentor }: RecommendationPanelProps) => {
       user={mentor}
       extra_information={
         <>
-          <p className="text-sm">
+          <div className="text-sm">
             {mentor.expertise.length > 0 ? (
               <div className="flex flex-wrap gap-1">
-                Expert in:
-                <span>
-                  {mentor.expertise.map((expertise) => (
-                    <SessionTopicLabel
-                      key={expertise}
-                      name={getSkillFromId(expertise, skills)?.name ?? ""}
-                    />
-                  ))}
-                </span>
+                <span>Expert in:</span>
+                {mentor.expertise.map((expertise) => (
+                  <SessionTopicLabel
+                    key={expertise}
+                    name={getSkillFromId(expertise, skills)?.name ?? ""}
+                  />
+                ))}
               </div>
             ) : (
               "No expertise"
             )}
-          </p>
+          </div>
           {error && (
             <div className="block text-sm m-1 font-medium text-red-700">
               {error}
@@ -152,23 +150,21 @@ const OutgoingRequestPanel = ({ request }: OutgoingRequestPanelProps) => {
       user={mentor}
       extra_information={
         <>
-          <p className="text-sm">
+          <div className="text-sm">
             {mentor.expertise.length > 0 ? (
               <div className="flex flex-wrap gap-1">
-                Expert in:
-                <span>
-                  {mentor.expertise.map((expertise) => (
-                    <SessionTopicLabel
-                      key={expertise}
-                      name={getSkillFromId(expertise, skills)?.name ?? ""}
-                    />
-                  ))}
-                </span>
+                <span>Expert in:</span>
+                {mentor.expertise.map((expertise) => (
+                  <SessionTopicLabel
+                    key={expertise}
+                    name={getSkillFromId(expertise, skills)?.name ?? ""}
+                  />
+                ))}
               </div>
             ) : (
               "No expertise"
             )}
-          </p>
+          </div>
           {error && (
             <div className="block text-sm m-1 font-medium text-red-700">
               {error}
@@ -290,7 +286,7 @@ export default function MentoringMatchingPage({ user }: MatchingPageProps) {
           ) : (
             <h4 className="font-medium text-xl text-gray-700 mt-10 text-center">
               There are currently no available mentors which match your profile.
-              Please refresh or try again later.
+              Check you areas of interest and refresh, or try again later.
             </h4>
           )}
         </div>

@@ -18,6 +18,7 @@ router.register(r'session', GroupSessionViewSet)
 router.register(r'area', BusinessAreaViewSet)
 router.register(r'skills', SkillViewSet)
 router.register(r'feedback', FeedbackViewSet)
+router.register(r'notification', NotificationViewSet)
 
 urlpatterns: List[str] = [
     path('', include(router.urls)),
