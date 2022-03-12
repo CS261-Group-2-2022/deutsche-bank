@@ -13,13 +13,10 @@ test("shows relative time", () => {
   expect(screen.getByText(/1 hour ago/i)).toBeInTheDocument();
 });
 
-test("shows full date on hover time", () => {
+test("shows date on hover title", () => {
   const now = DateTime.fromISO("2022-01-01T01:00:00Z");
 
   render(<DateText date="2022-01-01T00:00:00Z" base={now} />);
 
-  expect(
-    screen.queryByText(/Saturday, 1 January 2022, 0:00:00 GMT/i) ??
-      screen.queryByText(/Saturday, 1 January 2022, 12:00:00 UTC/i)
-  ).not.toBeNull();
+  expect(screen.getByTitle(/Saturday/i)).not.toBeNull();
 });
