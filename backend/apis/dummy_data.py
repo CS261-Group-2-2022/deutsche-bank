@@ -345,9 +345,9 @@ def create_dummy_data(quiet=False, seed="We're literally the best software eng t
 
 from django.apps import apps
 
-def clear_database(force = False):
-    print("Are you sure you want to clear db?")
-    if force or input("[y/n]>").lower() == 'y':
-        models = apps.all_models['apis']
-        for model in models:
-            models[model].manager.all().delete()
+#def clear_database(force = False):
+#    print("Are you sure you want to clear db?")
+#    if force or input("[y/n]>").lower() == 'y':
+#        models = apps.all_models['apis']
+#        for model in models:
+#            models[model].manager.all().delete()

@@ -63,12 +63,6 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
         return Response(cereal.data, status=response_status)
 
     @action(detail=True, methods=['get'])
-    def reset(self, request, pk=None):
-        # clear_database()
-        create_dummy_data()
-        return Response("Reset database.")
-
-    @action(detail=True, methods=['get'])
     def full(self, request, pk=None):
         return Response(UserSerializerFull(self.get_object()).data)
 
