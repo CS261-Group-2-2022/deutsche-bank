@@ -649,3 +649,81 @@ class ActionPlanTestCase(TestCase):
 
         ids_returned = [action_plan['id'] for action_plan in json_returned]
         self.assertIn(created_action_plan['id'], ids_returned, msg=show_res(response))
+
+    def test_user_can_unregister_for_group_session(self):
+        skills = list(Skill.objects.all())
+        host = User.make_random()
+        expertise_of_host = random.choice(skills) # Pick 1
+        host.expertise.set([expertise_of_host])
+        host.save()
+        participant = User.make_random()
+        participant.save()
+        new_groupsession = GroupSession.objects.create(name=lorem_random(max_length=100),
+                            location=lorem_random(max_length=100),
+                            virtual_link=lorem_random(max_length=100),
+                            image_link= lorem_random(max_length=100),
+                            description=lorem_random(max_length=2000),
+                            host=host,
+                            capacity=random.randint(1, 150),
+                            date=time_start + random_delta())
+
+        new_groupsession.skills.set([expertise_of_host])
+        new_groupsession.users.add(participant)
+        new_groupsession.save()
+
+        self.assertIn(participant, new_groupsession.users.all())
+        a = list(participant.get_sessions())
+        print(f'{a=}')
+
+        self.assertTrue(a == [new_groupsession])
+        body = {
+            "session": new_groupsession.pk,
+            "user":participant.pk
+        }
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/session/leave',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=participant)
+        view = GroupSessionViewSet.as_view({'post': 'leave'})
+        response = view(request, pk=new_groupsession.pk)
+        response.render()
+        self.assertEqual(response.status_code, 200, msg=show_res(response))
+        self.assertNotEqual(response.status_code, 400)
+
+class NotificationTestCases(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_dummy_data(quiet=True)
+
+    def test_expert_in_high_demand_gets_prompts_to_create_group_sessions(self):
+        expert = User.make_random(mentor_intent=False)
+        number_of_users_to_create = 50
+        skills = list(Skill.objects.all())
+        expertises_of_expert = random.sample(skills, random.randrange(1,3))
+        expert.expertise.set(expertises_of_expert)
+        expert.save()
+        for _ in range(number_of_users_to_create):
+            u = User.make_random()
+            u.interests.set(expertises_of_expert)
+            u.save()
+
+        notification_count_before = Notification.objects.count()
+        noti = Notification.objects
+        noti.send_group_session_prompts()
+        notification_count_after = Notification.objects.count()
+
+        print(f'{notification_count_before=}')
+        print(f'{notification_count_after=}')
+
+
+        factory = APIRequestFactory()
+        request = factory.get('/api/v1/notification/', follow=True)
+        force_authenticate(request, user=expert)
+        view = ActionPlanViewSet.as_view({'get': 'list'})
+        response = view(request)
+
+        self.assertEqual(response.status_code, 200, msg=show_res(response))
+        a = expert.get_notifications()
+
+        self.assertGreater(a.count(), 0, msg=show_res(response))

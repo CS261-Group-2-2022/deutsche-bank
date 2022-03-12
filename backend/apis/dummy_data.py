@@ -88,7 +88,8 @@ def lorem_random(max_length = None):
 
 
 import pytz
-time_start = datetime(2022, 2, 11, 10, 0, 0, 0, pytz.UTC)
+# Make sure time_start is always now so that events are in the future.
+time_start = datetime.now(tz=pytz.UTC)
 
 def random_delta():
     return timedelta(days = random.randrange(0, 30),

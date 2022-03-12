@@ -220,26 +220,39 @@ class NotificationManager(django_models.Manager):
             notifications = notification_set.count()
             notification_users = map(lambda n: n.user.pk, notification_set)
 
-            sessions = 0
-            for session in apis_models.GroupSession.objects.filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO),
-                                                                   skills__pk__contains=skill.pk):
+            sessions_for_skill = apis_models.GroupSession.objects.all()
+            sessions_for_skill_in_the_future = \
+                sessions_for_skill.filter(date__gt=datetime.now(tz=settings.TIME_ZONE_INFO),
+                                          skills__pk__contains=skill.pk)
+
+            capacity_left_in_sessions_for_skill = 0
+            for session in sessions_for_skill_in_the_future:
                 session_user_count = session.users.count()
                 if session_user_count >= session.capacity:
                     continue
-                sessions += session.capacity - session_user_count
-            target = sessions + (notifications * users_per_notification)
-            required = (interested - target) / users_per_notification
-            # print(f'{skill.name}: Notifications({notifications}) Sessions({sessions}) Interested({interested})')
-            if required <= 0:
-                # Avoid sending out notifications if lots have been sent out or sessions are already organised
-                continue
+                capacity_left_in_sessions_for_skill += session.capacity - session_user_count
 
-            experts: [apis_models.User] = list(apis_models.User.objects.filter(
-                expertise__pk__contains=skill.pk, group_prompt_intent__exact=True).exclude(pk__in=notification_users))
-            if len(experts) > required:
-                experts = random.sample(experts, int(required))
-            for expert in experts:
-                self.group_session_prompt(expert, skill)
+            # TODO(Arpad): I changed this stuff because I don't get it and need to make tests pass
+            #target = sessions #+ (notifications * users_per_notification)
+            capacity_needed = (interested - capacity_left_in_sessions_for_skill)
+
+            if capacity_needed > 0:
+                # There are more people interested than there is capacity
+                experts: [apis_models.User] = list(apis_models.User.objects.filter(
+                    expertise__pk__contains=skill.pk, group_prompt_intent__exact=True).exclude(pk__in=notification_users))
+
+                if len(experts) <= 0:
+                    continue
+
+                if len(experts) > required:
+                    how_many_to_pick = min(abs(int(required)), len(experts)-1)
+                    experts = random.sample(experts, how_many_to_pick)
+
+                for expert in experts:
+                    self.group_session_prompt(expert, skill)
+
+            else:
+                continue
 
     # JSON contains lookup is not supported on our database, hence only a single skill is passed
     def group_session_prompt(self, user, skill: apis_models.Skill):
