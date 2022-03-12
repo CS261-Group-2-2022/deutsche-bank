@@ -17,6 +17,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from .models import *
 from .serializers import *
+from .managers import NotificationType
 from .dummy_data import create_dummy_data
 
 from .matching_algorithm import matching_algorithm, NoPossibleMentorsError
@@ -45,6 +46,7 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
         current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         all_requests: List[MentorRequest] = list(MentorRequest.objects.all())
 
+        potential_mentors = []
         try:
             potential_mentors: List[User] = matching_algorithm(user,
                                                                all_users,
@@ -54,7 +56,6 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
                                                                all_requests)
             response_status = HTTP_200_OK
         except NoPossibleMentorsError:
-            potential_mentors = []
             response_status = HTTP_204_NO_CONTENT
 
         cereal = UserSerializer(potential_mentors, many=True)
@@ -500,15 +501,17 @@ class ActionPlanViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Gene
 
 
 class BusinessAreaViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)  # User does not need to be authenticated to login
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = BusinessArea.objects.all()
     serializer_class = BusinessAreaSerializer
 
 
 class SkillViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)  # User does not need to be authenticated to login
-    authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
+    # TODO(Arpad): Make a test that checks unauthenticated users can get the skills to pay the bills
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    # TODO(Arpad): If we have this enabled, requests to create new skills fail with an authentication error.
+    #authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
 

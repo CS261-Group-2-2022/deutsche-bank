@@ -247,7 +247,6 @@ export default function RequestMeetingPopup({
             <LoadingButton
               type="submit"
               className="inline-flex justify-center col-span-8 px-4 py-2 text-sm font-medium text-white bg-blue-700 border border-transparent rounded-md hover:bg-blue-800 focus:outline-none"
-              onClick={() => sendMeetingRequest()}
               isLoading={isLoading}
             >
               Submit Request

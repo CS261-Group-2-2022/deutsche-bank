@@ -1,6 +1,10 @@
 // Enforce that `isLoading` should be present within our props, but we can have anything else
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-interface LoadingButtonProps extends Record<any, any> {
+interface LoadingButtonProps
+  extends React.DetailedHTMLProps<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    HTMLButtonElement
+  > {
   isLoading: boolean;
 }
 

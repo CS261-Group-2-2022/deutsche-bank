@@ -31,4 +31,5 @@ class Command(BaseCommand):
             self.stderr.write(
                 self.style.ERROR(f'Failed to generate dummy data. ({self.random_seed=})'))
             self.stderr.write(self.style.ERROR(f' - Cause: {exception=}'))
-            raise CommandError(f'Generating dummy data has failed.')
+            raise exception
+            #raise CommandError(f'Generating dummy data has failed.')

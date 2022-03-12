@@ -438,8 +438,24 @@ export default function GeneralInfo({
         <BusinessAreaConflictWarning perspective={perspective} />
       )}
 
-      <InterestsDescription user={mentee} canEdit={perspective === "mentee"} />
-      <AreasOfInterest user={mentee} canEdit={perspective === "mentee"} />
+      <AreasOfInterest
+        user={mentee}
+        canEdit={perspective === "mentee"}
+        title={
+          perspective === "mentee"
+            ? "Your Areas of Interest"
+            : "Areas of Interest"
+        }
+      />
+      <InterestsDescription
+        user={mentee}
+        canEdit={perspective === "mentee"}
+        title={
+          perspective === "mentee"
+            ? "Your Interests Description"
+            : "Interests Description"
+        }
+      />
 
       <div className="flex flex-col gap-5">
         <MentorProfile
