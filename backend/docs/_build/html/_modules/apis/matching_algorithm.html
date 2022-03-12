@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>apis.matching_algorithm &#8212; deutschebank 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for apis.matching_algorithm</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.topic_modelling</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="NoPossibleMentorsError"><a class="viewcode-back" href="../../apis.html#apis.matching_algorithm.NoPossibleMentorsError">[docs]</a><span class="k">class</span> <span class="nc">NoPossibleMentorsError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="sort_by_score"><a class="viewcode-back" href="../../apis.html#apis.matching_algorithm.sort_by_score">[docs]</a><span class="k">def</span> <span class="nf">sort_by_score</span><span class="p">(</span><span class="n">mentors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">User</span><span class="p">],</span> <span class="n">scores</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">User</span><span class="p">]:</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">mentors</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">object</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mentors</span><span class="p">)):</span>
+        <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">mentors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="n">sortedMatrix</span> <span class="o">=</span> <span class="n">matrix</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">matrix</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])]</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[</span><span class="n">mentor</span> <span class="k">for</span> <span class="p">[</span><span class="n">score</span><span class="p">,</span> <span class="n">mentor</span><span class="p">]</span> <span class="ow">in</span> <span class="n">sortedMatrix</span><span class="p">]</span>
+    <span class="n">ret</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="interests_and_expertise_overlap"><a class="viewcode-back" href="../../apis.html#apis.matching_algorithm.interests_and_expertise_overlap">[docs]</a><span class="k">def</span> <span class="nf">interests_and_expertise_overlap</span><span class="p">(</span><span class="n">user_interests</span><span class="p">,</span> <span class="n">mentor_expertise</span><span class="p">):</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="n">user_interests</span><span class="o">.</span><span class="n">isdisjoint</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">mentor_expertise</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="matching_algorithm"><a class="viewcode-back" href="../../apis.html#apis.matching_algorithm.matching_algorithm">[docs]</a><span class="k">def</span> <span class="nf">matching_algorithm</span><span class="p">(</span><span class="n">user_looking_for_mentor</span><span class="p">:</span> <span class="n">User</span><span class="p">,</span>
+
+                       <span class="n">all_users</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">User</span><span class="p">],</span>
+                       <span class="n">users_who_want_to_mentor</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">User</span><span class="p">],</span>
+
+                       <span class="n">all_mentorships</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Mentorship</span><span class="p">],</span>
+                       <span class="n">current_mentorships</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Mentorship</span><span class="p">],</span>
+
+                       <span class="n">all_requests</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">MentorRequest</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">User</span><span class="p">]:</span>
+
+    <span class="n">prior_user_mentorships</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">mentee</span> <span class="o">==</span> <span class="n">user_looking_for_mentor</span><span class="p">,</span>
+                                         <span class="n">all_mentorships</span><span class="p">))</span>
+    <span class="n">requests_by_user</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">mentee</span> <span class="o">==</span> <span class="n">user_looking_for_mentor</span><span class="p">,</span> <span class="n">all_requests</span><span class="p">))</span>
+    <span class="c1"># Step 1:</span>
+    <span class="c1"># 1.1) Find user&#39;s past mentors. (user_past_mentorships)</span>
+    <span class="c1"># 1.2) Array of all the mentors the user has currently requested (pending).</span>
+    <span class="c1">#      (user_current_requests)</span>
+    <span class="c1"># 1.3) List of all requested mentors where the mentor has rejected the request.</span>
+    <span class="c1">#      (user_requests_rejected_by_mentor)</span>
+    <span class="c1"># 1.4) List of all mentors with currently pending requests.</span>
+    <span class="c1"># 1.5) List of current mentorships (just all the mentor mentee pairings currently active)</span>
+
+    <span class="c1"># Step 2:</span>
+    <span class="c1"># Filter out unwanted mentors out of users_who_want_to_mentor.</span>
+    <span class="c1"># Don&#39;t want:</span>
+    <span class="c1">#   user.BA == mentor.BA</span>
+    <span class="c1">#</span>
+    <span class="c1">#   user.interests \cap mentor.expertise = \emptyset</span>
+    <span class="c1">#</span>
+    <span class="c1">#   user had relationship with mentor before</span>
+    <span class="c1">#</span>
+    <span class="c1">#   user has already been offered mentor</span>
+
+    <span class="c1"># Standard compatibility check</span>
+    <span class="k">def</span> <span class="nf">has_compatible_business_areas</span><span class="p">(</span><span class="n">mentor</span><span class="p">:</span> <span class="n">User</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">user_looking_for_mentor</span><span class="o">.</span><span class="n">business_area</span> <span class="o">!=</span> <span class="n">mentor</span><span class="o">.</span><span class="n">business_area</span>
+
+    <span class="c1"># Criteria based on interest &amp; expertise overlap</span>
+    <span class="n">user_interests</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">user_looking_for_mentor</span><span class="o">.</span><span class="n">interests</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">count_overlapping_skills</span><span class="p">(</span><span class="n">mentor</span><span class="p">:</span> <span class="n">User</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">user_interests</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">mentor</span><span class="o">.</span><span class="n">expertise</span><span class="o">.</span><span class="n">all</span><span class="p">()))</span>
+
+    <span class="c1"># Criteria based on user&#39;s history</span>
+    <span class="k">def</span> <span class="nf">has_not_had_relationship_before</span><span class="p">(</span><span class="n">mentor</span><span class="p">:</span> <span class="n">User</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">mentorship</span><span class="p">:</span> <span class="n">mentorship</span><span class="o">.</span><span class="n">mentor</span> <span class="o">==</span> <span class="n">mentor</span><span class="p">,</span>
+                               <span class="n">prior_user_mentorships</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">is_not_already_offered</span><span class="p">(</span><span class="n">mentor</span><span class="p">:</span> <span class="n">User</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">req</span><span class="p">:</span> <span class="n">req</span><span class="o">.</span><span class="n">mentor</span> <span class="o">==</span> <span class="n">mentor</span><span class="p">,</span> <span class="n">requests_by_user</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">is_valid_mentor_option</span><span class="p">(</span><span class="n">mentor</span><span class="p">:</span> <span class="n">User</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">has_compatible_business_areas</span><span class="p">(</span><span class="n">mentor</span><span class="p">)</span> <span class="ow">and</span> \
+               <span class="n">interests_and_expertise_overlap</span><span class="p">(</span><span class="n">user_interests</span><span class="p">,</span> <span class="n">mentor</span><span class="o">.</span><span class="n">expertise</span><span class="o">.</span><span class="n">all</span><span class="p">())</span> <span class="ow">and</span> \
+               <span class="n">has_not_had_relationship_before</span><span class="p">(</span><span class="n">mentor</span><span class="p">)</span> <span class="ow">and</span> \
+               <span class="n">is_not_already_offered</span><span class="p">(</span><span class="n">mentor</span><span class="p">)</span>
+
+    <span class="n">possible_mentors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">is_valid_mentor_option</span><span class="p">,</span> <span class="n">users_who_want_to_mentor</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">possible_mentors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">NoPossibleMentorsError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="n">v1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">possible_mentors</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">v2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">possible_mentors</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">v3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">possible_mentors</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">v4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">possible_mentors</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">mentor</span> <span class="ow">in</span> <span class="n">possible_mentors</span><span class="p">:</span>
+        <span class="n">v1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="c1"># TODO Could be optimised, could get average of all possible_mentors straight in SQL.</span>
+        <span class="n">v2</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mentor</span><span class="o">.</span><span class="n">get_mentor_rating_average</span><span class="p">()</span> <span class="c1"># TODO NAN for matching user 778</span>
+        <span class="n">v3</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">count_overlapping_skills</span><span class="p">(</span><span class="n">mentor</span><span class="p">)</span> 
+        <span class="n">v4</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mentor</span><span class="o">.</span><span class="n">get_mentees</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># v5 - NLP for interest description similarity.</span>
+    <span class="n">v5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">possible_mentors</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">v5</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">get_interest_description_similarities</span><span class="p">(</span><span class="n">user_looking_for_mentor</span><span class="p">,</span> <span class="n">possible_mentors</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">calculate_score_vector</span><span class="p">(</span><span class="n">factor</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">v2</span> <span class="o">*</span> <span class="p">(</span><span class="n">v3</span> <span class="o">+</span> <span class="n">v5</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">user_interests</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">v4</span>
+
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">calculate_score_vector</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">sort_by_score</span><span class="p">(</span><span class="n">possible_mentors</span><span class="p">,</span> <span class="n">scores</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">deutschebank</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Group 2.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
