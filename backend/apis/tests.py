@@ -6,7 +6,7 @@ from random import randbytes
 
 import json
 
-from .views import GroupSessionViewSet, ActionPlanViewSet
+from .views import *
 
 from .models import *
 from .dummy_data import *
