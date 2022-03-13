@@ -233,7 +233,7 @@ class User(AbstractBaseUser, Randomisable):
         return self.get_mentees().count() > 0
 
     def get_mentorships_where_user_is_mentor(self) -> QuerySet[Mentorship]:
-        return Mentorship.objects.filter(mentor__pk__exact=self.pk)
+        return Mentorship.objects.filter(mentor__pk__exact=self.pk, mentee__mentorship__pk=self.pk)
 
     def get_mentor_rating_average(self) -> float:
         ret = self.get_mentorships_where_user_is_mentor().aggregate(Avg('rating'))['rating__avg']
