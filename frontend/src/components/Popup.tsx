@@ -32,19 +32,9 @@ export default function Popup({
           onClose={initiateClose}
         >
           <div className="min-h-screen px-4 text-center">
-            {/* <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-90"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-90"
-              leaveTo="opacity-0"
-            > */}
             <Dialog.Overlay className="fixed inset-0 bg-gray-700 opacity-90" />
-            {/* </Transition.Child> */}
 
-            {/* This element is to trick the browser into centering the modal contents. */}
+            {/* Center modal contents */}
             <span
               className="inline-block h-screen align-middle"
               aria-hidden="true"

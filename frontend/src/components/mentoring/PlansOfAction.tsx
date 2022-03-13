@@ -17,11 +17,7 @@ type PlansOfActionProps = {
   perspective: "mentor" | "mentee";
 };
 
-export default function GeneralInfo({
-  mentor,
-  mentee,
-  perspective,
-}: PlansOfActionProps) {
+export default function PlansOfAction({ mentee }: PlansOfActionProps) {
   const [openedPlanOfAction, setOpenedPlanOfAction] = useState<
     PlanOfAction | undefined
   >();

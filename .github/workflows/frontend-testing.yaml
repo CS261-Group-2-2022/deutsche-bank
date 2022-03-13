@@ -1,0 +1,36 @@
+name: Run Frontend Tests
+
+on: # Specify when we should run this task
+  push:
+    # Option 1) On any push to any branch
+    branches:
+      - "**" # This matches all branches, including ones with slashes in them.
+
+    # Option 2) On any push to main
+    #branches:
+    #  - main
+
+  pull_request: # On any pull request to main
+    branches:
+      - main
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out changes
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Run tests
+        run: npm test
+        working-directory: frontend

@@ -1,5 +1,6 @@
 import { getAreaFromId, useBusinessAreas } from "../../utils/business_area";
 import { User, UserFull } from "../../utils/endpoints";
+import UserAvatar from "../UserAvatar";
 
 type UserPanelProps = {
   user: User | UserFull;
@@ -22,7 +23,7 @@ export const UserPanel = ({
     <div className="bg-white border rounded-md w-full">
       <div className="flex flex-row items-center px-3 py-1">
         {/* Image */}
-        <div className="bg-gray-500 rounded-full aspect-square w-16 h-16"></div>
+        <UserAvatar size={16} user={user} />
 
         {/* Information */}
         <div className="flex-auto ml-2">

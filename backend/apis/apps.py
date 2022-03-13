@@ -10,5 +10,5 @@ class ApisConfig(AppConfig):
     def ready(self):
         background_scheduler()
         from .models import Notification
-        schedule.every(1).minute.do(Notification.objects.send_group_session_prompts)
+        schedule.every(5).minutes.do(Notification.objects.send_group_session_prompts)
         super().ready()

@@ -25,13 +25,6 @@ const MultiValueContainer = (props: MultiValueGenericProps<Skill, true>) => (
   />
 );
 
-// const MultiValueRemove = (props: MultiValueRemoveProps<Skill, true>) => (
-//   <components.MultiValueRemove
-//     {...props}
-//     innerProps={{ className: "rounded-r-lg hover:bg-red-200 pr-1" }}
-//   />
-// );
-
 const isCreateSuccess = (
   res: Response,
   body: CreateSkillResponse
@@ -57,7 +50,7 @@ const toTitleCase = (input: string) =>
 type SkillsFuzzyListProps = {
   title?: string;
   skills: readonly CreateableSkill[];
-  setSkills: (skills: readonly Skill[]) => unknown;
+  setSkills: (skills: readonly Skill[]) => Promise<boolean | string>;
 };
 
 export default function SkillsFuzzyList({
@@ -66,14 +59,22 @@ export default function SkillsFuzzyList({
   setSkills,
 }: SkillsFuzzyListProps) {
   const { skills: allSkills } = useSkills();
-  //   const [options, setOptions] = useState<CreateableSkill[]>(skills);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
   // Update the overall skills on change
-  const onChange = (newValue: OnChangeValue<CreateableSkill, true>) =>
-    setSkills(newValue);
+  const onChange = async (newValue: OnChangeValue<CreateableSkill, true>) => {
+    setError(undefined);
+    setIsLoading(true);
+
+    const result = await setSkills(newValue);
+    if (typeof result === "string") {
+      // We had an error message response Error message
+      setError(result);
+    }
+    setIsLoading(false);
+  };
 
   // If we have been asked to create a new option, send it to the backend
   const onCreateOption = async (input: string) => {

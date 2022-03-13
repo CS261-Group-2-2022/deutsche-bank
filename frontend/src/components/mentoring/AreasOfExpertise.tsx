@@ -1,4 +1,3 @@
-import { PencilIcon } from "@heroicons/react/solid";
 import { useEffect, useState } from "react";
 import { mutate } from "swr";
 import {
@@ -36,43 +35,39 @@ export default function AreasOfExpertise({
       .map((id) => getSkillFromId(id, skills))
       .filter<Skill>(isSkill)
   );
-  const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
-    setExpertise(
-      user.expertise
-        .map((id) => getSkillFromId(id, skills))
-        .filter<Skill>(isSkill)
-    );
+    if (expertise.length === 0) {
+      setExpertise(
+        user.expertise
+          .map((id) => getSkillFromId(id, skills))
+          .filter<Skill>(isSkill)
+      );
+    }
   }, [skills, user]);
 
-  const updateAreasOfExpertise = async () => {
-    setError(undefined);
-
-    const res = await fetch(
-        PROFILE_ENDPOINT,
-        {
-          method: "PATCH",
-          headers: {
-            "content-type": "application/json",
-            authorization: `Token ${getAuthToken()}`,
-          },
-          body: JSON.stringify({expertise: expertise.map((x) => x.id)}),
-        }
-    );
+  const updateAreasOfExpertise = async (skills: readonly Skill[]) => {
+    const res = await fetch(PROFILE_ENDPOINT, {
+      method: "PATCH",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+      },
+      body: JSON.stringify({ expertise: skills.map((x) => x.id) }),
+    });
 
     const body = await res.json();
 
     if (res.ok) {
-      setIsEditing(false);
       // Revalidate the caches for profile and users
+      setExpertise(skills);
       mutate(PROFILE_ENDPOINT);
       mutate(FULL_USER_ENDPOINT.replace("{ID}", user.id.toString()));
+      return true;
     } else {
-      setError(
+      return (
         body.expertise?.join(" ") ??
-          "An error occured when updating your expertise. Please try again."
+        "An error occured when updating your expertise. Please try again."
       );
     }
   };
@@ -80,42 +75,17 @@ export default function AreasOfExpertise({
   return (
     <div className="space-y-2">
       <div>
-        <h3 className="flex text-xl font-bold gap-2">
-          {title}
-          {canEdit && (
-            <button
-              className={`ml-2 px-4 flex justify-center items-center text-white transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg ${
-                isEditing
-                  ? " bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200"
-                  : " bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200"
-              }`}
-              onClick={() =>
-                isEditing ? updateAreasOfExpertise() : setIsEditing(true)
-              }
-            >
-              {isEditing ? (
-                <>Save</>
-              ) : (
-                <>
-                  <PencilIcon className="w-5 h-5 mr-1" />
-                  Edit
-                </>
-              )}
-            </button>
-          )}
-        </h3>
+        <h3 className="flex text-xl font-bold gap-2">{title}</h3>
 
         {subHeading && <h5 className="text-sm text-gray-600">{subHeading}</h5>}
       </div>
 
-      {canEdit && isEditing ? (
+      {canEdit ? (
         <>
-          {error && (
-            <div className="block text-sm m-1 font-medium text-red-700">
-              {error}
-            </div>
-          )}
-          <SkillsFuzzyList skills={expertise} setSkills={setExpertise} />
+          <SkillsFuzzyList
+            skills={expertise}
+            setSkills={updateAreasOfExpertise}
+          />
         </>
       ) : (
         <div className="flex flex-wrap gap-1 text-gray-800">

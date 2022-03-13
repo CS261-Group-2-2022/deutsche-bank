@@ -122,7 +122,6 @@ const NotificationPanel = ({ notification }: NotificationPanelProps) => {
         <div className="flex items-center gap-2">
           {isImportant && (
             <div className="flex h-3 w-3">
-              {/* TODO: PULSE? <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-red-400 opacity-75"></span> */}
               <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
             </div>
           )}

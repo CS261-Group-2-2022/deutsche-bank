@@ -1,0 +1,327 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>apis.serializers &#8212; deutschebank 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for apis.serializers</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">authenticate</span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">rest_framework.serializers</span> <span class="kn">import</span> <span class="n">ModelSerializer</span><span class="p">,</span> <span class="n">Serializer</span>
+
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="UserSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.UserSerializer">[docs]</a><span class="k">class</span> <span class="nc">UserSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="UserSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.UserSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">,)</span></div></div>
+
+
+<div class="viewcode-block" id="UserSerializerFull"><a class="viewcode-back" href="../../apis.html#apis.serializers.UserSerializerFull">[docs]</a><span class="k">class</span> <span class="nc">UserSerializerFull</span><span class="p">(</span><span class="n">UserSerializer</span><span class="p">):</span>
+    <span class="n">action_plans</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">SerializerMethodField</span><span class="p">()</span>
+
+<div class="viewcode-block" id="UserSerializerFull.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.UserSerializerFull.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="n">UserSerializer</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="UserSerializerFull.get_action_plans"><a class="viewcode-back" href="../../apis.html#apis.serializers.UserSerializerFull.get_action_plans">[docs]</a>    <span class="k">def</span> <span class="nf">get_action_plans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">User</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ActionPlanSerializer</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">get_action_plans</span><span class="p">(),</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">data</span></div></div>
+
+
+<div class="viewcode-block" id="RegisterSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.RegisterSerializer">[docs]</a><span class="k">class</span> <span class="nc">RegisterSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="s1">&#39; Serializes data sent to register a new user &#39;</span>
+
+<div class="viewcode-block" id="RegisterSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.RegisterSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;first_name&#39;</span><span class="p">,</span> <span class="s1">&#39;last_name&#39;</span><span class="p">,</span> <span class="s1">&#39;business_area&#39;</span><span class="p">,</span> <span class="s1">&#39;password&#39;</span><span class="p">)</span>
+        <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;write_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}}</span></div>
+
+<div class="viewcode-block" id="RegisterSerializer.create"><a class="viewcode-back" href="../../apis.html#apis.serializers.RegisterSerializer.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">validated_data</span><span class="p">):</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create_user</span><span class="p">(</span><span class="n">validated_data</span><span class="p">[</span><span class="s1">&#39;email&#39;</span><span class="p">],</span> <span class="n">validated_data</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">],</span>
+                                        <span class="n">first_name</span><span class="o">=</span><span class="n">validated_data</span><span class="p">[</span><span class="s1">&#39;first_name&#39;</span><span class="p">],</span> <span class="n">last_name</span><span class="o">=</span><span class="n">validated_data</span><span class="p">[</span><span class="s1">&#39;last_name&#39;</span><span class="p">],</span>
+                                        <span class="n">business_area</span><span class="o">=</span><span class="n">validated_data</span><span class="p">[</span><span class="s1">&#39;business_area&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">user</span></div></div>
+
+
+<div class="viewcode-block" id="LoginSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.LoginSerializer">[docs]</a><span class="k">class</span> <span class="nc">LoginSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serializes data sent to login a user</span>
+
+<span class="sd">    Email and password are inputted and a token is outputted</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">token</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Token&quot;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LoginSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.LoginSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">User</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;password&#39;</span><span class="p">,</span> <span class="s1">&#39;token&#39;</span><span class="p">)</span>
+        <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;write_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;validators&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+            <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;write_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;input_type&#39;</span><span class="p">:</span> <span class="s1">&#39;password&#39;</span><span class="p">}},</span>
+            <span class="s1">&#39;trim_whitespace&#39;</span><span class="p">:</span> <span class="kc">False</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="LoginSerializer.validate"><a class="viewcode-back" href="../../apis.html#apis.serializers.LoginSerializer.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="p">:</span> <span class="n">OrderedDict</span><span class="p">):</span>
+        <span class="n">email</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">)</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">authenticate</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;request&#39;</span><span class="p">),</span> <span class="n">username</span><span class="o">=</span><span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Unable to log in with provided credentials.&#39;</span>
+            <span class="k">raise</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="s1">&#39;authorization&#39;</span><span class="p">)</span>
+
+        <span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="k">return</span> <span class="n">attrs</span></div></div>
+
+
+<div class="viewcode-block" id="PasswordLoginSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.PasswordLoginSerializer">[docs]</a><span class="k">class</span> <span class="nc">PasswordLoginSerializer</span><span class="p">(</span><span class="n">LoginSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="PasswordLoginSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.PasswordLoginSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="n">LoginSerializer</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="PasswordLoginSerializer.validate"><a class="viewcode-back" href="../../apis.html#apis.serializers.PasswordLoginSerializer.validate">[docs]</a>    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="p">:</span> <span class="n">OrderedDict</span><span class="p">):</span>
+        <span class="n">user</span><span class="p">:</span> <span class="n">User</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;request&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">user</span>
+
+        <span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">authenticate</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;request&#39;</span><span class="p">),</span> <span class="n">username</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">serializers</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;This password is not correct&#39;</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="s1">&#39;authorization&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">attrs</span></div></div>
+
+
+<div class="viewcode-block" id="ChangePasswordSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.ChangePasswordSerializer">[docs]</a><span class="k">class</span> <span class="nc">ChangePasswordSerializer</span><span class="p">(</span><span class="n">PasswordLoginSerializer</span><span class="p">):</span>
+    <span class="n">new_password</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ChangePasswordSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.ChangePasswordSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="n">PasswordLoginSerializer</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">,</span> <span class="s1">&#39;new_password&#39;</span><span class="p">)</span>
+        <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;write_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;input_type&#39;</span><span class="p">:</span> <span class="s1">&#39;password&#39;</span><span class="p">}},</span>
+            <span class="s1">&#39;new_password&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;write_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;input_type&#39;</span><span class="p">:</span> <span class="s1">&#39;password&#39;</span><span class="p">}},</span>
+            <span class="s1">&#39;trim_whitespace&#39;</span><span class="p">:</span> <span class="kc">False</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="MentorshipSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorshipSerializer">[docs]</a><span class="k">class</span> <span class="nc">MentorshipSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+    <span class="n">meetings</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">SerializerMethodField</span><span class="p">()</span>
+    <span class="n">meeting_requests</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">SerializerMethodField</span><span class="p">()</span>
+    <span class="n">mentor_feedback</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">SerializerMethodField</span><span class="p">()</span>  <span class="c1"># Feedback given by the mentor to the mentee</span>
+
+<div class="viewcode-block" id="MentorshipSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorshipSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Mentorship</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="MentorshipSerializer.get_meetings"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorshipSerializer.get_meetings">[docs]</a>    <span class="k">def</span> <span class="nf">get_meetings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Mentorship</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">MeetingSerializer</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">get_meetings</span><span class="p">(),</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">data</span></div>
+
+<div class="viewcode-block" id="MentorshipSerializer.get_meeting_requests"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorshipSerializer.get_meeting_requests">[docs]</a>    <span class="k">def</span> <span class="nf">get_meeting_requests</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Mentorship</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">MeetingRequestSerializer</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">get_meeting_requests</span><span class="p">(),</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">data</span></div>
+
+<div class="viewcode-block" id="MentorshipSerializer.get_mentor_feedback"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorshipSerializer.get_mentor_feedback">[docs]</a>    <span class="k">def</span> <span class="nf">get_mentor_feedback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Mentorship</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">MentorFeedbackSerializer</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">get_mentor_feedback</span><span class="p">(),</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">data</span></div></div>
+
+
+<div class="viewcode-block" id="MentorshipSerializerFull"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorshipSerializerFull">[docs]</a><span class="k">class</span> <span class="nc">MentorshipSerializerFull</span><span class="p">(</span><span class="n">MentorshipSerializer</span><span class="p">):</span>
+    <span class="n">mentor</span> <span class="o">=</span> <span class="n">UserSerializer</span><span class="p">()</span>
+    <span class="n">mentee</span> <span class="o">=</span> <span class="n">UserSerializer</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MentorRequestSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorRequestSerializer">[docs]</a><span class="k">class</span> <span class="nc">MentorRequestSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="MentorRequestSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorRequestSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">MentorRequest</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;mentee&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="MentorRequestMentorSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorRequestMentorSerializer">[docs]</a><span class="k">class</span> <span class="nc">MentorRequestMentorSerializer</span><span class="p">(</span><span class="n">MentorRequestSerializer</span><span class="p">):</span>
+    <span class="n">mentor</span> <span class="o">=</span> <span class="n">UserSerializer</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MentorRequestMentorSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorRequestMentorSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="n">MentorRequestSerializer</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">include</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mentor&#39;</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="MentorRequestMenteeSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorRequestMenteeSerializer">[docs]</a><span class="k">class</span> <span class="nc">MentorRequestMenteeSerializer</span><span class="p">(</span><span class="n">MentorRequestSerializer</span><span class="p">):</span>
+    <span class="n">mentee</span> <span class="o">=</span> <span class="n">UserSerializer</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MentorRequestMenteeSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorRequestMenteeSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="n">MentorRequestSerializer</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">include</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mentee&#39;</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="MentorFeedbackSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorFeedbackSerializer">[docs]</a><span class="k">class</span> <span class="nc">MentorFeedbackSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="MentorFeedbackSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.MentorFeedbackSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">MentorFeedback</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="MeetingSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.MeetingSerializer">[docs]</a><span class="k">class</span> <span class="nc">MeetingSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="MeetingSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.MeetingSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Meeting</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+            <span class="s1">&#39;mentee_notes&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+            <span class="s1">&#39;mentor_notes&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="MeetingSerializerFull2"><a class="viewcode-back" href="../../apis.html#apis.serializers.MeetingSerializerFull2">[docs]</a><span class="k">class</span> <span class="nc">MeetingSerializerFull2</span><span class="p">(</span><span class="n">MeetingSerializer</span><span class="p">):</span>
+    <span class="n">mentorship</span> <span class="o">=</span> <span class="n">MentorshipSerializerFull</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MeetingSerializerFull2.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.MeetingSerializerFull2.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="n">MeetingSerializer</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="mi">2</span></div></div>
+
+
+<div class="viewcode-block" id="MeetingRequestSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.MeetingRequestSerializer">[docs]</a><span class="k">class</span> <span class="nc">MeetingRequestSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="MeetingRequestSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.MeetingRequestSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">MeetingRequest</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+            <span class="s1">&#39;mentorship&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="ActionPlanSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.ActionPlanSerializer">[docs]</a><span class="k">class</span> <span class="nc">ActionPlanSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="ActionPlanSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.ActionPlanSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ActionPlan</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+            <span class="s1">&#39;completion_date&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+            <span class="s1">&#39;creation_date&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="SkillSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.SkillSerializer">[docs]</a><span class="k">class</span> <span class="nc">SkillSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="SkillSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.SkillSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Skill</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span></div></div>
+
+
+<div class="viewcode-block" id="BusinessAreaSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.BusinessAreaSerializer">[docs]</a><span class="k">class</span> <span class="nc">BusinessAreaSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="BusinessAreaSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.BusinessAreaSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">BusinessArea</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span></div></div>
+
+
+<div class="viewcode-block" id="GroupSessionSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.GroupSessionSerializer">[docs]</a><span class="k">class</span> <span class="nc">GroupSessionSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupSessionSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.GroupSessionSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">GroupSession</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+            <span class="s1">&#39;virtual_link&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+            <span class="s1">&#39;image_link&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+            <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+            <span class="s1">&#39;users&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;read_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="GroupSessionSerializerFull"><a class="viewcode-back" href="../../apis.html#apis.serializers.GroupSessionSerializerFull">[docs]</a><span class="k">class</span> <span class="nc">GroupSessionSerializerFull</span><span class="p">(</span><span class="n">GroupSessionSerializer</span><span class="p">):</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">UserSerializer</span><span class="p">()</span>
+    <span class="n">users</span> <span class="o">=</span> <span class="n">UserSerializer</span><span class="p">(</span><span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GroupSessionSerializerFull.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.GroupSessionSerializerFull.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="n">GroupSessionSerializer</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="mi">1</span></div></div>
+
+
+<div class="viewcode-block" id="FeedbackSerializer"><a class="viewcode-back" href="../../apis.html#apis.serializers.FeedbackSerializer">[docs]</a><span class="k">class</span> <span class="nc">FeedbackSerializer</span><span class="p">(</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="FeedbackSerializer.Meta"><a class="viewcode-back" href="../../apis.html#apis.serializers.FeedbackSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Feedback</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[]</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">deutschebank</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Group 2.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

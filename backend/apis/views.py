@@ -17,24 +17,15 @@ from rest_framework.viewsets import GenericViewSet
 
 from .models import *
 from .serializers import *
+from .managers import NotificationType
 from .dummy_data import create_dummy_data
 
 from .matching_algorithm import matching_algorithm, NoPossibleMentorsError
-
 
 class UserViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,)
-
-    @action(detail=False, methods=['get'])
-    def mentor(self, request, *args, **kwargs):
-        user: User = request.user
-        mentorship: Mentorship = user.mentorship
-        if mentorship is None:
-            return Response({'error': 'This user does not have a mentor'}, status=status.HTTP_204_NO_CONTENT)
-
-        return Response(UserSerializerFull(user.mentorship.mentor))
 
     @action(detail=False, methods=['get'])
     def matching(self, request, *args, **kwargs):
@@ -45,6 +36,7 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
         current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         all_requests: List[MentorRequest] = list(MentorRequest.objects.all())
 
+        potential_mentors = []
         try:
             potential_mentors: List[User] = matching_algorithm(user,
                                                                all_users,
@@ -54,18 +46,11 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
                                                                all_requests)
             response_status = HTTP_200_OK
         except NoPossibleMentorsError:
-            potential_mentors = []
             response_status = HTTP_204_NO_CONTENT
 
         cereal = UserSerializer(potential_mentors, many=True)
 
         return Response(cereal.data, status=response_status)
-
-    @action(detail=True, methods=['get'])
-    def reset(self, request, pk=None):
-        # clear_database()
-        create_dummy_data()
-        return Response("Reset database.")
 
     @action(detail=True, methods=['get'])
     def full(self, request, pk=None):
@@ -76,13 +61,6 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
         user: User = request.user
 
         cereal = UserSerializerFull(user.get_mentees(), many=True)
-        return Response(cereal.data)
-
-    @action(detail=True, methods=['get'])
-    def expertise(self, request, pk=None) -> Response:
-        user: User = self.get_object()
-
-        cereal = SkillSerializer(user.expertise.all(), many=True)
         return Response(cereal.data)
 
     @action(detail=True, methods=['get'])
@@ -251,21 +229,46 @@ class GroupSessionViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
         return Response(GroupSessionSerializer(session).data)
 
 
-class MentorshipViewSet(RetrieveModelMixin, GenericViewSet):
+class MentorshipViewSet(RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     queryset = Mentorship.objects.all()
     serializer_class = MentorshipSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        # Check we're actually a member of the mentorship
+        mentorship: Mentorship = self.get_object()
+
+        if request.user != mentorship.mentor and request.user != mentorship.mentee:
+            return Response({'error': 'You cannot modify this mentorship'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # If we're a member of the mentorship, we can go ahead and continue with the update.
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
     @action(detail=True, methods=['post'])
     def end(self, request, *args, **kwargs):  # Terminates a mentorship
-        serializer = PasswordLoginSerializer(data=request.data, context=self.get_serializer_context())
+        serializer = PasswordLoginSerializer(data=request.data,
+                                             context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)  # Check user password
 
         mentorship: Mentorship = self.get_object()
         user: User = request.user
         mentee: User = mentorship.mentee
         if user != mentorship.mentor and user != mentorship.mentee:
-            return Response({'error': 'You cannot end this mentorship'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'You cannot end this mentorship'},
+                            status=status.HTTP_400_BAD_REQUEST)
         if not mentee.mentorship or mentee.mentorship.pk != mentorship.pk:
             return Response({'error': 'This mentorship is not active'}, status=status.HTTP_208_ALREADY_REPORTED)
         mentee.mentorship = None
@@ -456,7 +459,7 @@ class ActionPlanViewSet(CreateModelMixin, UpdateModelMixin, ListModelMixin, Gene
 
         target_user = serializer.validated_data['user']
 
-        if request.user is target_user:
+        if request.user.pk == target_user.pk:
             # We're making an action plan for ourselves
             if request.user.mentorship is None:
                 e = {'error': 'A user must be a mentee to create action plans'}
@@ -511,7 +514,8 @@ class BusinessAreaViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
 
 
 class SkillViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-    permission_classes = (permissions.IsAuthenticated,)
+    # TODO(Arpad): Make a test that checks unauthenticated users can get the skills to pay the bills
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     # TODO(Arpad): If we have this enabled, requests to create new skills fail with an authentication error.
     #authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = Skill.objects.all()

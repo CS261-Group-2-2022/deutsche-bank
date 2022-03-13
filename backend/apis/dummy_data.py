@@ -88,7 +88,8 @@ def lorem_random(max_length = None):
 
 
 import pytz
-time_start = datetime(2022, 2, 11, 10, 0, 0, 0, pytz.UTC)
+# Make sure time_start is always now so that events are in the future.
+time_start = datetime.now(tz=pytz.UTC)
 
 def random_delta():
     return timedelta(days = random.randrange(0, 30),
@@ -344,9 +345,9 @@ def create_dummy_data(quiet=False, seed="We're literally the best software eng t
 
 from django.apps import apps
 
-def clear_database(force = False):
-    print("Are you sure you want to clear db?")
-    if force or input("[y/n]>").lower() == 'y':
-        models = apps.all_models['apis']
-        for model in models:
-            models[model].manager.all().delete()
+#def clear_database(force = False):
+#    print("Are you sure you want to clear db?")
+#    if force or input("[y/n]>").lower() == 'y':
+#        models = apps.all_models['apis']
+#        for model in models:
+#            models[model].manager.all().delete()
