@@ -167,6 +167,10 @@ class ChangePasswordView(generics.GenericAPIView):
     serializer_class = ChangePasswordSerializer
 
     def post(self, request, *args, **kwargs):
+        """
+        Changes the currently authenticated user's password to 'new_password', checking if the supplied 'password'
+        field matches their current password
+        """
         user: User = request.user
         serializer = self.get_serializer(data=request.data)  # Deserialize request data
         serializer.is_valid(raise_exception=True)  # Validate request data
