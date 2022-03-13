@@ -1374,3 +1374,47 @@ class MentorshipViewTest(TestCase):
         ## Check that the response contains a suitable message
 
         self.assertIn('cannot modify', response.data['error'], msg=show_res(response))
+
+
+class MeetingRequestViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_dummy_data(quiet=True)
+
+    def test_that_mentees_can_create_and_cancel_meeting_requests(self):
+        # 2) Check we can create a meeting request
+        mentorship = Mentorship.choose_random()
+        if mentorship is None:
+            return
+
+        mentee = mentorship.mentee
+
+        description_len = MeetingRequest._meta.get_field('description').max_length
+        location_len = MeetingRequest._meta.get_field('location').max_length
+
+        body = {
+            'description': lorem_random(max_length=description_len),
+            'location': lorem_random(max_length=location_len),
+            'time': str(time_start + random_delta()),
+        }
+        request = factory.post('/api/v1/meeting-request/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentee)
+
+        view = MeetingRequestViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        ## Check that the request succeeds
+        self.assertEquals(response.status_code, 201, msg=show_res(response))
+
+        # 2) Check we can cancel the meeting request
+        request = factory.post('/api/v1/meeting-request/' + str(response.data['id']) + '/cancel',
+                               follow=True)
+        force_authenticate(request, user=mentee)
+
+        view = MeetingRequestViewSet.as_view({'post': 'cancel'})
+        response = view(request, pk=response.data['id'])
+
+        ## Check that the request succeeds
+        self.assertEquals(response.status_code, 200, msg=show_res(response))
