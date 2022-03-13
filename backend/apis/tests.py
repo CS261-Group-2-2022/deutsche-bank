@@ -357,6 +357,41 @@ class UserModelTests(TestCase):
         self.assertTrue(meeting_count_before < meeting_count_after)
 
         # TODO Add endpoint test to make sure that both users can see their meetings in their upcoming list.
+        
+    def test_mentor_cannot_schedule_a_meeting(self):
+        rating = None
+        feedback = None
+       
+        mentor = User.make_random(mentor_intent=True)
+        mentee = User.make_random()
+
+        assert(mentor.mentor_intent == True)
+        
+        new_mentorship = Mentorship.objects.create(mentor=mentor,
+                                                   mentee=mentee,
+                                                   rating=rating,
+                                                   feedback=feedback)
+
+        body = {
+            "mentorship":new_mentorship.pk,
+            "description": lorem_random(100),
+            "location": lorem_random(100),
+            "time": str(time_start + random_delta()),
+            "mentor_notes": lorem_random(1000),
+            "mentee_notes": lorem_random(1000)
+        }
+        factory = APIRequestFactory()
+        request = factory.post('/api/v1/meeting-request/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentor)
+        
+
+        view = MeetingRequestViewSet.as_view({'post': 'create'})
+        response = view(request, pk=new_mentorship.pk)
+
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+    
       
     def test_mentor_can_cancel_meeting(self):
         rating = None
