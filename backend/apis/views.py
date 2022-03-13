@@ -29,15 +29,6 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
     @action(detail=False, methods=['get'])
-    def mentor(self, request, *args, **kwargs):
-        user: User = request.user
-        mentorship: Mentorship = user.mentorship
-        if mentorship is None:
-            return Response({'error': 'This user does not have a mentor'}, status=status.HTTP_204_NO_CONTENT)
-
-        return Response(UserSerializerFull(user.mentorship.mentor))
-
-    @action(detail=False, methods=['get'])
     def matching(self, request, *args, **kwargs):
         user: User = request.user
         all_users: List[User] = list(User.objects.all())
@@ -71,13 +62,6 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
         user: User = request.user
 
         cereal = UserSerializerFull(user.get_mentees(), many=True)
-        return Response(cereal.data)
-
-    @action(detail=True, methods=['get'])
-    def expertise(self, request, pk=None) -> Response:
-        user: User = self.get_object()
-
-        cereal = SkillSerializer(user.expertise.all(), many=True)
         return Response(cereal.data)
 
     @action(detail=True, methods=['get'])
