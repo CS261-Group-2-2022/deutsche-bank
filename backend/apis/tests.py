@@ -1472,3 +1472,48 @@ class MeetingRequestViewTest(TestCase):
 
         ## Check that the request succeeds
         self.assertEquals(response.status_code, 200, msg=show_res(response))
+
+    def test_that_mentors_can_accept_and_decline_meeting_requests(self):
+        mentorship = Mentorship.choose_random()
+        if mentorship is None:
+            return
+
+        mentee = mentorship.mentee
+        mentor = mentorship.mentor
+
+        description_len = MeetingRequest._meta.get_field('description').max_length
+        location_len = MeetingRequest._meta.get_field('location').max_length
+
+        body = {
+            'description': lorem_random(max_length=description_len),
+            'location': lorem_random(max_length=location_len),
+            'time': str(time_start + random_delta()),
+        }
+        request = factory.post('/api/v1/meeting-request/',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=mentee)
+
+        view = MeetingRequestViewSet.as_view({'post': 'create'})
+        response = view(request)
+
+        meeting_request_pk = response.data['id']
+
+        # Then accept the request as the mentor
+        no_of_meetings_before_accepting = mentor.get_meetings().count()
+        request = factory.post('/api/v1/meeting-request/' + str(meeting_request_pk) + '/accept',
+                               follow=True)
+        force_authenticate(request, user=mentor)
+
+        view = MeetingRequestViewSet.as_view({'post': 'accept'})
+        response = view(request, pk=meeting_request_pk)
+
+        ## Verify that the request succeeds
+        self.assertEqual(response.status_code, 200, msg=show_res(response))
+
+        ## Verify that the request is cleared
+        self.assertEqual(MeetingRequest.objects.filter(pk=meeting_request_pk).count(), 0)
+
+        ## Verify that the meeting has been created
+        no_of_meetings_after_accepting = mentor.get_meetings().count()
+        self.assertGreater(no_of_meetings_after_accepting, no_of_meetings_before_accepting)

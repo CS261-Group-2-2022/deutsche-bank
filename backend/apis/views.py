@@ -22,7 +22,6 @@ from .dummy_data import create_dummy_data
 
 from .matching_algorithm import matching_algorithm, NoPossibleMentorsError
 
-
 class UserViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
