@@ -3,13 +3,7 @@ import {
   ChartPieIcon,
   CheckCircleIcon,
 } from "@heroicons/react/solid";
-import useSWR from "swr";
-import {
-  LIST_USER_PLANS,
-  PlanOfAction,
-  PlanOfActionResponse,
-  User,
-} from "../../utils/endpoints";
+import { PlanOfAction, User } from "../../utils/endpoints";
 import PlanOfActionInfo from "./PlanOfActionInfo";
 
 type PlansOfActionColumnProps = {
@@ -21,7 +15,6 @@ type PlansOfActionColumnProps = {
 };
 
 export default function PlansOfActionColumn({
-  mentee,
   is_completed_goals,
   plansOfActionData,
   setOpenedPlanOfAction,

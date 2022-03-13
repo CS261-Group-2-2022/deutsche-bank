@@ -25,13 +25,6 @@ const MultiValueContainer = (props: MultiValueGenericProps<Skill, true>) => (
   />
 );
 
-// const MultiValueRemove = (props: MultiValueRemoveProps<Skill, true>) => (
-//   <components.MultiValueRemove
-//     {...props}
-//     innerProps={{ className: "rounded-r-lg hover:bg-red-200 pr-1" }}
-//   />
-// );
-
 const isCreateSuccess = (
   res: Response,
   body: CreateSkillResponse
@@ -66,7 +59,6 @@ export default function SkillsFuzzyList({
   setSkills,
 }: SkillsFuzzyListProps) {
   const { skills: allSkills } = useSkills();
-  //   const [options, setOptions] = useState<CreateableSkill[]>(skills);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();

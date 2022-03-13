@@ -23,7 +23,6 @@ import Feedback from "./pages/Feedback";
 import LoggedOutPage from "./pages/LoggedOutPage";
 import MentoringProfile from "./pages/MentoringProfile";
 import YourMentees from "./pages/YourMentees";
-import MentoringMatchingPage from "./components/mentoring/MentoringMatching";
 
 const fetcher: BareFetcher = async (resource) => {
   const token = getAuthToken();
@@ -63,6 +62,7 @@ function App() {
                   </Route>
                   <Route path="groups" element={<GroupSessions />} />
                   <Route path="settings" element={<Settings />} />
+                  <Route path="feedback" element={<Feedback />} />
                 </Route>
 
                 {/* All subpages here are rendered as logged out pages - i.e. if you are logged in you will be redirected out of here */}
@@ -72,7 +72,6 @@ function App() {
                 </Route>
 
                 <Route path="logout" element={<Logout />} />
-                <Route path="feedback" element={<Feedback />} />
                 <Route path="*" element={<Error404 />} />
               </Routes>
             </BrowserRouter>

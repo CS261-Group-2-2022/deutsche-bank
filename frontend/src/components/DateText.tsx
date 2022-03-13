@@ -4,10 +4,11 @@ import { useRelativeTime } from "../utils/time";
 
 type DateTextProps = {
   date: string;
+  base?: DateTime;
 };
 
-export default function DateTextProps({ date }: DateTextProps) {
-  const relativeTime = useRelativeTime(date);
+export default function DateTextProps({ date, base }: DateTextProps) {
+  const relativeTime = useRelativeTime(date, undefined, base);
 
   return (
     <p

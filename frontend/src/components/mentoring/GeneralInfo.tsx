@@ -1,13 +1,11 @@
 import SessionTopicLabel from "../SessionTopicLabel";
 import {
   END_MENTORSHIP_ENDPOINT,
-  FULL_USER_ENDPOINT,
   getAuthToken,
   MentorFeedback,
   Mentorship,
   MENTORSHIP_ENDPOINT,
   PROFILE_ENDPOINT,
-  Skill,
   User,
   UserFull,
 } from "../../utils/endpoints";
@@ -19,11 +17,8 @@ import {
   XIcon,
 } from "@heroicons/react/solid";
 import React, { Fragment, useRef, useState } from "react";
-import { FormTextArea } from "../FormTextarea";
 import { Transition, Dialog, Disclosure } from "@headlessui/react";
 import { FormInput } from "../FormInput";
-import { getSkillFromId, useSkills } from "../../utils/skills";
-import SkillsFuzzyList from "../SkillsFuzzyList";
 import MentorReviewPopup from "./MentorReviewPopup";
 import { mutate } from "swr";
 import AreasOfInterest from "./AreasOfInterest";

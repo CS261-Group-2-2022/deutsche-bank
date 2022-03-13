@@ -1,25 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { mutate } from "swr";
-import useSWR from "swr";
-import { Dialog, Disclosure } from "@headlessui/react";
-import { ChevronUpIcon, StarIcon } from "@heroicons/react/solid";
+import { Dialog } from "@headlessui/react";
 import {
   CREATE_MENTOR_FEEDBACK_ENDPOINT,
   getAuthToken,
-  GroupSession,
-  JoinSessionResponse,
-  JoinSessionSuccess,
   Mentorship,
   MENTORSHIP_ENDPOINT,
-  User,
 } from "../../utils/endpoints";
-import { useUser } from "../../utils/authentication";
-import SessionTopicLabel from "../SessionTopicLabel";
-import LocationText from "../LocationText";
-import DateText from "../DateText";
 import Popup from "../Popup";
-import CapacityText from "../CapacityText";
-import { PlanOfAction } from "../../utils/endpoints";
 import { FormTextArea } from "../FormTextarea";
 import { LoadingButton } from "../LoadingButton";
 
