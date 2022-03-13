@@ -3,6 +3,7 @@ import { FormTextArea } from "../components/FormTextarea";
 import { useState } from "react";
 import { FEEDBACK_ENDPOINT } from "../utils/endpoints";
 import { LoadingButton } from "../components/LoadingButton";
+import { getAuthToken } from "../utils/endpoints"
 
 export default function Feedback() {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,6 +18,9 @@ export default function Feedback() {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
+        // TODO(Arpad): ^ This doesn't actually seem to fix the auth error.
+        // If I don't set the ViewSet to AllowAll permissions, this fails no matter what.
       },
       body: JSON.stringify({
         feedback: feedback,

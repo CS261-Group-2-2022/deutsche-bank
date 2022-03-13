@@ -519,7 +519,7 @@ class SkillViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
 
 
 class FeedbackViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
 
