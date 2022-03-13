@@ -728,6 +728,52 @@ class CurrentUserViewIntegrationTest(TestCase):
         retrieved_user = User.objects.get(pk=user.pk)
         self.assertEqual(retrieved_user.first_name, body['first_name'])
 
+class ChangePasswordViewIntegrationTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_dummy_business_areas()
+        create_dummy_skills()
+
+    def test_user_can_not_change_their_own_password_without_providing_password(self):
+        randomly_created_user_pass = str(randbytes(20))
+        user = User.make_random(password=randomly_created_user_pass)
+
+        body = {
+            'new_password': randomly_created_user_pass,
+        }
+        request = factory.post('/api/v1/auth/password',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=user)
+
+        view = ChangePasswordView.as_view()
+        response = view(request)
+
+        ## Check that the request is not successful
+        self.assertEqual(response.status_code, 400, msg=show_res(response))
+        ## Check that we get a good error message
+        self.assertIn('password', response.data, msg=show_res(response))
+
+    def test_user_can_change_their_own_password(self):
+        randomly_created_user_pass = str(randbytes(20))
+        user = User.make_random(password=randomly_created_user_pass)
+
+        body = {
+            'new_password': randomly_created_user_pass,
+            'password': randomly_created_user_pass,
+        }
+        request = factory.post('/api/v1/auth/password',
+                               json.dumps(body),
+                               follow=True, content_type='application/json')
+        force_authenticate(request, user=user)
+
+        view = ChangePasswordView.as_view()
+        response = view(request)
+
+        ## Check that the request is not successful
+        self.assertEqual(response.status_code, 200, msg=show_res(response))
+
+
 class ActionPlanTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
