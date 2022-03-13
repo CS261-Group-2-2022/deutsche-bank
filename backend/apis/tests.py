@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+from typing import *
+
 from django.test import TestCase
 from django.conf import settings
 from rest_framework.test import force_authenticate
@@ -680,10 +683,54 @@ class UserModelTests(TestCase):
         #response.render()
 
         self.assertEqual(response.status_code, 200, msg=show_res(response))
-        
-    
-        
-    
+
+class CurrentUserViewIntegrationTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_dummy_data(quiet=True)
+
+    def test_currently_signed_in_user_can_be_retrieved(self):
+        user = User.choose_random()
+
+        # Make the request to get the currently signed in user, with the user signed in
+        factory = APIRequestFactory()
+        request = factory.get('/api/v1/profile', follow=True)
+        force_authenticate(request, user=user)
+
+        view = CurrentUserView.as_view()
+        response = view(request)
+
+        ## Verify the request succeeds
+        self.assertEqual(response.status_code, 200, msg=show_res(response))
+        ## Verify the data received is correct for the user
+        self.assertIn('first_name', response.data, msg=show_res(response))
+        self.assertEqual(user.first_name, response.data['first_name'], msg=show_res(response))
+        self.assertIn('id', response.data, msg=show_res(response))
+        self.assertEqual(user.pk, response.data['id'], msg=show_res(response))
+
+    def test_currently_signed_in_user_details_can_be_updated(self):
+        user = User.choose_random()
+
+        # Make the request to update our first name.
+        name_len = User._meta.get_field('first_name').max_length
+        body = {
+            'first_name': lorem_random(max_length=name_len),
+        }
+        factory = APIRequestFactory()
+        request = factory.patch('/api/v1/profile',
+                                json.dumps(body),
+                                follow=True, content_type='application/json')
+        force_authenticate(request, user=user)
+
+        view = CurrentUserView.as_view()
+        response = view(request)
+
+        ## Verify the request succeeds
+        self.assertEqual(response.status_code, 200, msg=show_res(response))
+
+        ## Verify that the first name is actually changed.
+        retrieved_user = User.objects.get(pk=user.pk)
+        self.assertEqual(retrieved_user.first_name, body['first_name'])
 
 class ActionPlanTestCase(TestCase):
     @classmethod
