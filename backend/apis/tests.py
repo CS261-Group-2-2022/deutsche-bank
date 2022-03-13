@@ -711,7 +711,7 @@ class CurrentUserViewIntegrationTest(TestCase):
         name_len = User._meta.get_field('first_name').max_length
         body = {
             'first_name': lorem_random(max_length=name_len),
-            'business_area': BusinessArea.choose_random().pk,
+            'business_area': mentorship.mentor.business_area.pk,
         }
         request = factory.patch('/api/v1/profile',
                                 json.dumps(body),
@@ -727,6 +727,48 @@ class CurrentUserViewIntegrationTest(TestCase):
         ## Verify that the first name is actually changed.
         retrieved_user = User.objects.get(pk=user.pk)
         self.assertEqual(retrieved_user.first_name, body['first_name'])
+
+        ## Verify that notifications got created to state that the mentorship business areas are now
+        ## in conflict.
+        ## First check the mentee.
+        request = factory.get('/api/v1/notification', follow=True)
+        force_authenticate(request, user=user)
+
+        view = NotificationViewSet.as_view({'get': 'list'})
+        response = view(request)
+
+        notifications_for_mentee = response.data
+
+        # Check that we have some notifications
+        self.assertGreater(len(notifications_for_mentee), 0)
+
+        # Check that the mentee has a conflict notification
+        found_mentee_conflict_notification = False
+        for notification in notifications_for_mentee:
+            if notification['type'] == NotificationType.BUSINESS_AREA_CONFLICT_MENTOR.value:
+                found_mentee_conflict_notification = True
+
+        self.assertTrue(found_mentee_conflict_notification)
+
+        ## Then check the mentor.
+        request = factory.get('/api/v1/notification', follow=True)
+        force_authenticate(request, user=mentorship.mentor)
+
+        view = NotificationViewSet.as_view({'get': 'list'})
+        response = view(request)
+
+        notifications_for_mentor = response.data
+
+        # Check that we have some notifications
+        self.assertGreater(len(notifications_for_mentor), 0)
+
+        # Check that the mentee has a conflict notification
+        found_conflict_notification_for_mentor = False
+        for notification in notifications_for_mentor:
+            if notification['type'] == NotificationType.BUSINESS_AREA_CONFLICT_MENTEE.value:
+                found_conflict_notification_for_mentor = True
+
+        self.assertTrue(found_conflict_notification_for_mentor)
 
 class ChangePasswordViewIntegrationTest(TestCase):
     @classmethod
