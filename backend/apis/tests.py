@@ -1166,7 +1166,8 @@ class MatchingAlgorithmTestCases(TestCase):
         except NoPossibleMentorsError:
             self.assertTrue(True)
 
-    def test_user_can_send_mentor_requests(self):
+    def test_user_can_send_and_cancel_mentor_requests(self):
+        # 1) Test the user can send a mentor request
         mentee = self.randomly_created_user
         mentor = User.make_random()
         skills = list(Skill.objects.all())
@@ -1188,6 +1189,15 @@ class MatchingAlgorithmTestCases(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 201, msg=show_res(response))
+
+        # 1) Test the user can cancel the request
+        request = factory.post('/api/v1/mentorship-request/cancel', follow=True)
+        force_authenticate(request, user=mentee)
+
+        view = MentorRequestViewSet.as_view({'post': 'cancel'})
+        response = view(request, pk=response.data['id'])
+
+        self.assertEqual(response.status_code, 204, msg=show_res(response))
 
     def test_mentor_can_accept_mentor_requests(self):
         mentee = self.randomly_created_user
