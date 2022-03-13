@@ -217,7 +217,7 @@ class NotificationManager(django_models.Manager):
             interested = apis_models.User.objects.filter(interests__pk__contains=skill.pk).count()
             notification_set: QuerySet[apis_models.Notification] = self.filter(
                 type=NotificationType.GROUP_SESSION_PROMPT.value, info__skill__exact=skill.pk)
-            notifications = notification_set.count()
+            existing_notifications = notification_set.count()
             notification_users = map(lambda n: n.user.pk, notification_set)
 
             sessions_for_skill = apis_models.GroupSession.objects.all()
