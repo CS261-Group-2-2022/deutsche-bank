@@ -95,9 +95,6 @@ class UserModelTests(TestCase):
 
         # Test it gives us a token
         self.assertIn('token', data, msg=f'{response.json()=}')
-        # Test it gives us the expiry - TODO Why does this not give us an expiry?
-        if False: # TODO Enable test.
-            self.assertIn('expiry', data, msg=f'{response.json()=}')
         # Test it returns the logged in user
         self.assertIn('user', data, msg=f'{response.json()=}')
 
