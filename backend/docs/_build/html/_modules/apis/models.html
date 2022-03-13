@@ -1,0 +1,472 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>apis.models &#8212; deutschebank 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for apis.models</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>  <span class="c1"># This allows us to use type hints of a class inside that class.</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.base_user</span> <span class="kn">import</span> <span class="n">AbstractBaseUser</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">QuerySet</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Avg</span>
+
+<span class="kn">from</span> <span class="nn">.dummy_data_dataset</span> <span class="kn">import</span> <span class="n">dataset</span>
+
+<span class="kn">from</span> <span class="nn">.managers</span> <span class="kn">import</span> <span class="n">UserManager</span>
+
+<span class="sd">&quot;&quot;&quot; This file contains the database models and some associated utilities.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="Randomisable"><a class="viewcode-back" href="../../apis.html#apis.models.Randomisable">[docs]</a><span class="k">class</span> <span class="nc">Randomisable</span><span class="p">:</span>
+<div class="viewcode-block" id="Randomisable.choose_random"><a class="viewcode-back" href="../../apis.html#apis.models.Randomisable.choose_random">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">choose_random</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">map_with</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">map_with</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">map_with</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Randomisable.choose_list_at_random"><a class="viewcode-back" href="../../apis.html#apis.models.Randomisable.choose_list_at_random">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">choose_list_at_random</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                              <span class="n">minimum_number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                              <span class="n">maximum_number</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">map_with</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">map_with</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">map_with</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()))</span>
+
+        <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">maximum_number</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">maximum_number</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">maximum_number</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">maximum_number</span> <span class="o">=</span> <span class="n">count</span>
+
+        <span class="n">how_many_to_choose</span> <span class="o">=</span> <span class="n">minimum_number</span>
+        <span class="k">if</span> <span class="n">minimum_number</span> <span class="o">&lt;</span> <span class="n">maximum_number</span><span class="p">:</span>
+            <span class="n">how_many_to_choose</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">minimum_number</span><span class="p">,</span> <span class="n">maximum_number</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="n">how_many_to_choose</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Randomisable.make_random"><a class="viewcode-back" href="../../apis.html#apis.models.Randomisable.make_random">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">make_random</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="Skill"><a class="viewcode-back" href="../../apis.html#apis.models.Skill">[docs]</a><span class="k">class</span> <span class="nc">Skill</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">Randomisable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Database model that holds all the &#39;kinds&#39; of expertise users may have.</span>
+
+<span class="sd">    This can then be searched through during account creation to select your areas of expertise.</span>
+<span class="sd">    Further, this is also used in the storage of this information - see UserExpertise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BusinessArea"><a class="viewcode-back" href="../../apis.html#apis.models.BusinessArea">[docs]</a><span class="k">class</span> <span class="nc">BusinessArea</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">Randomisable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Database model that stores the business areas that are in the company.</span>
+
+<span class="sd">    This can then be searched through during account creation to select your business area, or more</span>
+<span class="sd">    can be created later on.</span>
+<span class="sd">    Further, this is also used in the storage of this information - see the User model&#39;s</span>
+<span class="sd">    business_area field.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+
+
+<div class="viewcode-block" id="Mentorship"><a class="viewcode-back" href="../../apis.html#apis.models.Mentorship">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Mentorship</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">,</span> <span class="n">Randomisable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Mentorship between mentor and mentee</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mentee</span><span class="p">:</span> <span class="n">User</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;User&#39;</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;mentorship_mentee&#39;</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">mentor</span><span class="p">:</span> <span class="n">User</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;User&#39;</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;mentorship_mentor&#39;</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">rating</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">SmallIntegerField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">feedback</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Mentorship.get_meetings"><a class="viewcode-back" href="../../apis.html#apis.models.Mentorship.get_meetings">[docs]</a>    <span class="k">def</span> <span class="nf">get_meetings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">Meeting</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mentorship_meetings</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Mentorship.get_upcoming_meetings"><a class="viewcode-back" href="../../apis.html#apis.models.Mentorship.get_upcoming_meetings">[docs]</a>    <span class="k">def</span> <span class="nf">get_upcoming_meetings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">Meeting</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_meetings</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">time__gt</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">TIME_ZONE_INFO</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Mentorship.get_meeting_requests"><a class="viewcode-back" href="../../apis.html#apis.models.Mentorship.get_meeting_requests">[docs]</a>    <span class="k">def</span> <span class="nf">get_meeting_requests</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">MeetingRequest</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mentorship_meeting_requests</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Mentorship.get_mentor_feedback"><a class="viewcode-back" href="../../apis.html#apis.models.Mentorship.get_mentor_feedback">[docs]</a>    <span class="k">def</span> <span class="nf">get_mentor_feedback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mentorship_feedback</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="MentorRequest"><a class="viewcode-back" href="../../apis.html#apis.models.MentorRequest">[docs]</a><span class="k">class</span> <span class="nc">MentorRequest</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Mentorship request from a mentee to a mentor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mentee</span><span class="p">:</span> <span class="n">User</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;User&#39;</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;request_mentee&#39;</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">mentor</span><span class="p">:</span> <span class="n">User</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;User&#39;</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;request_mentor&#39;</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MentorFeedback"><a class="viewcode-back" href="../../apis.html#apis.models.MentorFeedback">[docs]</a><span class="k">class</span> <span class="nc">MentorFeedback</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Feedback given by the mentor to the mentee</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mentorship</span><span class="p">:</span> <span class="n">Mentorship</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Mentorship</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;mentorship_feedback&#39;</span><span class="p">)</span>
+    <span class="n">positives</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="n">improvements</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="User"><a class="viewcode-back" href="../../apis.html#apis.models.User">[docs]</a><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">AbstractBaseUser</span><span class="p">,</span> <span class="n">Randomisable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Database model that describes a single User.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">first_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">image_link</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">business_area</span><span class="p">:</span> <span class="n">BusinessArea</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;BusinessArea&#39;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">SET_NULL</span><span class="p">)</span>
+
+    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">EmailField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># identifies each user instead of username</span>
+    <span class="n">is_email_verified</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">mentorship</span><span class="p">:</span> <span class="n">Mentorship</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span><span class="n">Mentorship</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">SET_NULL</span><span class="p">)</span>
+    <span class="n">mentor_intent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># whether a user wishes to become a mentor</span>
+
+    <span class="n">interests</span><span class="p">:</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">Skill</span><span class="p">]</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Skill</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;user_interests&#39;</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">expertise</span><span class="p">:</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">Skill</span><span class="p">]</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Skill</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;user_expertise&#39;</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">interests_description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">objects</span> <span class="o">=</span> <span class="n">UserManager</span><span class="p">()</span>
+
+    <span class="n">USERNAME_FIELD</span> <span class="o">=</span> <span class="s1">&#39;email&#39;</span>
+    <span class="n">REQUIRED_FIELDS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;first_name&#39;</span><span class="p">,</span> <span class="s1">&#39;last_name&#39;</span><span class="p">,</span> <span class="s1">&#39;business_area&#39;</span><span class="p">]</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="s1">&#39;user&#39;</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="s1">&#39;users&#39;</span>
+
+<div class="viewcode-block" id="User.get_full_name"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_full_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_full_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the first_name plus the last_name, with a space in between.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">full_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">full_name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="User.get_short_name"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_short_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_short_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the short name for the user.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_name</span></div>
+
+<div class="viewcode-block" id="User.get_mentees"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_mentees">[docs]</a>    <span class="k">def</span> <span class="nf">get_mentees</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">User</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot; Retrieves the list of mentees for this user.</span>
+<span class="sd">        :return: the set of users who have this user as their mentor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">mentorship__mentor__pk__exact</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="User.find_group_sessions"><a class="viewcode-back" href="../../apis.html#apis.models.User.find_group_sessions">[docs]</a>    <span class="k">def</span> <span class="nf">find_group_sessions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">GroupSession</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot; Retrieves set of suggested upcoming group sessions for this user</span>
+<span class="sd">        :return: set of suggested group sessions for this user</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># skills__in=self.interests.all() TODO: Skill Matching/Ordering, Filter Out Sessions at Maximum Capacity</span>
+        <span class="k">return</span> <span class="n">GroupSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__gt</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">TIME_ZONE_INFO</span><span class="p">))</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span>
+            <span class="n">users__pk__contains</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">host__pk__exact</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="User.get_host_sessions"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_host_sessions">[docs]</a>    <span class="k">def</span> <span class="nf">get_host_sessions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">GroupSession</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot; Retrieves set of upcoming hosted group sessions for this user</span>
+<span class="sd">        :return: set of upcoming hosted group sessions for this user</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_host</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__gt</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">TIME_ZONE_INFO</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="User.get_sessions"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_sessions">[docs]</a>    <span class="k">def</span> <span class="nf">get_sessions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">GroupSession</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;  Retrieves set of upcoming group sessions this user is in</span>
+<span class="sd">        :return: set of upcoming group sessions this user is in</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">GroupSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">users__pk__contains</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                                           <span class="n">date__gt</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">TIME_ZONE_INFO</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="User.get_all_sessions"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_all_sessions">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_sessions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">GroupSession</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;  Retrieves set of all upcoming group sessions this user is in or is hosting</span>
+<span class="sd">        :return: set of all upcoming group sessions this user is in or is hosting</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_host_sessions</span><span class="p">()</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_sessions</span><span class="p">())</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;date&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="User.get_action_plans"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_action_plans">[docs]</a>    <span class="k">def</span> <span class="nf">get_action_plans</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">ActionPlan</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_action_plans</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="User.get_outgoing_mentor_requests"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_outgoing_mentor_requests">[docs]</a>    <span class="k">def</span> <span class="nf">get_outgoing_mentor_requests</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">MentorRequest</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot; Retrieves set of mentor requests which this user has sent to mentors</span>
+<span class="sd">        :return: set of mentor requests which this user has sent to mentors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_mentee</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="User.get_incoming_mentor_requests"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_incoming_mentor_requests">[docs]</a>    <span class="k">def</span> <span class="nf">get_incoming_mentor_requests</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">MentorRequest</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot; Retrieves set of mentor requests which this user has been sent by potential mentees</span>
+<span class="sd">        :return: Retrieves set of mentor requests which this user has been sent by potential mentees</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_mentor</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="User.get_meetings"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_meetings">[docs]</a>    <span class="k">def</span> <span class="nf">get_meetings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">Meeting</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the set of all upcoming meetings which this user has</span>
+<span class="sd">        :return: set of all meetings which this user has</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">Meeting</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">none</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mentorship</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mentorship</span><span class="o">.</span><span class="n">get_upcoming_meetings</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">mentorship</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mentorships_where_user_is_mentor</span><span class="p">():</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">mentorship</span><span class="o">.</span><span class="n">get_upcoming_meetings</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="User.has_mentees"><a class="viewcode-back" href="../../apis.html#apis.models.User.has_mentees">[docs]</a>    <span class="k">def</span> <span class="nf">has_mentees</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mentees</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="User.get_mentorships_where_user_is_mentor"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_mentorships_where_user_is_mentor">[docs]</a>    <span class="k">def</span> <span class="nf">get_mentorships_where_user_is_mentor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">User</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">Mentorship</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">mentor__pk__exact</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="User.get_mentor_rating_average"><a class="viewcode-back" href="../../apis.html#apis.models.User.get_mentor_rating_average">[docs]</a>    <span class="k">def</span> <span class="nf">get_mentor_rating_average</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mentorships_where_user_is_mentor</span><span class="p">()</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">Avg</span><span class="p">(</span><span class="s1">&#39;rating&#39;</span><span class="p">))[</span><span class="s1">&#39;rating__avg&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">4</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ret</span></div>
+
+    <span class="c1"># TODO Add to a mixin type thing.</span>
+<div class="viewcode-block" id="User.make_distinct_email_from"><a class="viewcode-back" href="../../apis.html#apis.models.User.make_distinct_email_from">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">make_distinct_email_from</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">first_name</span><span class="p">,</span> <span class="n">last_name</span><span class="p">):</span>
+        <span class="n">email_domain</span> <span class="o">=</span> <span class="s2">&quot;deutschebank&quot;</span>
+        <span class="n">email</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">number_of_people_with_same_name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="n">first_name</span><span class="p">,</span>
+                                                             <span class="n">last_name</span><span class="o">=</span><span class="n">last_name</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">number_of_people_with_same_name</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">first_name</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">last_name</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">number_of_people_with_same_name</span><span class="si">}</span><span class="s1">@</span><span class="si">{</span><span class="n">email_domain</span><span class="si">}</span><span class="s1">.com&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">first_name</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">last_name</span><span class="si">}</span><span class="s1">@</span><span class="si">{</span><span class="n">email_domain</span><span class="si">}</span><span class="s1">.com&#39;</span>
+
+        <span class="k">return</span> <span class="n">email</span></div>
+
+<div class="viewcode-block" id="User.make_random"><a class="viewcode-back" href="../../apis.html#apis.models.User.make_random">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">make_random</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                    <span class="n">skills_pool</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Skill</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">business_area_pool</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BusinessArea</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs_for_user_constructor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">User</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">skills_pool</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">skills_pool</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Skill</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+
+        <span class="n">business_area</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="s1">&#39;business_area&#39;</span> <span class="ow">in</span> <span class="n">kwargs_for_user_constructor</span><span class="p">:</span>
+            <span class="n">business_area</span> <span class="o">=</span> <span class="n">kwargs_for_user_constructor</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;business_area&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">business_area_pool</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">business_area_pool</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">BusinessArea</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+
+            <span class="n">business_area</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">business_area_pool</span><span class="p">)</span>
+
+        <span class="n">first_name</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;first_names&quot;</span><span class="p">])</span>
+        <span class="n">last_name</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;last_names&quot;</span><span class="p">])</span>
+
+        <span class="n">email_domain</span> <span class="o">=</span> <span class="s2">&quot;deutschebank.com&quot;</span>
+
+        <span class="n">interests</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s1">&#39;interests&#39;</span> <span class="ow">in</span> <span class="n">kwargs_for_user_constructor</span><span class="p">:</span>
+            <span class="n">interests</span> <span class="o">=</span> <span class="n">kwargs_for_user_constructor</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;interests&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">interests</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">skills_pool</span><span class="p">,</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+
+        <span class="n">expertise</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s1">&#39;expertise&#39;</span> <span class="ow">in</span> <span class="n">kwargs_for_user_constructor</span><span class="p">:</span>
+            <span class="n">expertise</span> <span class="o">=</span> <span class="n">kwargs_for_user_constructor</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;expertise&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">expertise</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">skills_pool</span><span class="p">,</span> <span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+
+        <span class="n">mentor_intent</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s1">&#39;mentor_intent&#39;</span> <span class="ow">in</span> <span class="n">kwargs_for_user_constructor</span><span class="p">:</span>
+            <span class="n">mentor_intent</span> <span class="o">=</span> <span class="n">kwargs_for_user_constructor</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;mentor_intent&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mentor_intent</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+
+        <span class="n">password</span> <span class="o">=</span> <span class="s1">&#39;nunya&#39;</span>
+        <span class="k">if</span> <span class="s1">&#39;password&#39;</span> <span class="ow">in</span> <span class="n">kwargs_for_user_constructor</span><span class="p">:</span>
+            <span class="n">password</span> <span class="o">=</span> <span class="n">kwargs_for_user_constructor</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;password&#39;</span><span class="p">)</span>
+
+        <span class="n">email</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s1">&#39;email&#39;</span> <span class="ow">in</span> <span class="n">kwargs_for_user_constructor</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="n">kwargs_for_user_constructor</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">make_distinct_email_from</span><span class="p">(</span><span class="n">first_name</span><span class="p">,</span> <span class="n">last_name</span><span class="p">)</span>
+
+        <span class="n">u</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="n">first_name</span><span class="p">,</span>
+                               <span class="n">last_name</span><span class="o">=</span><span class="n">last_name</span><span class="p">,</span>
+                               <span class="n">business_area</span><span class="o">=</span><span class="n">business_area</span><span class="p">,</span>
+                               <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
+                               <span class="n">is_email_verified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">mentor_intent</span><span class="o">=</span><span class="n">mentor_intent</span><span class="p">,</span>
+                               <span class="o">**</span><span class="n">kwargs_for_user_constructor</span><span class="p">)</span>
+
+        <span class="c1"># TODO Make tests for this.</span>
+        <span class="n">u</span><span class="o">.</span><span class="n">set_password</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+
+        <span class="n">u</span><span class="o">.</span><span class="n">interests</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">interests</span><span class="p">)</span>
+        <span class="n">u</span><span class="o">.</span><span class="n">expertise</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">expertise</span><span class="p">)</span>
+
+        <span class="n">u</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">u</span></div></div>
+
+
+<div class="viewcode-block" id="Meeting"><a class="viewcode-back" href="../../apis.html#apis.models.Meeting">[docs]</a><span class="k">class</span> <span class="nc">Meeting</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">mentorship</span><span class="p">:</span> <span class="n">Mentorship</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Mentorship</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;mentorship_meetings&#39;</span><span class="p">)</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">()</span>  <span class="c1"># time of meeting</span>
+    <span class="n">mentee_notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mentor_notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MeetingRequest"><a class="viewcode-back" href="../../apis.html#apis.models.MeetingRequest">[docs]</a><span class="k">class</span> <span class="nc">MeetingRequest</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">mentorship</span><span class="p">:</span> <span class="n">Mentorship</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Mentorship</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span>
+                                               <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;mentorship_meeting_requests&#39;</span><span class="p">)</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">time</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">()</span>  <span class="c1"># time of meeting</span></div>
+
+
+<div class="viewcode-block" id="ActionPlan"><a class="viewcode-back" href="../../apis.html#apis.models.ActionPlan">[docs]</a><span class="k">class</span> <span class="nc">ActionPlan</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">user</span><span class="p">:</span> <span class="n">User</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span>
+                                   <span class="n">related_name</span><span class="o">=</span><span class="s2">&quot;user_action_plans&quot;</span><span class="p">)</span>  <span class="c1"># if the user is deleted action plans</span>
+    <span class="n">creation_date</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># creation date of action plan</span>
+    <span class="n">due_date</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># due date of action plan</span>
+    <span class="n">completion_date</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">completed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># whether the action plan is completed</span></div>
+
+
+<div class="viewcode-block" id="Notification"><a class="viewcode-back" href="../../apis.html#apis.models.Notification">[docs]</a><span class="k">class</span> <span class="nc">Notification</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">user</span><span class="p">:</span> <span class="n">User</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">actioned</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>  <span class="c1"># user has acted on notification</span></div>
+
+
+<div class="viewcode-block" id="GroupSession"><a class="viewcode-back" href="../../apis.html#apis.models.GroupSession">[docs]</a><span class="k">class</span> <span class="nc">GroupSession</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">virtual_link</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">image_link</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+    <span class="n">host</span><span class="p">:</span> <span class="n">User</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;session_host&#39;</span><span class="p">,</span>
+                                   <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>  <span class="c1"># if host is deleted, delete session</span>
+    <span class="n">capacity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">skills</span><span class="p">:</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">Skill</span><span class="p">]</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Skill</span><span class="p">)</span>
+    <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">()</span>
+    <span class="n">users</span><span class="p">:</span> <span class="n">QuerySet</span><span class="p">[</span><span class="n">User</span><span class="p">]</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[],</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Feedback"><a class="viewcode-back" href="../../apis.html#apis.models.Feedback">[docs]</a><span class="k">class</span> <span class="nc">Feedback</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">date</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">()</span>
+    <span class="n">feedback</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">deutschebank</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Group 2.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
