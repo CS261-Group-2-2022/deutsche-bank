@@ -701,12 +701,17 @@ class CurrentUserViewIntegrationTest(TestCase):
         self.assertEqual(user.pk, response.data['id'], msg=show_res(response))
 
     def test_currently_signed_in_user_details_can_be_updated(self):
-        user = User.choose_random()
+        mentorship = Mentorship.choose_random()
+        if mentorship is None:
+            return
+
+        user = mentorship.mentee
 
         # Make the request to update our first name.
         name_len = User._meta.get_field('first_name').max_length
         body = {
             'first_name': lorem_random(max_length=name_len),
+            'business_area': BusinessArea.choose_random().pk,
         }
         request = factory.patch('/api/v1/profile',
                                 json.dumps(body),
