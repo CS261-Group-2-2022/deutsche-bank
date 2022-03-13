@@ -6,8 +6,11 @@ import random
 import numpy as np
 
 from django.test import TestCase
-from .dummy_data import create_dummy_data
+from rest_framework.test import force_authenticate
+from rest_framework.test import APIRequestFactory
+from .dummy_data import *
 from .models import *
+from .views import *
 from .matching_algorithm import *
 
 class InterestAndExpertiseOverlapUnitTest(TestCase):
@@ -103,3 +106,25 @@ class MatchingAlgorithmTestCase(TestCase):
                                     all_users, mentors,
                                     all_mentorships, current_mentorships,
                                     all_requests)
+
+
+class MatchingAlgorithmIntegrationTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_dummy_business_areas()
+        create_dummy_skills()
+        pass # No dummy data for this, we don't want any mentors.
+
+    def test_matching_algorithm_endpoint_raises_error_if_no_mentors_match(self):
+        user_looking_for_mentor = User.make_random()
+
+        factory = APIRequestFactory()
+        request = factory.get('/api/v1/user/' + str(user_looking_for_mentor.pk) + '/matching',
+                               follow=True)
+        force_authenticate(request, user=user_looking_for_mentor)
+
+        view = UserViewSet.as_view({'get': 'matching'})
+        response = view(request, pk=user_looking_for_mentor.pk)
+
+        ## Check that the endpoint correctly signifies there are no mentors available.
+        self.assertEqual(response.status_code, 204)
