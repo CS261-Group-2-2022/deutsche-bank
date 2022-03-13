@@ -235,20 +235,24 @@ class NotificationManager(django_models.Manager):
             # TODO(Arpad): I changed this stuff because I don't get it and need to make tests pass
             #target = sessions #+ (notifications * users_per_notification)
             capacity_needed = (interested - capacity_left_in_sessions_for_skill)
+            no_of_notifications_desired = capacity_needed // 15
+            no_of_notifications_to_make = no_of_notifications_desired - existing_notifications
 
-            if capacity_needed > 0:
-                # There are more people interested than there is capacity
-                experts: [apis_models.User] = list(apis_models.User.objects.filter(
-                    expertise__pk__contains=skill.pk, group_prompt_intent__exact=True).exclude(pk__in=notification_users))
+            if no_of_notifications_to_make > 0:
+                # There are more people interested than there is capacity & existing notifications
+                experts_for_skill = apis_models.User.objects.filter(expertise__pk__contains=skill.pk,
+                                                                    group_prompt_intent__exact=True)
+                experts_not_yet_notified = list(experts_for_skill.exclude(pk__in=notification_users))
 
-                if len(experts) <= 0:
+                if len(experts_not_yet_notified) <= 0:
                     continue
 
-                if len(experts) > capacity_needed:
-                    how_many_to_pick = min(abs(int(capacity_needed)), len(experts)-1)
-                    experts = random.sample(experts, how_many_to_pick)
+                if len(experts_not_yet_notified) > no_of_notifications_to_make:
+                    how_many_to_pick = min(abs(no_of_notifications_to_make),
+                                           len(experts_not_yet_notified)-1)
+                    experts = random.sample(experts_not_yet_notified, how_many_to_pick)
 
-                for expert in experts:
+                for expert in experts_not_yet_notified:
                     self.group_session_prompt(expert, skill)
 
             else:
