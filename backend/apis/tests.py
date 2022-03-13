@@ -1115,6 +1115,7 @@ class ActionPlanTestCase(TestCase):
         self.assertEqual(response.status_code, 200, msg=show_res(response))
         self.assertNotEqual(response.status_code, 400)
 
+
 class MatchingAlgorithmTestCases(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -1330,7 +1331,8 @@ class MatchingAlgorithmTestCases(TestCase):
         response = view(request)
 
         self.assertEqual(response.status_code, 400, msg=show_res(response))
-        
+
+
 class NotificationTestCases(TestCase):
     @classmethod
     def setUpTestData(cls):

@@ -71,12 +71,12 @@ class NotificationManager(django_models.Manager):
         if mentee.mentorship != mentorship:
             return
         mentor = mentorship.mentor
-        self.create(NotificationType.BUSINESS_AREA_CONFLICT_MENTEE,
+        self.create(type_enum=NotificationType.BUSINESS_AREA_CONFLICT_MENTEE,
                     user=mentor,
                     title=f'Your business area is the same as {mentee.get_full_name()}',
                     action={'mentee': mentee.pk})
 
-        self.create(NotificationType.BUSINESS_AREA_CONFLICT_MENTOR,
+        self.create(type_enum=NotificationType.BUSINESS_AREA_CONFLICT_MENTOR,
                     user=mentee,
                     title=f'Your business area is the same as {mentor.get_full_name()}',
                     action={'mentor': mentor.pk})
