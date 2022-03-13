@@ -113,7 +113,6 @@ class MatchingAlgorithmIntegrationTest(TestCase):
     def setUpTestData(cls):
         create_dummy_business_areas()
         create_dummy_skills()
-        pass # No dummy data for this, we don't want any mentors.
 
     def test_matching_algorithm_endpoint_raises_error_if_no_mentors_match(self):
         user_looking_for_mentor = User.make_random()

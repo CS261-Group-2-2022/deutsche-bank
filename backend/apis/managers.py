@@ -256,7 +256,6 @@ class NotificationManager(django_models.Manager):
 
     # JSON contains lookup is not supported on our database, hence only a single skill is passed
     def group_session_prompt(self, user, skill: apis_models.Skill):
-        # print(f'Sending group session prompt to {user.get_full_name()}')
         self.create(NotificationType.GROUP_SESSION_PROMPT,
                     user=user,
                     title=f'There is demand for a group session on {skill.name}',

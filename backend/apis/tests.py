@@ -18,6 +18,8 @@ from .dummy_data_dataset import dataset
 def show_res(response):
     return f'{str(response)}: {response.status_code} | {response.status_text}' + '\n' + f'{response.data=}'
 
+factory = APIRequestFactory()
+
 class UserModelTests(TestCase):
     register_url = str(settings.REGISTER_URL)
 
@@ -388,7 +390,6 @@ class UserModelTests(TestCase):
                                              mentor_notes= lorem_random(max_length=mentor_notes_len))
         meeting_count_before = Meeting.objects.count()
         body = {"meeting":new_meeting.pk}
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/meeting/destroy',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -433,7 +434,6 @@ class UserModelTests(TestCase):
                                              mentor_notes= lorem_random(max_length=mentor_notes_len))
         meeting_count_before = Meeting.objects.count()
         body = {"meeting":new_meeting.pk}
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/meeting/destroy',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -479,7 +479,6 @@ class UserModelTests(TestCase):
                                              mentor_notes= lorem_random(max_length=mentor_notes_len))
         meeting_count_before = Meeting.objects.count()
         body = {"meeting":new_meeting.pk}
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/meeting/destroy',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -526,7 +525,6 @@ class UserModelTests(TestCase):
             "improvements":lorem_random(1000),
             "date":str(time)
         }
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/mentorship-feedback/',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -593,7 +591,6 @@ class UserModelTests(TestCase):
             "users": []
         }
 
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/session/',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -635,7 +632,6 @@ class UserModelTests(TestCase):
             "session": new_groupsession.pk,
             "user":user.pk
         }
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/session/join',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -672,7 +668,6 @@ class UserModelTests(TestCase):
             "session": new_groupsession.pk,
             "user":participant.pk
         }
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/session/join',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -684,6 +679,7 @@ class UserModelTests(TestCase):
 
         self.assertEqual(response.status_code, 200, msg=show_res(response))
 
+
 class CurrentUserViewIntegrationTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -693,7 +689,6 @@ class CurrentUserViewIntegrationTest(TestCase):
         user = User.choose_random()
 
         # Make the request to get the currently signed in user, with the user signed in
-        factory = APIRequestFactory()
         request = factory.get('/api/v1/profile', follow=True)
         force_authenticate(request, user=user)
 
@@ -716,7 +711,6 @@ class CurrentUserViewIntegrationTest(TestCase):
         body = {
             'first_name': lorem_random(max_length=name_len),
         }
-        factory = APIRequestFactory()
         request = factory.patch('/api/v1/profile',
                                 json.dumps(body),
                                 follow=True, content_type='application/json')
@@ -748,7 +742,6 @@ class ActionPlanTestCase(TestCase):
             "description": lorem_random(max_length=1000),
         }
 
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/plan/',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -784,7 +777,6 @@ class ActionPlanTestCase(TestCase):
             "description": lorem_random(max_length=1000),
         }
 
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/plan/',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -813,7 +805,6 @@ class ActionPlanTestCase(TestCase):
             "description": lorem_random(max_length=1000),
         }
 
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/plan/',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -872,7 +863,6 @@ class ActionPlanTestCase(TestCase):
             "user": other_mentee.pk
         }
 
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/plan/',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -905,7 +895,6 @@ class ActionPlanTestCase(TestCase):
 
         number_of_action_plans_before = ActionPlan.objects.all().filter(user=mentee).count()
 
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/plan/',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -963,7 +952,6 @@ class ActionPlanTestCase(TestCase):
         number_of_action_plans_before = ActionPlan.objects.all().filter(user=mentee).count()
 
         # Create an action plan for the mentee as the mentor
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/plan/',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -1027,7 +1015,6 @@ class ActionPlanTestCase(TestCase):
             "session": new_groupsession.pk,
             "user":participant.pk
         }
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/session/leave',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -1144,7 +1131,6 @@ class MatchingAlgorithmTestCases(TestCase):
             "mentee":mentee.pk,
             "mentor":mentor.pk
         }
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/mentorship-request/',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -1170,7 +1156,6 @@ class MatchingAlgorithmTestCases(TestCase):
             "mentor-request":mentor_request.pk,
             "mentor":mentor.pk
         }
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/mentorship-request/accept',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -1198,7 +1183,6 @@ class MatchingAlgorithmTestCases(TestCase):
             "mentor-request":mentor_request.pk,
             "mentor":mentor.pk
         }
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/mentorship-request/decline',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -1237,7 +1221,6 @@ class MatchingAlgorithmTestCases(TestCase):
             "mentee":mentee.pk,
             "mentor":mentor.pk
         }
-        factory = APIRequestFactory()
         request = factory.post('/api/v1/mentorship-request/',
                                json.dumps(body),
                                follow=True, content_type='application/json')
@@ -1268,7 +1251,6 @@ class NotificationTestCases(TestCase):
         noti = Notification.objects
         noti.send_group_session_prompts()
 
-        factory = APIRequestFactory()
         request = factory.get('/api/v1/notification/', follow=True)
         force_authenticate(request, user=expert)
         view = ActionPlanViewSet.as_view({'get': 'list'})
@@ -1302,7 +1284,6 @@ class MentorshipViewTest(TestCase):
             'rating': random.randrange(1,10)
         }
 
-        factory = APIRequestFactory()
         request = factory.patch('/api/v1/mentorship/',
                                 json.dumps(body),
                                 follow=True, content_type='application/json')
@@ -1331,7 +1312,6 @@ class MentorshipViewTest(TestCase):
             'rating': random.randrange(1,10)
         }
 
-        factory = APIRequestFactory()
         request = factory.patch('/api/v1/mentorship/',
                                 json.dumps(body),
                                 follow=True, content_type='application/json')
