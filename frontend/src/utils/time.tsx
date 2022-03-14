@@ -6,14 +6,20 @@ import { DateTime } from "luxon";
  * @param time An ISO string representing the time
  * @param refreshRate The time in ms between refreshing
  */
-export const useRelativeTime = (time: string, refreshRate = 60000) => {
+export const useRelativeTime = (
+  time: string,
+  refreshRate = 60000,
+  base?: DateTime
+) => {
   const relativeTime = DateTime.fromISO(time);
-  const [timeFromNow, setTimeFromNow] = useState(relativeTime.toRelative());
+  const [timeFromNow, setTimeFromNow] = useState(
+    relativeTime.toRelative({ base })
+  );
 
   useEffect(() => {
     // Create a refresh loop
     const intervalId = setInterval(
-      () => setTimeFromNow(relativeTime.toRelative()),
+      () => setTimeFromNow(relativeTime.toRelative({ base })),
       refreshRate
     );
 

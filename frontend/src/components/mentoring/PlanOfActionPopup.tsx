@@ -1,33 +1,14 @@
 import { useEffect, useState } from "react";
 import { mutate } from "swr";
-import useSWR from "swr";
-import { Dialog, Disclosure } from "@headlessui/react";
-import { ChevronUpIcon } from "@heroicons/react/solid";
+import { Dialog } from "@headlessui/react";
 import {
   CHANGE_USER_PLANS,
-  CREATE_USER_PLANS,
   getAuthToken,
-  GroupSession,
-  JoinSessionResponse,
-  JoinSessionSuccess,
   LIST_USER_PLANS,
-  User,
 } from "../../utils/endpoints";
-import { useUser } from "../../utils/authentication";
-import SessionTopicLabel from "../SessionTopicLabel";
-import LocationText from "../LocationText";
 import DateText from "../DateText";
 import Popup from "../Popup";
-import CapacityText from "../CapacityText";
 import { PlanOfAction } from "../../utils/endpoints";
-
-/** Verifies whether a join response is succesful or not (and type guards the body) */
-const isJoinSuccess = (
-  res: Response,
-  body: JoinSessionResponse
-): body is JoinSessionSuccess => {
-  return res.ok;
-};
 
 type PlanOfActionPopupProps = {
   planOfAction?: PlanOfAction;
@@ -40,8 +21,6 @@ export default function PlanOfActionPopup({
   isOpen,
   closeModal,
 }: PlanOfActionPopupProps) {
-  const { user } = useUser();
-
   const [isClosing, setIsClosing] = useState(false);
 
   // When we want to start closing the modal, we want to let the animation
@@ -51,7 +30,7 @@ export default function PlanOfActionPopup({
     setIsClosing(true);
   };
 
-  const completePlanOfAction = async () => {
+  const updatePlanOfAction = async (isCompleted: boolean) => {
     const res = await fetch(
       CHANGE_USER_PLANS.replace("{ID}", planOfAction?.id.toString() ?? "-1"),
       {
@@ -61,8 +40,8 @@ export default function PlanOfActionPopup({
           authorization: `Token ${getAuthToken()}`,
         },
         body: JSON.stringify({
-          completed: true,
-          completion_date: new Date().toISOString(),
+          completed: isCompleted,
+          completion_date: isCompleted ? new Date().toISOString() : null,
         }),
       }
     );
@@ -71,28 +50,10 @@ export default function PlanOfActionPopup({
       mutate(
         LIST_USER_PLANS.replace("{ID}", planOfAction?.user.toString() ?? "-1")
       );
-    }
-  };
-
-  const uncompletePlanOfAction = async () => {
-    const res = await fetch(
-      CHANGE_USER_PLANS.replace("{ID}", planOfAction?.id.toString() ?? "-1"),
-      {
-        method: "PATCH",
-        headers: {
-          "content-type": "application/json",
-          authorization: `Token ${getAuthToken()}`,
-        },
-        body: JSON.stringify({
-          completed: false,
-          completion_date: null,
-        }),
-      }
-    );
-
-    if (res.ok) {
-      mutate(
-        LIST_USER_PLANS.replace("{ID}", planOfAction?.user.toString() ?? "-1")
+    } else {
+      const body = await res.json();
+      setError(
+        body.error ?? "An error occurred when updating this plan of action"
       );
     }
   };
@@ -144,7 +105,7 @@ export default function PlanOfActionPopup({
             className={
               "col-span-3 bg-red-600 hover:bg-red-700 focus:ring-red-500 focus:ring-offset-red-200 text-white font-semibold rounded-md"
             }
-            onClick={uncompletePlanOfAction}
+            onClick={() => updatePlanOfAction(false)}
           >
             Mark as incomplete
           </button>
@@ -164,7 +125,7 @@ export default function PlanOfActionPopup({
             className={
               "col-span-3 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white font-semibold rounded-md"
             }
-            onClick={completePlanOfAction}
+            onClick={() => updatePlanOfAction(true)}
           >
             Mark as complete
           </button>

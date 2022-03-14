@@ -1,3 +1,4 @@
+// Enforce that `isLoading` should be present within our props, but we can have anything else
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface LoadingButtonProps
   extends React.DetailedHTMLProps<
@@ -26,6 +27,7 @@ export const LoadingButton = (
     >
       {isLoading ? (
         <svg
+          data-testid="loading-indicator"
           className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

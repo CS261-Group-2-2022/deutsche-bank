@@ -1,4 +1,3 @@
-/* This example requires Tailwind CSS v2.0+ */
 import { Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
@@ -6,7 +5,6 @@ import { CheckIcon, SelectorIcon } from "@heroicons/react/solid";
 export interface DropdownOption {
   id: number;
   name: string;
-  // image?: string;
 }
 
 type DropdownItemProps<T extends DropdownOption> = {

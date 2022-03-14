@@ -8,7 +8,6 @@ import {
   getAuthToken,
   Skill,
   LIST_USER_HOSTING_SESSIONS_ENDPOINT,
-  LIST_All_GROUP_SESSIONS_ENDPOINT,
   LIST_USER_SUGGESTED_SESSIONS_ENDPOINT,
 } from "../utils/endpoints";
 import { useSkills } from "../utils/skills";
@@ -49,6 +48,7 @@ export default function CreateSessionPopup({
   const [datetime, setDatetime] = useState("");
   const [assignedSkills, setAssignedSkills] = useState<Skill[]>([]);
 
+  // Error state
   const [sessionTitleError, setSessionTitleError] = useState<
     string | undefined
   >();
@@ -86,6 +86,12 @@ export default function CreateSessionPopup({
 
     if (!assignedSkills || assignedSkills.length == 0) {
       setSkillsError("You must select atleast one topic");
+      setIsLoading(false);
+      return;
+    }
+
+    if (Date.parse(datetime) <= Date.now()) {
+      setDatetimeError("The time you select cannot be in the past");
       setIsLoading(false);
       return;
     }

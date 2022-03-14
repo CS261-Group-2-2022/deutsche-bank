@@ -1,6 +1,5 @@
 import { Popover, Transition } from "@headlessui/react";
 import {
-  BellIcon,
   CogIcon,
   LogoutIcon,
   ChatAlt2Icon,
