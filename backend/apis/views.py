@@ -33,7 +33,7 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
         user: User = request.user
         all_users: List[User] = list(User.objects.all())
         users_who_want_to_mentor: List[User] = list(
-            User.objects.filter(mentor_intent=True).exclude(request_mentor__mentee__exact=user))
+            User.objects.filter(mentor_intent=True).exclude(request__mentor__mentee__exact=user))
         all_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         all_requests: List[MentorRequest] = list(MentorRequest.objects.all())
