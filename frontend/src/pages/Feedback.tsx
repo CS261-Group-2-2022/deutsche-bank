@@ -1,9 +1,8 @@
 import Topbar from "../components/Topbar";
 import { FormTextArea } from "../components/FormTextarea";
 import { useState } from "react";
-import { FEEDBACK_ENDPOINT } from "../utils/endpoints";
+import {FEEDBACK_ENDPOINT, getAuthToken} from "../utils/endpoints";
 import { LoadingButton } from "../components/LoadingButton";
-import { getAuthToken } from "../utils/endpoints"
 
 export default function Feedback() {
   const [isLoading, setIsLoading] = useState(false);
