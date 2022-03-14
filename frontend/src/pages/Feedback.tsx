@@ -18,6 +18,8 @@ export default function Feedback() {
       headers: {
         "content-type": "application/json",
         authorization: `Token ${getAuthToken()}`,
+        // TODO(Arpad): ^ This doesn't actually seem to fix the auth error.
+        // If I don't set the ViewSet to AllowAll permissions, this fails no matter what.
       },
       body: JSON.stringify({
         feedback: feedback,

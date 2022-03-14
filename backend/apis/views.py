@@ -22,6 +22,7 @@ from .dummy_data import create_dummy_data
 
 from .matching_algorithm import matching_algorithm, NoPossibleMentorsError
 
+
 class UserViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -31,7 +32,8 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
     def matching(self, request, *args, **kwargs):
         user: User = request.user
         all_users: List[User] = list(User.objects.all())
-        users_who_want_to_mentor: List[User] = list(User.objects.filter(mentor_intent=True))
+        users_who_want_to_mentor: List[User] = list(
+            User.objects.filter(mentor_intent=True).exclude(request_mentor__in=user.get_outgoing_mentor_requests()))
         all_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         current_mentorships: List[Mentorship] = list(Mentorship.objects.all())
         all_requests: List[MentorRequest] = list(MentorRequest.objects.all())
@@ -44,13 +46,12 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
                                                                all_mentorships,
                                                                current_mentorships,
                                                                all_requests)
-            response_status = HTTP_200_OK
         except NoPossibleMentorsError:
-            response_status = HTTP_204_NO_CONTENT
+            pass
 
         cereal = UserSerializer(potential_mentors, many=True)
 
-        return Response(cereal.data, status=response_status)
+        return Response(cereal.data, status=HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def full(self, request, pk=None):
@@ -302,6 +303,13 @@ class MentorRequestViewSet(CreateModelMixin, GenericViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.validated_data['mentee'] = request.user
+        if serializer.validated_data['mentor'] == request.user:
+            return Response({'error': 'You cannot send a mentor request to yourself'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if MentorRequest.objects.filter(mentee__exact=request.user,
+                                        mentor__exact=serializer.validated_data['mentor']).exists():
+            return Response({'error': 'You have already sent a request to this mentor'},
+                            status=status.HTTP_400_BAD_REQUEST)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         Notification.objects.mentorship_request_received(serializer.instance)
@@ -517,13 +525,13 @@ class SkillViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     # TODO(Arpad): Make a test that checks unauthenticated users can get the skills to pay the bills
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     # TODO(Arpad): If we have this enabled, requests to create new skills fail with an authentication error.
-    #authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
+    # authentication_classes = ()  # If the front-end provides a token that is invalid, these endpoints should work.
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
 
 
 class FeedbackViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
 

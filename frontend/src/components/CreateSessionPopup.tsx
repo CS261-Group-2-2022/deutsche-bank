@@ -90,6 +90,12 @@ export default function CreateSessionPopup({
       return;
     }
 
+    if (Date.parse(datetime) <= Date.now()) {
+      setDatetimeError("The time you select cannot be in the past");
+      setIsLoading(false);
+      return;
+    }
+
     const res = await fetch(CREATE_GROUP_SESSION_ENDPOINT, {
       method: "POST",
       headers: {
