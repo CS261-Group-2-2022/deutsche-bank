@@ -1,7 +1,7 @@
 import Topbar from "../components/Topbar";
 import { FormTextArea } from "../components/FormTextarea";
 import { useState } from "react";
-import { FEEDBACK_ENDPOINT } from "../utils/endpoints";
+import {FEEDBACK_ENDPOINT, getAuthToken} from "../utils/endpoints";
 import { LoadingButton } from "../components/LoadingButton";
 
 export default function Feedback() {
@@ -17,6 +17,7 @@ export default function Feedback() {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        authorization: `Token ${getAuthToken()}`,
       },
       body: JSON.stringify({
         feedback: feedback,
