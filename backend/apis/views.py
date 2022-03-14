@@ -307,7 +307,8 @@ class MentorRequestViewSet(CreateModelMixin, GenericViewSet):
         if serializer.validated_data['mentor'] == request.user:
             return Response({'error': 'You cannot send a mentor request to yourself'},
                             status=status.HTTP_400_BAD_REQUEST)
-        if MentorRequest.objects.filter(mentee__exact=request.user, mentor__exact=serializer.validated_data['mentor']):
+        if MentorRequest.objects.filter(mentee__exact=request.user,
+                                        mentor__exact=serializer.validated_data['mentor']).exists():
             return Response({'error': 'You have already sent a request to this mentor'},
                             status=status.HTTP_400_BAD_REQUEST)
         self.perform_create(serializer)
