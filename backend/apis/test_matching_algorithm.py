@@ -10,6 +10,7 @@ from rest_framework.test import force_authenticate
 from rest_framework.test import APIRequestFactory
 from .dummy_data import *
 from .models import *
+from .tests import show_res
 from .views import *
 from .matching_algorithm import *
 
@@ -114,7 +115,7 @@ class MatchingAlgorithmIntegrationTest(TestCase):
         create_dummy_business_areas()
         create_dummy_skills()
 
-    def test_matching_algorithm_endpoint_raises_error_if_no_mentors_match(self):
+    def test_matching_algorithm_endpoint_empty_if_no_mentors_match(self):
         user_looking_for_mentor = User.make_random()
 
         factory = APIRequestFactory()
@@ -126,4 +127,5 @@ class MatchingAlgorithmIntegrationTest(TestCase):
         response = view(request, pk=user_looking_for_mentor.pk)
 
         ## Check that the endpoint correctly signifies there are no mentors available.
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
