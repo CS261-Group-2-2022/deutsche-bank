@@ -5,9 +5,8 @@ Workflow status:
 ![Tests](https://github.com/CS261-Group-2-2022/deutsche-bank/actions/workflows/backend-testing.yaml/badge.svg)
 
 ## Building and running in Docker using Docker Compose
-# First,
 To build and run this project, make sure you have the latest versions of Docker
-and Docker Compose installed. For guidance on this, see the next section.
+and Docker Compose installed. For guidance on this, see the [next section](#how-to-install-docker-and-docker-compose).
 
 This project is expected to be ran with auto-generated test data. To run it in production, please see the deployment checklist, as well as the section on turning off automatic random data generation.
 
