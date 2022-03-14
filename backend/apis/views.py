@@ -46,13 +46,12 @@ class UserViewSet(RetrieveModelMixin, GenericViewSet):
                                                                all_mentorships,
                                                                current_mentorships,
                                                                all_requests)
-            response_status = HTTP_200_OK
         except NoPossibleMentorsError:
-            response_status = HTTP_204_NO_CONTENT
+            pass
 
         cereal = UserSerializer(potential_mentors, many=True)
 
-        return Response(cereal.data, status=response_status)
+        return Response(cereal.data, status=HTTP_200_OK)
 
     @action(detail=True, methods=['get'])
     def full(self, request, pk=None):
